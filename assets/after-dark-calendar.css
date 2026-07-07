@@ -1,0 +1,2271 @@
+﻿:root {
+      color-scheme: light;
+      --page-bg: #eef0f3;
+    }
+
+    body {
+      background: var(--page-bg);
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    .amc-preview-shell {
+      margin: 0 auto;
+      max-width: 1540px;
+      padding: 28px 14px;
+    }
+
+    .amc-sky-calendar {
+      --bg: #f7f4ed;
+      --panel: #fffdf8;
+      --panel-soft: #f0ece3;
+      --text: #16191d;
+      --muted: #5e6671;
+      --faint: #8b929c;
+      --line: rgba(26, 30, 36, .13);
+      --line-strong: rgba(26, 30, 36, .24);
+      --shadow: rgba(33, 31, 26, .28);
+      --moon: #b78222;
+      --meteor: #dc6b2f;
+      --launch: #cf3f54;
+      --opposition: #7658cf;
+      --eclipse: #343842;
+      --sky: #2879b9;
+      --telescope: #4c8d62;
+      --occultation: #8b5a2b;
+      --accent: #0f6f84;
+      --good: #2f9e44;
+      --ok: #d39a21;
+      --bad: #d94a45;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.74), rgba(255,255,255,.2)),
+        var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 25px;
+      box-shadow: 0 42px 132px var(--shadow), 0 16px 38px rgba(22, 25, 29, .16);
+      box-sizing: border-box;
+      color: var(--text);
+      container-type: inline-size;
+      font-family: Manrope, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 1.42;
+      max-width: 1500px;
+      overflow: clip;
+      padding: clamp(14px, 2vw, 22px);
+      position: relative;
+    }
+
+    .amc-sky-calendar[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #080a0d;
+      --panel: #11161c;
+      --panel-soft: #181e26;
+      --text: #f1f0eb;
+      --muted: #aeb6c1;
+      --faint: #7c8795;
+      --line: rgba(231, 235, 241, .14);
+      --line-strong: rgba(231, 235, 241, .27);
+      --shadow: rgba(0, 0, 0, .46);
+      --moon: #e2b457;
+      --meteor: #ff8b46;
+      --launch: #ff6274;
+      --opposition: #b09cff;
+      --eclipse: #d7dce6;
+      --sky: #70cfff;
+      --telescope: #85d396;
+      --occultation: #ffbc74;
+      --accent: #78d8ee;
+      --good: #6fdc87;
+      --ok: #f2c14e;
+      --bad: #ff6b6b;
+      background:
+        radial-gradient(circle at 8% 14%, rgba(255,255,255,.14) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 74% 12%, rgba(255,255,255,.1) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 88% 70%, rgba(255,255,255,.1) 0 1px, transparent 1.5px),
+        linear-gradient(135deg, #080a0d, #111820 56%, #07090e);
+    }
+
+    .amc-sky-calendar[data-theme="dark"] .amc-title {
+      color: #ffffff;
+    }
+
+    .amc-sky-calendar *,
+    .amc-sky-calendar *::before,
+    .amc-sky-calendar *::after {
+      box-sizing: border-box;
+    }
+
+    .amc-sky-calendar :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .amc-top {
+      align-items: end;
+      display: grid;
+      gap: 14px 18px;
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 340px) minmax(0, 1fr);
+      margin-bottom: 10px;
+    }
+
+    .amc-brand-lockup {
+      align-items: center;
+      align-self: start;
+      display: inline-grid;
+      gap: 10px;
+      grid-template-columns: auto minmax(0, 1fr);
+      max-width: 100%;
+    }
+
+    .amc-brand-logo {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      display: block;
+      height: clamp(46px, 4.4vw, 58px);
+      object-fit: cover;
+      width: clamp(46px, 4.4vw, 58px);
+    }
+
+    .amc-title {
+      display: grid;
+      font-size: clamp(1.55rem, 2.6vw, 2.35rem);
+      font-weight: 500;
+      letter-spacing: 0;
+      line-height: 1;
+      margin: 0;
+      text-transform: uppercase;
+    }
+
+    .amc-title span {
+      color: var(--muted);
+      font-size: clamp(.78rem, 1vw, .9rem);
+      font-weight: 400;
+      letter-spacing: .01em;
+      line-height: 1.3;
+      margin-top: 7px;
+      text-transform: none;
+    }
+
+    .amc-subtitle {
+      color: var(--muted);
+      font-size: .95rem;
+      margin: 9px 0 0;
+      max-width: 70ch;
+    }
+
+    .amc-actions {
+      align-items: center;
+      align-self: start;
+      display: grid;
+      gap: 7px 8px;
+      grid-template-columns: auto auto;
+      justify-self: end;
+      justify-items: end;
+    }
+
+    .amc-location-controls {
+      align-items: center;
+      display: flex;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .amc-location-prompt {
+      color: var(--accent);
+      flex-basis: 100%;
+      font-size: .74rem;
+      font-weight: 650;
+      grid-column: 1 / -1;
+      line-height: 1.2;
+      text-align: right;
+    }
+
+    .amc-sky-calendar.has-location .amc-location-prompt {
+      display: none;
+    }
+
+    .amc-location-status {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--muted);
+      display: inline-flex;
+      font-size: .73rem;
+      font-weight: 650;
+      align-items: center;
+      gap: 5px;
+      height: 40px;
+      line-height: 1;
+      max-width: 220px;
+      overflow: hidden;
+      padding: 8px 10px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .amc-location-status svg,
+    .amc-detail-location svg {
+      color: var(--accent);
+      flex: 0 0 auto;
+      height: 14px;
+      width: 14px;
+    }
+
+    .amc-manual-location {
+      display: grid;
+      gap: 6px;
+      grid-column: 1 / -1;
+      grid-template-columns: minmax(190px, 1fr) auto;
+      justify-self: end;
+      width: min(100%, 284px);
+    }
+
+    .amc-location-input {
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-sizing: border-box;
+      color: var(--text);
+      font: inherit;
+      font-size: .76rem;
+      font-weight: 560;
+      block-size: 40px;
+      height: 40px;
+      line-height: 1.1;
+      max-height: 40px;
+      min-height: 40px;
+      min-width: 0;
+      padding: 0 10px;
+    }
+
+    .amc-location-input::placeholder {
+      color: var(--faint);
+      opacity: 1;
+    }
+
+    .amc-button {
+      -webkit-tap-highlight-color: transparent;
+      align-items: center;
+      background: var(--text);
+      border: 1px solid var(--text);
+      border-radius: 8px;
+      color: var(--panel);
+      cursor: pointer;
+      display: inline-flex;
+      font: inherit;
+      font-size: .78rem;
+      font-weight: 650;
+      gap: 7px;
+      height: 40px;
+      justify-content: center;
+      line-height: 1.1;
+      padding: 9px 11px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .amc-button.secondary {
+      background: var(--panel);
+      border-color: var(--line-strong);
+      color: var(--text);
+    }
+
+    .amc-button:hover {
+      border-color: var(--accent);
+    }
+
+    .amc-icon-button {
+      height: 40px;
+      padding: 0;
+      width: 40px;
+    }
+
+    .amc-icon-button svg {
+      display: block;
+      height: 21px;
+      width: 21px;
+    }
+
+    .amc-month-strip {
+      align-items: center;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: minmax(0, 1fr);
+      justify-self: center;
+      margin: 0 0 3px;
+      width: 100%;
+    }
+
+    .amc-month-nav {
+      align-items: center;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 36px minmax(0, 1fr) 36px;
+      grid-column: auto;
+      margin: 0;
+      max-width: none;
+      width: 100%;
+    }
+
+    .amc-month-button {
+      align-items: center;
+      background: var(--panel);
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      color: #0c2340;
+      cursor: pointer;
+      display: inline-flex;
+      height: 36px;
+      justify-content: center;
+      padding: 0;
+      width: 36px;
+    }
+
+    .amc-month-button:disabled {
+      cursor: default;
+      opacity: 1;
+    }
+
+    .amc-sky-calendar[data-theme="dark"] .amc-month-button {
+      color: #ffffff;
+    }
+
+    .amc-month-button svg {
+      display: block;
+      height: 20px;
+      width: 20px;
+    }
+
+    .amc-month-label {
+      color: var(--text);
+      font-size: clamp(.98rem, 1.5vw, 1.28rem);
+      font-weight: 640;
+      letter-spacing: .08em;
+      line-height: 1;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .amc-intel-strip {
+      align-items: stretch;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: minmax(118px, 150px) minmax(0, 1fr);
+      margin-bottom: 14px;
+    }
+
+    .amc-intel-heading {
+      align-content: center;
+      background: color-mix(in srgb, var(--panel) 82%, transparent);
+      border: 1px solid var(--line);
+      border-left: 5px solid var(--accent);
+      border-radius: 8px;
+      color: var(--text);
+      display: grid;
+      font-size: clamp(.92rem, 1.1vw, 1.08rem);
+      font-weight: 700;
+      line-height: 1.12;
+      min-height: 88px;
+      padding: 10px 12px;
+    }
+
+    .amc-intel-heading span {
+      color: var(--muted);
+      display: block;
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      line-height: 1;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .amc-intel-heading b {
+      display: block;
+      font-size: inherit;
+      font-weight: inherit;
+      line-height: inherit;
+    }
+
+    .amc-intel {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-bottom: 0;
+    }
+
+    .amc-intel-card {
+      align-items: center;
+      background: color-mix(in srgb, var(--panel) 88%, transparent);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      border-left: 5px solid var(--intel-colour, var(--accent));
+      box-shadow: 0 10px 24px color-mix(in srgb, var(--intel-colour, var(--accent)) 10%, transparent);
+      display: grid;
+      gap: 7px;
+      grid-template-columns: 72px minmax(0, 1fr);
+      min-height: 88px;
+      overflow: hidden;
+      padding: 6px;
+    }
+
+    .amc-intel-card:nth-child(1) { --intel-colour: var(--moon); }
+    .amc-intel-card:nth-child(2) { --intel-colour: var(--accent); }
+    .amc-intel-card:nth-child(3) { --intel-colour: var(--meteor); }
+    .amc-intel-card:nth-child(4) { --intel-colour: var(--launch); }
+
+    .amc-intel-card img {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.22);
+      display: block;
+      height: 72px;
+      object-fit: cover;
+      width: 72px;
+    }
+
+    .amc-intel-card img[alt="New Moon"] {
+      border: 1px solid color-mix(in srgb, var(--moon) 74%, var(--line));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.22), 0 0 18px color-mix(in srgb, var(--moon) 26%, transparent);
+    }
+
+    .amc-intel-copy {
+      display: block;
+      min-width: 0;
+    }
+
+    .amc-intel-card b {
+      color: var(--text);
+      display: block;
+      font-size: .9rem;
+      font-weight: 700;
+      line-height: 1.18;
+      margin-bottom: 4px;
+    }
+
+    .amc-intel-card span {
+      color: var(--muted);
+      display: block;
+      font-size: .79rem;
+      font-weight: 600;
+      line-height: 1.28;
+    }
+
+    .amc-layout {
+      align-items: start;
+      display: grid;
+      gap: 16px;
+      grid-template-columns: minmax(0, 1fr) minmax(270px, 300px);
+    }
+
+    .amc-calendar-wrap {
+      min-width: 0;
+    }
+
+    .amc-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 0 0 9px;
+    }
+
+    .amc-legend span,
+    .amc-tag {
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      display: inline-flex;
+      font-size: .64rem;
+      font-weight: 700;
+      gap: 5px;
+      letter-spacing: .06em;
+      line-height: 1;
+      padding: 5px 7px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .amc-legend span::before {
+      background: currentColor;
+      border-radius: 99px;
+      content: "";
+      height: 7px;
+      width: 7px;
+    }
+
+    .amc-weekdays {
+      color: #ffffff;
+      display: grid;
+      font-size: .76rem;
+      font-weight: 760;
+      gap: 7px;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      letter-spacing: .1em;
+      margin-bottom: 7px;
+      text-transform: uppercase;
+    }
+
+    .amc-weekdays span {
+      background: #0c2340;
+      border-radius: 999px;
+      padding: 7px 8px;
+      text-align: center;
+    }
+
+    .amc-sky-calendar[data-theme="dark"] .amc-weekdays span {
+      background: rgba(255,255,255,.14);
+      color: #ffffff;
+    }
+
+    .amc-grid {
+      align-items: start;
+      display: grid;
+      gap: 7px;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+
+    .amc-empty {
+      height: 136px;
+      min-height: 136px;
+    }
+
+    .amc-day {
+      -webkit-tap-highlight-color: transparent;
+      background: color-mix(in srgb, var(--panel) 85%, transparent);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      display: grid;
+      font: inherit;
+      gap: 5px;
+      grid-template-rows: 17px 44px 19px 22px;
+      height: 136px;
+      min-height: 136px;
+      overflow: hidden;
+      padding: 9px 9px 8px;
+      position: relative;
+      text-align: left;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+      width: 100%;
+    }
+
+    .amc-day:hover {
+      border-color: var(--line-strong);
+      transform: translateY(-1px);
+    }
+
+    .amc-day[aria-expanded="true"] {
+      background: var(--panel);
+      border-width: 2px;
+      border-color: var(--day-colour, var(--accent));
+      box-shadow: 0 14px 30px color-mix(in srgb, var(--day-colour, var(--accent)) 18%, transparent);
+      height: 136px;
+      min-height: 136px;
+      outline: 2px solid var(--day-colour, var(--accent));
+      outline-offset: -1px;
+      overflow: visible;
+      transform: none;
+      z-index: 2;
+    }
+
+    .amc-day.is-row-end[aria-expanded="true"] {
+      grid-column: span 1;
+      transform: none;
+      width: 100%;
+    }
+
+    .amc-day[aria-expanded="true"] > .amc-date,
+    .amc-day[aria-expanded="true"] > .amc-moon-line,
+    .amc-day[aria-expanded="true"] > .amc-dark-line,
+    .amc-day[aria-expanded="true"] > .amc-tags {
+      display: none;
+    }
+
+    .amc-day.is-new-moon {
+      background: color-mix(in srgb, var(--moon) 11%, var(--panel));
+      border-color: color-mix(in srgb, var(--moon) 72%, var(--line));
+      box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--moon) 42%, transparent), 0 10px 24px color-mix(in srgb, var(--moon) 16%, transparent);
+    }
+
+    .amc-day.is-new-moon .amc-date strong {
+      color: var(--moon);
+      font-weight: 820;
+    }
+
+    .amc-day.is-today {
+      background: color-mix(in srgb, var(--accent) 14%, var(--panel));
+      border-color: var(--accent);
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+      box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--accent) 72%, transparent), 0 14px 30px color-mix(in srgb, var(--accent) 22%, transparent);
+    }
+
+    .amc-day.is-today .amc-date strong {
+      color: var(--accent);
+      font-weight: 820;
+    }
+
+    .amc-day.is-today[aria-expanded="true"] {
+      border-color: var(--accent);
+      outline: 3px solid var(--accent);
+      outline-offset: 0;
+      box-shadow: 0 22px 44px color-mix(in srgb, var(--accent) 28%, transparent), inset 0 0 0 3px color-mix(in srgb, var(--accent) 72%, transparent);
+    }
+
+    .amc-date {
+      align-items: baseline;
+      display: flex;
+      gap: 6px;
+      justify-content: space-between;
+      min-width: 0;
+    }
+
+    .amc-date strong {
+      font-size: 1.08rem;
+      font-weight: 650;
+      line-height: 1;
+    }
+
+    .amc-date-badges {
+      align-items: center;
+      display: inline-flex;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .amc-today-pill {
+      align-items: center;
+      background: var(--accent);
+      border-radius: 999px;
+      color: var(--panel);
+      display: inline-flex;
+      font-size: .56rem;
+      font-weight: 800;
+      height: 17px;
+      letter-spacing: .06em;
+      line-height: 1;
+      padding: 0 6px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .amc-mobile-weekday {
+      color: var(--faint);
+      display: none;
+      font-size: .68rem;
+      font-weight: 650;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .amc-moon-line {
+      align-items: center;
+      display: grid;
+      gap: 7px;
+      grid-template-columns: 42px minmax(0, 1fr);
+      min-width: 0;
+    }
+
+    .amc-moon-img {
+      aspect-ratio: 1;
+      background: #07090d;
+      border-radius: 999px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.18);
+      display: block;
+      height: 42px;
+      object-fit: cover;
+      width: 42px;
+    }
+
+    .is-new-moon .amc-moon-img {
+      box-shadow: 0 0 0 2px var(--moon), 0 0 20px color-mix(in srgb, var(--moon) 34%, transparent);
+    }
+
+    .amc-moon-copy {
+      min-width: 0;
+    }
+
+    .amc-moon-copy b {
+      display: block;
+      font-size: .76rem;
+      font-weight: 650;
+      line-height: 1.14;
+      overflow-wrap: normal;
+    }
+
+    .amc-moon-copy span {
+      color: var(--muted);
+      display: block;
+      font-size: .68rem;
+      font-weight: 680;
+      line-height: 1.18;
+    }
+
+    .amc-dark-line {
+      color: var(--accent);
+      display: block;
+      font-size: .72rem;
+      font-weight: 760;
+      min-height: 18px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .amc-tags {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 5px;
+      height: 22px;
+      min-height: 22px;
+      overflow: hidden;
+    }
+
+    .amc-tag {
+      border-color: currentColor;
+      flex: 0 1 auto;
+      font-size: .6rem;
+      height: 21px;
+      justify-content: center;
+      min-width: 0;
+      overflow: hidden;
+      padding: 0 8px;
+      text-overflow: ellipsis;
+    }
+
+    .amc-expanded {
+      align-content: start;
+      background: var(--panel);
+      border: 3px solid var(--day-colour, var(--accent));
+      border-radius: 8px;
+      box-shadow: 0 18px 34px color-mix(in srgb, var(--day-colour, var(--accent)) 16%, transparent);
+      color: var(--muted);
+      display: none;
+      font-size: .76rem;
+      gap: 7px;
+      height: 322px;
+      line-height: 1.3;
+      left: -2px;
+      padding: 9px;
+      position: absolute;
+      top: -2px;
+      width: calc(200% + 11px);
+      z-index: 20;
+    }
+
+    .amc-expanded::after {
+      align-items: center;
+      background: var(--panel);
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      color: var(--text);
+      content: "-";
+      display: inline-flex;
+      font-size: .9rem;
+      font-weight: 800;
+      height: 21px;
+      justify-content: center;
+      line-height: 1;
+      position: absolute;
+      right: 7px;
+      top: 7px;
+      width: 21px;
+    }
+
+    .amc-day[aria-expanded="true"] .amc-expanded {
+      display: grid;
+    }
+
+    .amc-day.is-row-end[aria-expanded="true"] .amc-expanded {
+      left: auto;
+      right: -2px;
+    }
+
+    .amc-day[aria-expanded="true"] .amc-mini-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .amc-expanded-head {
+      align-items: stretch;
+      display: grid;
+      gap: 7px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      min-height: 50px;
+      padding-right: 0;
+    }
+
+    .amc-expanded-identity {
+      align-items: center;
+      display: grid;
+      gap: 7px;
+      grid-template-columns: 40px minmax(0, 1fr);
+      min-height: 56px;
+      padding-right: 25px;
+    }
+
+    .amc-expanded-identity img {
+      aspect-ratio: 1;
+      border-radius: 999px;
+      display: block;
+      height: 40px;
+      object-fit: cover;
+      width: 40px;
+    }
+
+    .amc-expanded-identity strong,
+    .amc-expanded-identity span {
+      display: block;
+      min-width: 0;
+    }
+
+    .amc-expanded-identity strong {
+      color: var(--text);
+      font-size: .84rem;
+      font-weight: 760;
+      line-height: 1.08;
+    }
+
+    .amc-expanded-identity span {
+      color: var(--muted);
+      font-size: .7rem;
+      font-weight: 650;
+      line-height: 1.15;
+    }
+
+    .amc-expanded-identity .amc-expanded-stat,
+    .amc-expanded-night {
+      color: var(--accent) !important;
+      font-size: .78rem !important;
+      font-weight: 800 !important;
+      letter-spacing: 0;
+      line-height: 1.15 !important;
+      margin-top: 3px;
+      text-transform: none;
+    }
+
+    .amc-zodiac-card {
+      align-items: center;
+      background: color-mix(in srgb, var(--panel-soft) 74%, transparent);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      display: grid;
+      gap: 6px;
+      grid-template-columns: 31px minmax(0, 1fr);
+      min-height: 50px;
+      padding: 5px 6px;
+      width: 100%;
+    }
+
+    .amc-zodiac-mark {
+      align-items: center;
+      background: color-mix(in srgb, var(--moon) 18%, transparent);
+      border: 1px solid color-mix(in srgb, var(--moon) 45%, transparent);
+      border-radius: 999px;
+      color: var(--moon);
+      display: inline-flex;
+      font-size: 1.06rem;
+      font-weight: 800;
+      height: 30px;
+      justify-content: center;
+      width: 30px;
+    }
+
+    .amc-zodiac-card small,
+    .amc-zodiac-card span {
+      display: block;
+      line-height: 1.05;
+    }
+
+    .amc-zodiac-card small {
+      color: var(--faint);
+      font-size: .58rem;
+      font-weight: 760;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .amc-zodiac-card b {
+      color: var(--text);
+      display: block;
+      font-size: .82rem;
+      font-weight: 760;
+      line-height: 1.05;
+    }
+
+    .amc-zodiac-card span {
+      color: var(--muted);
+      font-size: .58rem;
+      font-weight: 650;
+    }
+
+    .amc-expanded-title {
+      align-items: center;
+      background: color-mix(in srgb, var(--event-colour, var(--accent)) 8%, transparent);
+      border: 1px solid color-mix(in srgb, var(--event-colour, var(--accent)) 24%, transparent);
+      border-left: 3px solid currentColor;
+      border-radius: 6px;
+      color: var(--event-colour, var(--accent));
+      display: flex;
+      font-size: .78rem;
+      font-weight: 750;
+      line-height: 1.18;
+      min-height: 50px;
+      padding: 5px 6px;
+    }
+
+    .amc-expanded-title.is-empty {
+      background: transparent;
+      border-color: transparent;
+      color: transparent;
+    }
+
+    .amc-cell-mobile-extra {
+      display: none;
+    }
+
+    .amc-cell-alt-chart {
+      margin: 0;
+      min-height: 0;
+    }
+
+    .amc-cell-alt-chart .amc-alt-labels {
+      margin-top: 1px;
+    }
+
+    .amc-cell-section {
+      background: color-mix(in srgb, var(--panel-soft) 76%, transparent);
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      display: grid;
+      gap: 7px;
+      padding: 8px;
+    }
+
+    .amc-cell-section > b {
+      color: var(--faint);
+      display: block;
+      font-size: .62rem;
+      font-weight: 750;
+      letter-spacing: .08em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .amc-cell-event-list,
+    .amc-cell-recs,
+    .amc-cell-weather-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .amc-cell-event {
+      border-left: 3px solid var(--event-colour, var(--accent));
+      color: var(--event-colour, var(--accent));
+      display: block;
+      font-size: .74rem;
+      font-weight: 700;
+      line-height: 1.18;
+      padding-left: 7px;
+    }
+
+    .amc-cell-recs span {
+      color: var(--text);
+      display: block;
+      font-size: .74rem;
+      font-weight: 650;
+      line-height: 1.2;
+    }
+
+    .amc-cell-weather-row {
+      background: color-mix(in srgb, var(--panel) 60%, transparent);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      display: block;
+      gap: 6px;
+      padding: 7px;
+      position: relative;
+    }
+
+    .amc-cell-weather-row .amc-weather-icons {
+      right: 7px;
+      top: 7px;
+    }
+
+    .amc-cell-weather-copy {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .amc-cell-weather-copy > b {
+      align-items: center;
+      color: var(--text);
+      display: flex;
+      font-size: .74rem;
+      font-weight: 650;
+      line-height: 1;
+      min-height: 34px;
+      padding-right: 54px;
+    }
+
+    .amc-mini-grid {
+      display: grid;
+      gap: 7px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .amc-mini-item,
+    .amc-astro-item {
+      align-items: center;
+      background: color-mix(in srgb, var(--panel-soft) 72%, transparent);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--muted);
+      display: grid;
+      gap: 6px;
+      grid-template-columns: 31px minmax(0, 1fr);
+      min-width: 0;
+      min-height: 50px;
+      padding: 6px 7px;
+    }
+
+    .amc-mini-item svg,
+    .amc-astro-item svg {
+      color: var(--accent);
+      display: block;
+      height: 30px;
+      width: 30px;
+    }
+
+    .amc-mini-item span,
+    .amc-astro-item span {
+      display: block;
+      font-size: .58rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .amc-mini-item > span,
+    .amc-astro-item > span {
+      min-width: 0;
+    }
+
+    .amc-mini-item b,
+    .amc-astro-item b {
+      color: var(--text);
+      display: block;
+      font-size: .78rem;
+      font-weight: 700;
+      line-height: 1.08;
+      overflow-wrap: anywhere;
+    }
+
+    .amc-detail {
+      background: color-mix(in srgb, var(--panel) 90%, transparent);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 14px 34px var(--shadow);
+      min-width: 0;
+      overflow: clip;
+      position: sticky;
+      top: 12px;
+    }
+
+    .amc-mobile-planning {
+      display: none;
+    }
+
+    .amc-detail-body {
+      padding: 10px;
+    }
+
+    .amc-detail-head {
+      align-items: center;
+      display: flex;
+      gap: 7px;
+      justify-content: space-between;
+      margin-bottom: 7px;
+      min-width: 0;
+    }
+
+    .amc-detail-date {
+      color: var(--faint);
+      display: block;
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .amc-detail-location {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      flex: 0 1 auto;
+      font-size: .66rem;
+      font-weight: 700;
+      line-height: 1;
+      max-width: 44%;
+      overflow: hidden;
+      padding: 6px 8px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .amc-astro-row {
+      display: grid;
+      gap: 6px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin: 0 0 12px;
+    }
+
+    .amc-astro-row .amc-astro-item {
+      gap: 5px;
+      grid-template-columns: 25px minmax(0, 1fr);
+      min-height: 42px;
+      padding: 6px;
+    }
+
+    .amc-astro-row .amc-astro-item svg {
+      height: 24px;
+      width: 24px;
+    }
+
+    .amc-alt-chart {
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      display: grid;
+      gap: 6px;
+      margin: 0 0 8px;
+      min-height: 266px;
+      padding: 6px;
+    }
+
+    .amc-detail .amc-alt-chart {
+      height: auto;
+      overflow: hidden;
+      padding: 5px;
+    }
+
+    .amc-alt-chart h3 {
+      color: var(--text);
+      font-size: .64rem;
+      font-weight: 650;
+      letter-spacing: .08em;
+      line-height: 1;
+      margin: 0;
+      text-transform: uppercase;
+    }
+
+    .amc-alt-svg {
+      aspect-ratio: 360 / 244;
+      display: block;
+      height: auto;
+      width: 100%;
+    }
+
+    .amc-detail .amc-alt-svg {
+      height: auto;
+    }
+
+    .amc-alt-labels {
+      color: var(--text);
+      display: grid;
+      font-size: .78rem;
+      font-weight: 760;
+      gap: 2px;
+      line-height: 1.08;
+      min-height: 42px;
+    }
+
+    .amc-alt-labels span {
+      display: block;
+      min-width: 0;
+    }
+
+    .amc-alt-labels b {
+      color: var(--faint);
+      font-weight: 800;
+    }
+
+    .amc-chart-empty {
+      color: var(--muted);
+      font-size: .68rem;
+      font-weight: 650;
+      line-height: 1.2;
+    }
+
+    .amc-detail-title {
+      color: var(--event-colour, var(--text));
+      font-size: 1.18rem;
+      font-weight: 700;
+      line-height: 1.22;
+      margin: 0 0 6px;
+      min-height: 0;
+      overflow: visible;
+    }
+
+    .amc-metrics {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-bottom: 10px;
+    }
+
+    .amc-metric {
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 8px;
+    }
+
+    .amc-metric span {
+      color: var(--faint);
+      display: block;
+      font-size: .62rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      margin-bottom: 3px;
+      text-transform: uppercase;
+    }
+
+    .amc-metric b {
+      display: block;
+      font-size: .83rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .amc-event-list {
+      display: grid;
+      gap: 7px;
+      margin: 0 0 10px;
+      padding: 0;
+    }
+
+    .amc-detail .amc-event-list {
+      max-height: none;
+      overflow: visible;
+      padding-right: 2px;
+    }
+
+    .amc-weather {
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      margin-bottom: 10px;
+      padding: 9px;
+    }
+
+    .amc-weather h3 {
+      color: var(--faint);
+      font-size: .7rem;
+      font-weight: 650;
+      letter-spacing: .08em;
+      margin: 0 0 8px;
+      text-transform: uppercase;
+    }
+
+    .amc-weather-grid {
+      display: grid;
+      gap: 7px;
+      grid-template-columns: 1fr;
+    }
+
+    .amc-weather-updated {
+      color: var(--faint);
+      display: block;
+      font-size: .64rem;
+      font-weight: 650;
+      letter-spacing: .04em;
+      line-height: 1;
+      margin-top: 7px;
+      text-transform: uppercase;
+    }
+
+    .amc-weather-card {
+      background: color-mix(in srgb, var(--panel) 72%, transparent);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      display: block;
+      min-height: 150px;
+      padding: 9px;
+      position: relative;
+    }
+
+    .amc-detail .amc-weather-card {
+      height: 150px;
+    }
+
+    .amc-weather-icons {
+      align-items: center;
+      display: inline-grid;
+      gap: 4px;
+      grid-auto-flow: column;
+      grid-auto-columns: 32px;
+      justify-content: flex-end;
+      min-width: 104px;
+    }
+
+    .amc-weather-icons svg {
+      color: var(--accent);
+      display: block;
+      height: 32px;
+      width: 32px;
+    }
+
+    .amc-weather-head {
+      align-items: center;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: minmax(0, 1fr) 104px;
+      margin-bottom: 8px;
+      min-width: 0;
+    }
+
+    .amc-weather-head b {
+      color: var(--text);
+      display: block;
+      font-size: .88rem;
+      font-weight: 700;
+      line-height: 1;
+      min-width: 0;
+    }
+
+    .amc-weather-metrics {
+      display: grid;
+      gap: 7px;
+      margin-top: 0;
+    }
+
+    .amc-weather-meter {
+      align-items: center;
+      color: var(--muted);
+      display: grid;
+      font-size: .72rem;
+      font-weight: 550;
+      gap: 8px;
+      grid-template-columns: minmax(104px, .86fr) minmax(120px, 1.14fr);
+      line-height: 1;
+    }
+
+    .amc-weather-label {
+      align-items: baseline;
+      display: flex !important;
+      gap: 5px;
+      min-width: 0;
+      white-space: nowrap;
+    }
+
+    .amc-weather-meter em,
+    .amc-weather-meter strong {
+      font-style: normal;
+      font-weight: 560;
+      min-width: 0;
+    }
+
+    .amc-weather-meter strong {
+      color: var(--text);
+      font-size: .74rem;
+    }
+
+    .amc-weather-segments {
+      background: color-mix(in srgb, var(--line-strong) 42%, transparent);
+      border-radius: 999px;
+      display: grid;
+      gap: 2px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      height: 12px;
+      min-width: 0;
+      overflow: visible;
+      padding: 1px;
+      position: relative;
+    }
+
+    .amc-weather-stack {
+      display: grid;
+      min-width: 0;
+    }
+
+    .amc-weather-segments i {
+      background: var(--segment-colour, var(--line-strong));
+      border-radius: 999px;
+      cursor: pointer;
+      display: block;
+      min-width: 0;
+      position: relative;
+    }
+
+    .amc-weather-segments i::after {
+      display: none;
+    }
+
+    .amc-weather-tooltip {
+      background: #101822;
+      border-radius: 6px;
+      box-shadow: 0 14px 30px rgba(0,0,0,.22);
+      color: #ffffff;
+      align-items: center;
+      display: inline-flex;
+      font-size: .68rem;
+      font-weight: 700;
+      gap: 6px;
+      left: 0;
+      line-height: 1.16;
+      max-width: min(240px, calc(100% - 20px));
+      opacity: 0;
+      padding: 7px 9px;
+      pointer-events: none;
+      position: absolute;
+      text-align: center;
+      top: 0;
+      transform: translate(-50%, 4px);
+      transition: opacity .12s ease, transform .12s ease;
+      white-space: nowrap;
+      z-index: 80;
+    }
+
+    .amc-weather-tooltip::before {
+      align-items: center;
+      border: 1px solid rgba(255,255,255,.62);
+      border-radius: 999px;
+      content: "i";
+      display: inline-flex;
+      flex: 0 0 auto;
+      font-size: .56rem;
+      font-weight: 800;
+      height: 15px;
+      justify-content: center;
+      width: 15px;
+    }
+
+    .amc-weather-tooltip.is-visible {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .amc-weather-bar {
+      background: color-mix(in srgb, var(--line-strong) 42%, transparent);
+      border-radius: 999px;
+      display: none;
+      height: 5px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .amc-weather-bar::before {
+      background: var(--meter-colour, var(--accent));
+      border-radius: inherit;
+      content: "";
+      display: block;
+      height: 100%;
+      width: var(--value, 0%);
+    }
+
+    .amc-sky-calendar[data-theme="dark"] .amc-weather-bar,
+    .amc-sky-calendar[data-theme="dark"] .amc-weather-segments {
+      background: rgba(255,255,255,.16);
+    }
+
+    .amc-weather-note {
+      color: var(--muted);
+      display: block;
+      font-size: .75rem;
+      font-weight: 650;
+      line-height: 1.25;
+    }
+
+    .amc-tonight {
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      margin-bottom: 10px;
+      padding: 9px;
+    }
+
+    .amc-tonight h3 {
+      color: var(--faint);
+      font-size: .64rem;
+      font-weight: 650;
+      letter-spacing: .08em;
+      margin: 0 0 6px;
+      text-transform: uppercase;
+    }
+
+    .amc-tonight ol {
+      display: grid;
+      gap: 5px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .amc-tonight li {
+      align-items: center;
+      color: var(--text);
+      display: grid;
+      font-size: .82rem;
+      font-weight: 650;
+      gap: 7px;
+      grid-template-columns: 18px minmax(0, 1fr);
+      line-height: 1.16;
+      list-style: none;
+    }
+
+    .amc-tonight li span {
+      align-items: center;
+      background: var(--accent);
+      border-radius: 999px;
+      color: var(--panel);
+      display: inline-flex;
+      font-size: .62rem;
+      height: 18px;
+      justify-content: center;
+      width: 18px;
+    }
+
+    .amc-article-promo {
+      border-top: 1px solid var(--line);
+      color: var(--text);
+      display: grid;
+      gap: 2px;
+      margin-top: 8px;
+      padding-top: 8px;
+      text-decoration: none;
+    }
+
+    .amc-article-promo small {
+      color: var(--faint);
+      font-size: .58rem;
+      font-weight: 760;
+      letter-spacing: .08em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .amc-article-promo b {
+      color: var(--accent);
+      font-size: .76rem;
+      font-weight: 760;
+      line-height: 1.18;
+    }
+
+    .amc-article-promo:hover b {
+      text-decoration: underline;
+    }
+
+    .amc-event {
+      border-left: 4px solid var(--event-colour);
+      border-radius: 6px;
+      background: color-mix(in srgb, var(--event-colour) 7%, transparent);
+      display: grid;
+      gap: 0;
+      list-style: none;
+      padding: 5px 0 5px 8px;
+    }
+
+    .amc-event small {
+      color: color-mix(in srgb, var(--event-colour) 82%, var(--text));
+      font-size: .62rem;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .amc-event h4 {
+      color: var(--text);
+      font-size: .88rem;
+      font-weight: 700;
+      line-height: 1.24;
+      margin: 0;
+      padding-bottom: 1px;
+    }
+
+    .amc-sky-calendar[data-theme="dark"] .amc-event h4 {
+      color: #ffffff;
+    }
+
+    .amc-event p {
+      color: var(--muted);
+      font-size: .78rem;
+      line-height: 1.22;
+      margin: 0;
+    }
+
+    .amc-detail .amc-event p {
+      display: none;
+    }
+
+    .amc-reference-row {
+      align-items: start;
+      border-top: 1px solid var(--line);
+      display: grid;
+      gap: 12px;
+      grid-template-columns: minmax(0, 1fr) auto;
+      margin-top: 14px;
+      padding-top: 11px;
+    }
+
+    .amc-sources {
+      min-width: 0;
+    }
+
+    .amc-sources summary {
+      align-items: center;
+      color: var(--muted);
+      cursor: pointer;
+      display: inline-flex;
+      font-size: .75rem;
+      font-weight: 700;
+      gap: 7px;
+      letter-spacing: .08em;
+      list-style: none;
+      text-transform: uppercase;
+    }
+
+    .amc-sources summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .amc-sources summary::before {
+      border-bottom: 5px solid transparent;
+      border-left: 7px solid currentColor;
+      border-top: 5px solid transparent;
+      content: "";
+      height: 0;
+      transition: transform .16s ease;
+      width: 0;
+    }
+
+    .amc-sources[open] summary::before {
+      transform: rotate(90deg);
+    }
+
+    .amc-source-list {
+      display: grid;
+      gap: 6px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin: 10px 0 0;
+      padding: 0;
+    }
+
+    .amc-source-list li {
+      color: var(--muted);
+      font-size: .73rem;
+      line-height: 1.28;
+      list-style: none;
+    }
+
+    .amc-source-list a {
+      color: var(--accent);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .amc-source-list a:hover {
+      text-decoration: underline;
+    }
+
+    .amc-reference-row .amc-button {
+      justify-self: end;
+    }
+
+    .amc-print-brand {
+      display: none;
+    }
+
+    .moon { color: var(--moon); --event-colour: var(--moon); --day-colour: var(--moon); }
+    .meteor { color: var(--meteor); --event-colour: var(--meteor); --day-colour: var(--meteor); }
+    .launch { color: var(--launch); --event-colour: var(--launch); --day-colour: var(--launch); }
+    .opposition { color: var(--opposition); --event-colour: var(--opposition); --day-colour: var(--opposition); }
+    .eclipse { color: var(--eclipse); --event-colour: var(--eclipse); --day-colour: var(--eclipse); }
+    .sky { color: var(--sky); --event-colour: var(--sky); --day-colour: var(--sky); }
+    .telescope { color: var(--telescope); --event-colour: var(--telescope); --day-colour: var(--telescope); }
+    .occultation { color: var(--occultation); --event-colour: var(--occultation); --day-colour: var(--occultation); }
+
+    @container (max-width: 1120px) {
+      .amc-top {
+        grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+      }
+
+      .amc-brand-lockup {
+        grid-column: 1;
+      }
+
+      .amc-month-strip {
+        grid-column: 1 / -1;
+        justify-self: center;
+        width: min(100%, 340px);
+      }
+
+      .amc-actions {
+        grid-column: 2;
+        grid-row: 1;
+      }
+
+      .amc-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .amc-detail {
+        position: static;
+      }
+    }
+
+    @container (max-width: 820px) {
+      .amc-top {
+        align-items: start;
+        grid-template-columns: 1fr;
+      }
+
+      .amc-detail {
+        display: none;
+      }
+
+      .amc-mobile-planning {
+        display: none;
+      }
+
+      .amc-day[aria-expanded="true"] .amc-cell-mobile-extra {
+        display: grid;
+        gap: 8px;
+      }
+
+      .amc-actions {
+        grid-column: auto;
+        grid-row: auto;
+        grid-template-columns: minmax(0, 1fr) auto;
+        justify-items: start;
+        width: 100%;
+      }
+
+      .amc-month-strip {
+        grid-template-columns: 1fr;
+        justify-self: center;
+        width: min(100%, 360px);
+      }
+
+      .amc-month-nav {
+        max-width: none;
+      }
+
+      .amc-manual-location {
+        justify-self: start;
+        width: min(100%, 300px);
+      }
+
+      .amc-location-controls {
+        flex-wrap: wrap;
+      }
+
+      .amc-location-status {
+        max-width: 100%;
+      }
+
+      .amc-location-prompt {
+        justify-self: start;
+        text-align: left;
+      }
+
+      .amc-reference-row {
+        grid-template-columns: 1fr;
+      }
+
+      .amc-reference-row .amc-button {
+        justify-self: start;
+      }
+
+      .amc-intel {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .amc-intel-strip {
+        grid-template-columns: 1fr;
+        gap: 7px;
+      }
+
+      .amc-intel-heading {
+        align-content: start;
+        min-height: 0;
+        padding: 8px 10px;
+      }
+
+      .amc-intel-card {
+        min-height: 70px;
+        padding: 9px;
+      }
+
+      .amc-intel-card img {
+        height: 54px;
+        width: 54px;
+      }
+
+      .amc-weekdays {
+        display: none;
+      }
+
+      .amc-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .amc-day[aria-expanded="true"] {
+        grid-column: span 3;
+        height: auto;
+        min-height: 284px;
+        overflow: hidden;
+      }
+
+      .amc-day.is-today {
+        box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 68%, transparent), 0 12px 26px color-mix(in srgb, var(--accent) 18%, transparent);
+      }
+
+      .amc-day.is-today[aria-expanded="true"] {
+        box-shadow: 0 16px 32px color-mix(in srgb, var(--accent) 24%, transparent);
+      }
+
+      .amc-day[aria-expanded="true"] > .amc-date,
+      .amc-day[aria-expanded="true"] > .amc-moon-line {
+        display: none;
+      }
+
+      .amc-day[aria-expanded="true"] .amc-expanded {
+        background: transparent;
+        border: 0;
+        border-top: 2px solid var(--day-colour, var(--accent));
+        border-radius: 0;
+        box-shadow: none;
+        display: grid;
+        gap: 7px;
+        height: auto;
+        left: auto;
+        padding: 10px 0 0;
+        position: static;
+        right: auto;
+        top: auto;
+        width: 100%;
+      }
+
+      .amc-day.is-row-end[aria-expanded="true"] {
+        grid-column: span 3;
+        transform: none;
+        width: 100%;
+      }
+
+      .amc-empty {
+        display: none;
+      }
+
+      .amc-mobile-weekday {
+        display: inline;
+      }
+
+      .amc-day[aria-expanded="true"] .amc-mobile-weekday {
+        color: var(--day-colour, var(--accent));
+        font-size: .72rem;
+        font-weight: 800;
+      }
+    }
+
+    @container (max-width: 520px) {
+      .amc-sky-calendar {
+        padding: 12px;
+      }
+
+      .amc-month-nav {
+        grid-template-columns: 36px minmax(0, 1fr) 36px;
+      }
+
+      .amc-month-button {
+        height: 36px;
+        width: 36px;
+      }
+
+      .amc-day[aria-expanded="true"] {
+        grid-column: span 2;
+      }
+
+      .amc-day.is-row-end[aria-expanded="true"] {
+        grid-column: span 2;
+        transform: none;
+        width: 100%;
+      }
+
+      .amc-mini-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .amc-intel {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .amc-metrics,
+      .amc-source-list {
+        grid-template-columns: 1fr;
+      }
+
+      .amc-intel {
+        gap: 7px;
+      }
+
+      .amc-intel-card {
+        gap: 7px;
+        grid-template-columns: 46px minmax(0, 1fr);
+        min-height: 82px;
+      }
+
+      .amc-intel-card img {
+        height: 46px;
+        width: 46px;
+      }
+
+      .amc-intel-card b {
+        font-size: .78rem;
+      }
+
+      .amc-intel-card span {
+        font-size: .68rem;
+      }
+
+      .amc-grid {
+        gap: 6px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .amc-day {
+        gap: 6px;
+        height: 130px;
+        grid-template-rows: auto 42px auto auto;
+        min-height: 130px;
+        padding: 8px 8px 7px;
+      }
+
+      .amc-day[aria-expanded="true"] {
+        min-height: 284px;
+      }
+
+      .amc-moon-line {
+        gap: 7px;
+        grid-template-columns: 38px minmax(0, 1fr);
+        min-height: 38px;
+      }
+
+      .amc-moon-img {
+        height: 38px;
+        width: 38px;
+      }
+
+      .amc-moon-copy b {
+        font-size: .72rem;
+      }
+
+      .amc-moon-copy span {
+        font-size: .72rem;
+      }
+
+      .amc-dark-line {
+        font-size: .76rem;
+      }
+
+      .amc-tags {
+        gap: 4px;
+        height: 22px;
+        min-height: 22px;
+      }
+
+      .amc-tag {
+        font-size: .54rem;
+        height: 20px;
+        min-width: 58px;
+      }
+
+      .amc-expanded-head {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .amc-zodiac-card {
+        grid-template-columns: 28px minmax(0, 1fr);
+        padding: 6px;
+      }
+
+      .amc-zodiac-mark {
+        height: 28px;
+        width: 28px;
+      }
+
+    }
+
+    @media (max-width: 560px) {
+      .amc-preview-shell {
+        padding-inline: 0;
+        width: 100%;
+      }
+
+      .amc-sky-calendar {
+        border-left: 0;
+        border-radius: 0;
+        border-right: 0;
+        margin-inline: auto;
+        width: 100%;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .amc-day {
+        transition: none;
+      }
+
+      .amc-day:hover,
+      .amc-day[aria-expanded="true"] {
+        transform: none;
+      }
+    }
+
+    @page {
+      margin: 0;
+      size: A3 landscape;
+    }
+
+    @media print {
+      :root,
+      body {
+        --page-bg: #ffffff;
+        background: #ffffff;
+      }
+
+      html,
+      body {
+        height: 297mm;
+        margin: 0;
+        overflow: hidden;
+        width: 420mm;
+      }
+
+      .amc-preview-shell {
+        height: 297mm;
+        max-width: none;
+        padding: 0;
+        width: 420mm;
+      }
+
+      .amc-sky-calendar {
+        background: #ffffff;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        height: 297mm;
+        max-width: none;
+        overflow: hidden;
+        padding: 7mm;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+        width: 420mm;
+      }
+
+      .amc-top,
+      .amc-actions,
+      .amc-month-nav,
+      .amc-reference-row,
+      .amc-detail,
+      .amc-mobile-planning,
+      .amc-sources {
+        display: none !important;
+      }
+
+      .amc-print-brand {
+        align-items: center;
+        border-bottom: 1px solid rgba(22, 25, 29, .18);
+        display: grid;
+        gap: 3mm;
+        grid-template-columns: 18mm minmax(0, 1fr) auto;
+        margin-bottom: 4mm;
+        padding-bottom: 3mm;
+      }
+
+      .amc-print-logo {
+        border-radius: 3mm;
+        display: block;
+        height: 18mm;
+        object-fit: cover;
+        width: 18mm;
+      }
+
+      .amc-print-brand span {
+        color: #5e6671;
+        display: block;
+        font-size: 10pt;
+        font-weight: 600;
+        letter-spacing: 0;
+        text-transform: none;
+      }
+
+      .amc-print-brand strong {
+        color: #16191d;
+        display: block;
+        font-size: 25pt;
+        font-weight: 700;
+        letter-spacing: 0;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+
+      .amc-print-brand em {
+        color: #5e6671;
+        font-size: 12pt;
+        font-style: normal;
+        font-weight: 600;
+      }
+
+      .amc-intel {
+        gap: 2.6mm;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .amc-intel-strip {
+        gap: 2.6mm;
+        grid-template-columns: 27mm minmax(0, 1fr);
+        margin-bottom: 3mm;
+      }
+
+      .amc-intel-heading {
+        border-radius: 3mm;
+        min-height: 17mm;
+        padding: 2.5mm;
+      }
+
+      .amc-intel-heading span {
+        font-size: 6.5pt;
+        margin-bottom: 1mm;
+      }
+
+      .amc-month-strip {
+        display: block;
+        margin: 0 0 3mm;
+      }
+
+      .amc-intel-card {
+        border-radius: 3mm;
+        box-shadow: none;
+        gap: 2mm;
+        grid-template-columns: 12mm minmax(0, 1fr);
+        min-height: 17mm;
+        padding: 2.5mm 3mm;
+      }
+
+      .amc-intel-card img {
+        border-radius: 2mm;
+        height: 12mm;
+        width: 12mm;
+      }
+
+      .amc-intel-card b {
+        font-size: 9.5pt;
+        margin-bottom: 1mm;
+      }
+
+      .amc-intel-card span {
+        font-size: 8pt;
+        line-height: 1.2;
+      }
+
+      .amc-layout {
+        display: block;
+      }
+
+      .amc-legend {
+        gap: 1.8mm;
+        margin: 0 0 2.2mm;
+      }
+
+      .amc-legend span,
+      .amc-tag {
+        font-size: 6.6pt;
+        padding: 1.2mm 2mm;
+      }
+
+      .amc-weekdays {
+        display: grid;
+        color: #ffffff;
+        font-size: 7.6pt;
+        gap: 1.8mm;
+        margin-bottom: 1.8mm;
+      }
+
+      .amc-weekdays span {
+        background: #0c2340;
+        border-radius: 99px;
+        padding: 1.3mm 1.5mm;
+        text-align: center;
+      }
+
+      .amc-grid {
+        gap: 1.8mm;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+      }
+
+      .amc-empty,
+      .amc-day {
+        min-height: 40mm;
+      }
+
+      .amc-day {
+        break-inside: avoid;
+        border-radius: 2.5mm;
+        gap: 1.8mm;
+        grid-template-rows: auto 10.5mm auto auto;
+        padding: 2mm;
+        transform: none !important;
+      }
+
+      .amc-day[aria-expanded="true"] {
+        border-color: var(--line);
+        box-shadow: none;
+        grid-column: auto;
+        min-height: 40mm;
+      }
+
+      .amc-date strong {
+        font-size: 10pt;
+      }
+
+      .amc-moon-line {
+        gap: 1.6mm;
+        grid-template-columns: 10mm minmax(0, 1fr);
+      }
+
+      .amc-moon-img {
+        width: 10mm;
+      }
+
+      .amc-moon-copy b {
+        font-size: 7.8pt;
+      }
+
+      .amc-moon-copy span,
+      .amc-dark-line {
+        font-size: 6.7pt;
+      }
+
+      .amc-tags {
+        gap: 1mm;
+        min-height: 5mm;
+      }
+
+      .amc-tag {
+        height: 4.8mm;
+        min-width: 17mm;
+        padding: 0 1.6mm;
+      }
+
+      .amc-day-quick,
+      .amc-expanded {
+        display: none !important;
+      }
+    }
