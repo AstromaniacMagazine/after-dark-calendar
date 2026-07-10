@@ -73,7 +73,7 @@
             <button class="amc-button secondary" type="submit">Set</button>
             <div class="amc-location-results" id="amc-location-results" role="listbox" hidden></div>
           </form>
-          <span class="amc-location-prompt" id="amc-location-prompt">Click USE CURRENT LOCATION for local timing and forecast.</span>
+          <span class="amc-location-prompt" id="amc-location-prompt">Click Use Current Location for local timing and forecast.</span>
         </div>
       </div>
 
@@ -102,16 +102,21 @@
 
         <div class="amc-mobile-planning" id="amc-mobile-planning" aria-live="polite"></div>
         <aside class="amc-detail" id="amc-detail" aria-live="polite" aria-label="Selected day details"></aside>
+        <section class="amc-recommendations" id="amc-recommendations" aria-live="polite" aria-label="Night photography targets and related articles"></section>
       </div>
-
-      <section class="amc-recommendations" id="amc-recommendations" aria-live="polite" aria-label="Night photography targets and related articles"></section>
 
       <div class="amc-reference-row">
         <details class="amc-sources">
           <summary>Sources and References</summary>
           <ul class="amc-source-list" id="amc-source-list"></ul>
         </details>
-        <span class="amc-version-note">Beta v0.2 · location fixes, UI adjustments, target thumbnails and related articles</span>
+        <details class="amc-version" id="amc-version">
+          <summary>Current version: Beta 0.3</summary>
+          <ul class="amc-version-list">
+            <li><b>Beta 0.3:</b> clearer location-permission guidance, compact recommendations layout, larger target thumbnails, updated Pleiades and Saturn images, and May, August and September 2026 month data.</li>
+            <li><b>Beta 0.2:</b> place search picker, event descriptions, target thumbnails, related article cards and canonical index.html for GitHub Pages.</li>
+          </ul>
+        </details>
         <button class="amc-button secondary" type="button" id="amc-download-pdf">Download PDF</button>
       </div>
       <span class="amc-weather-tooltip" id="amc-weather-tooltip" role="status" aria-live="polite"></span>
@@ -119,6 +124,7 @@
   </main>
 
   <script src="assets/astronomy.browser.js"></script>
+  <script src="data/common.js"></script>
   <script src="data/month-manifest.js"></script>
   <script src="assets/after-dark-calendar.js"></script>
 </body>

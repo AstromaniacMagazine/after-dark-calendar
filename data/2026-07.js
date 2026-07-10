@@ -183,11 +183,12 @@
         earth: nasaImage("https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e001386/GSFC_20171208_Archive_e001386~medium.jpg", "https://images.nasa.gov/details/GSFC_20171208_Archive_e001386"),
         milkyWay: nasaImage("https://images-assets.nasa.gov/image/PIA13974/PIA13974~medium.jpg", "https://images.nasa.gov/details/PIA13974"),
         lagoon: nasaImage("https://assets.science.nasa.gov/content/dam/science/missions/hubble/nebulae/emission/Hubble_M8_ACS_1_flat_FINAL.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-8/"),
-        trifid: nasaImage("https://assets.science.nasa.gov/content/dam/science/missions/hubble/nebulae/emission/hubble_2026_trifid.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-20/"),
+        trifid: nasaImage("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/releases/2026/04/STScI-01KM5VPG2R1WX1SY7ASDJ9JEV5.jpg?w=900", "https://science.nasa.gov/asset/hubble/trifid-nebula-wide-field-camera-3-image/"),
         comet: nasaImage("https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/07/hartley2_main.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "https://science.nasa.gov/solar-system/comets/"),
-        pleiades: nasaImage("https://images-assets.nasa.gov/image/PIA09262/PIA09262~medium.jpg", "https://images.nasa.gov/details/PIA09262"),
-        saturn: nasaImage("https://images-assets.nasa.gov/image/PIA12639/PIA12639~small.jpg", "https://images.nasa.gov/details/PIA12639"),
+        pleiades: nasaImage("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/releases/2000/12/STScI-01EVT9S49SBSG3HS70G8GW5PRJ.tif?w=900", "https://science.nasa.gov/asset/hubble/ghostly-reflections-in-the-pleiades/"),
+        saturn: nasaImage("https://svs.gsfc.nasa.gov/vis/a030000/a030300/a030348/saturn_full_disk_PIA06193_print.jpg", "https://svs.gsfc.nasa.gov/30348/"),
         meteor: nasaImage("https://images-assets.nasa.gov/image/NHQ202508030001/NHQ202508030001~medium.jpg", "https://images.nasa.gov/details/NHQ202508030001"),
+        cluster: nasaImage("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/releases/2000/12/STScI-01EVT9S49SBSG3HS70G8GW5PRJ.tif?w=900", "https://science.nasa.gov/asset/hubble/ghostly-reflections-in-the-pleiades/"),
         soyuz: nasaImage("https://images-assets.nasa.gov/image/NHQ201907180037/NHQ201907180037~medium.jpg", "https://images.nasa.gov/details/NHQ201907180037"),
         spacex40: nasaImage("https://sxcontent9668.azureedge.us/cms-assets/assets/medium_Kuiper_KF_03_vertical_sunset_101225_DSC_9663_desktop_4bcd35ae8f.jpg", "https://www.spacex.com/launches"),
         spacexVandy: nasaImage("https://sxcontent9668.azureedge.us/cms-assets/assets/medium_Vandy_desktop2_dbaac02989.jpg", "https://www.spacex.com/launches"),
@@ -241,6 +242,27 @@
         { title: "Meteor peak", text: "Delta Aquariids peak 30 Jul. Radiant height depends on latitude.", image: media.meteor.src, alt: "Meteor shower" },
         { title: "Launch watch", text: "SpaceX and Soyuz launch dates in current listings.", image: media.spacex40.src, alt: "SpaceX rocket launch" }
       ];
+
+      const targetData = {
+        4: ["Mars-Uranus pairing", "Waning gibbous Moon", "Saturn"],
+        5: ["Carroll Crater", "Waning gibbous Moon", "Saturn"],
+        6: ["Waning gibbous Moon", "Saturn", "Bright clusters"],
+        7: ["Last Quarter Moon", "Saturn", "Bright clusters"],
+        10: ["Pleiades (M45)", "Waning crescent Moon", "Saturn"],
+        11: ["Moon-Mars-Saturn line-up", "Waning crescent Moon", "Saturn"],
+        12: ["Delta Aquariids", "Waning crescent Moon", "Saturn"],
+        13: ["Thin crescent Moon", "Delta Aquariids", "Saturn"],
+        14: ["Milky Way core", "Lagoon Nebula (M8)", "Trifid Nebula (M20)"],
+        15: ["Milky Way core", "Lagoon Nebula (M8)", "Comet 10P/Tempel 2"],
+        16: ["Crescent Moon", "Milky Way core", "Comet 10P/Tempel 2"],
+        17: ["Moon-Venus pairing", "Crescent Moon", "Milky Way fields"],
+        24: ["Antares occultation", "Waxing gibbous Moon", "Saturn"],
+        26: ["Saturn", "Waxing gibbous Moon", "Pluto"],
+        27: ["Pluto", "Saturn", "Waxing gibbous Moon"],
+        29: ["Full Moon", "Moonrise", "Saturn"],
+        30: ["Delta Aquariids", "Alpha Capricornids", "Full Moon"],
+        31: ["Saturn", "Waning gibbous Moon", "Bright clusters"]
+      };
 
       const eventData = {
         4: [
@@ -317,6 +339,7 @@
     moonData,
     exactMoon,
     monthIntel,
+    targetData,
     eventData
   };
 })();
