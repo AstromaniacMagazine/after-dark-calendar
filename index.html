@@ -52,6 +52,7 @@
           <h1 class="amc-title" id="amc-title">After Dark Calendar<span>by Astromaniac Magazine</span></h1>
         </div>
         <div class="amc-month-strip">
+          <button class="amc-button secondary amc-today-button" type="button" id="amc-today-button">Today</button>
           <nav class="amc-month-nav" aria-label="Calendar month">
             <button class="amc-month-button" type="button" aria-label="Previous month unavailable" title="Previous loaded month" data-month-prev disabled>
               <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18 9 12l6-6"/></svg>
@@ -107,15 +108,15 @@
 
       <div class="amc-reference-row">
         <details class="amc-sources">
-          <summary>Sources and References</summary>
+          <summary>Sources, References and Version</summary>
+          <div class="amc-version-panel">
+            <h3>Current version: Beta 0.3</h3>
+            <ul class="amc-version-list">
+              <li><b>Beta 0.3:</b> clearer browser-location permission guidance, Today button, lower month controls, smaller title, smooth month slide transitions, stronger highlight markers, separated recommendation panels, Wikimedia target thumbnails, merged sources/version drawer, compact recommendation layout, larger thumbnails, updated Pleiades and Saturn imagery, and May, August and September 2026 month data.</li>
+              <li><b>Beta 0.2:</b> place search picker, event descriptions, target thumbnails, related article cards and canonical index.html for GitHub Pages.</li>
+            </ul>
+          </div>
           <ul class="amc-source-list" id="amc-source-list"></ul>
-        </details>
-        <details class="amc-version" id="amc-version">
-          <summary>Current version: Beta 0.3</summary>
-          <ul class="amc-version-list">
-            <li><b>Beta 0.3:</b> clearer location-permission guidance, compact recommendations layout, larger target thumbnails, updated Pleiades and Saturn images, and May, August and September 2026 month data.</li>
-            <li><b>Beta 0.2:</b> place search picker, event descriptions, target thumbnails, related article cards and canonical index.html for GitHub Pages.</li>
-          </ul>
         </details>
         <button class="amc-button secondary" type="button" id="amc-download-pdf">Download PDF</button>
       </div>
