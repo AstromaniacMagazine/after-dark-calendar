@@ -69,40 +69,71 @@
   const articleData = {
     deepSky: {
       title: "Astrophotography Anywhere: Best Deep-Sky Targets for Light-Polluted and Dark-Sky Locations",
-      url: "https://www.astromaniacmagazine.com/articles/astrophotography-anywhere-best-deep-sky-targets-for-light-polluted-and-dark-sky-locations"
+      url: "https://www.astromaniacmagazine.com/articles/astrophotography-anywhere-best-deep-sky-targets-for-light-polluted-and-dark-sky-locations",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/67cdb38f2b2e3d32a212902d/1741534096005/Astromaniac+Magazine_light-pollution-bortle-class.jpeg?format=750w",
+      kind: "Article"
     },
     moon: {
       title: "Supermoon: How An Illusion Makes The Full Moon Appear Bigger Than It Really Is",
-      url: "https://www.astromaniacmagazine.com/articles/supermoon-how-an-illusion-makes-the-full-moon-appear-bigger-than-it-really-is"
+      url: "https://www.astromaniacmagazine.com/articles/supermoon-how-an-illusion-makes-the-full-moon-appear-bigger-than-it-really-is",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/695c22f72e97d326b10fb19b/1767645945673/unsplash-image-ve_uN9V8xqU.jpg?format=750w",
+      kind: "Article"
     },
     launch: {
       title: "What's Gone Wrong Between Nasa And Elon Musk's SpaceX?",
-      url: "https://www.astromaniacmagazine.com/articles/whats-gone-wrong-between-nasa-and-elon-musks-spacex"
+      url: "https://www.astromaniacmagazine.com/articles/whats-gone-wrong-between-nasa-and-elon-musks-spacex",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/6932cf67dc074a59f9ad6b17/1764937575242/file-20251102-56-e4dr6q.jpg?format=750w",
+      kind: "Article"
     },
     numbers: {
       title: "The Big Seven: Why Numbers Matter in Astrophotography",
-      url: "https://www.astromaniacmagazine.com/articles/why-numbers-matter-in-astrophotography"
+      url: "https://www.astromaniacmagazine.com/articles/why-numbers-matter-in-astrophotography",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/67111efb41ec1c4994ea1b3f/6863d7553631d3567ba056c0/1769689545951/unsplash-image--h8Od9ze-0o.jpg?format=750w",
+      kind: "Article"
     },
     telescope: {
       title: "A New Generation of Telescopes Will Probe The Unknown Unknowns",
-      url: "https://www.astromaniacmagazine.com/articles/new-generation-of-telescopes"
+      url: "https://www.astromaniacmagazine.com/articles/new-generation-of-telescopes",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/6728c6e99ebd4e6e30e98fed/1730725615439/The+Rubin+Observatory.jpeg?format=750w",
+      kind: "Article"
     },
     planetary: {
       title: "A Real Treat for Skywatchers: Rare Planetary Parade",
-      url: "https://www.astromaniacmagazine.com/articles/rare-planetary-parade"
+      url: "https://www.astromaniacmagazine.com/articles/rare-planetary-parade",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/67bf4450e47c4e7a2363bac1/1740588112827/Astromaniac+Magazine_planets+alignment.jpg?format=750w",
+      kind: "Article"
     },
     lightPollution: {
       title: "Light Pollution Has Cut Humanity's Ancient Connection With The Stars",
-      url: "https://www.astromaniacmagazine.com/articles/light-pollution"
+      url: "https://www.astromaniacmagazine.com/articles/light-pollution",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/68fde30033288c43fc363513/1761469184940/unsplash-image-m_MdXo-axyg.jpg?format=750w",
+      kind: "Article"
     },
     accessories: {
       title: "14 Underrated Astrophotography Accessories That Will Transform Your Workflow",
-      url: "https://www.astromaniacmagazine.com/articles/14-underrated-astrophotography-accessories-that-will-transform-your-workflow"
+      url: "https://www.astromaniacmagazine.com/articles/14-underrated-astrophotography-accessories-that-will-transform-your-workflow",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/697b5133508dce356f001036/1769689395970/14+Underrated+Astrophotography+Accessories+That+Will+Transform+Your+Workflow.jpg?format=750w",
+      kind: "Article"
+    },
+    sqmReview: {
+      title: "Measure Sky Quality to Tackle Light Pollution",
+      url: "https://www.astromaniacmagazine.com/reviews/unihedron-sky-quality-meter-lu",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/69cae3ad9ca09f06a1530400/1774904243635/Sky+Quality+Meter+by+Unihedron+Astromaniac+Magazine+Review+3.jpg?format=750w",
+      kind: "Review"
+    },
+    zwoReview: {
+      title: "ZWO AM5N Harmonic Equatorial Mount: A New Era Begins!",
+      url: "https://www.astromaniacmagazine.com/reviews/zwo-am5n",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/6795069bb508a23893983874/1737819803394/ZWO+AM5N.jpg?format=750w",
+      kind: "Review"
     }
   };
 
   const media = {
     milkyWay: nasaImage("https://images-assets.nasa.gov/image/PIA13974/PIA13974~medium.jpg", "https://images.nasa.gov/details/PIA13974"),
+    lagoon: nasaImage("https://assets.science.nasa.gov/content/dam/science/missions/hubble/nebulae/emission/Hubble_M8_ACS_1_flat_FINAL.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-8/"),
+    trifid: nasaImage("https://assets.science.nasa.gov/content/dam/science/missions/hubble/nebulae/emission/hubble_2026_trifid.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-20/"),
+    comet: nasaImage("https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/07/hartley2_main.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "https://science.nasa.gov/solar-system/comets/"),
     planets: nasaImage("https://images-assets.nasa.gov/image/PIA00405/PIA00405~medium.jpg", "https://images.nasa.gov/details/PIA00405"),
     venus: nasaImage("https://images-assets.nasa.gov/image/PIA00104/PIA00104~medium.jpg", "https://images.nasa.gov/details/PIA00104"),
     sun: nasaImage("https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e000982/GSFC_20171208_Archive_e000982~medium.jpg", "https://images.nasa.gov/details/GSFC_20171208_Archive_e000982")
@@ -150,7 +181,7 @@
 
   const monthIntel = [
     { title: "Moon-free dates", text: "14-17 Jun. The darkest window of the month.", image: moonImage(15, 216), alt: "New Moon" },
-    { title: "Astronomical night", text: "Use location to calculate local dark-time windows.", image: media.milkyWay.src, alt: "Milky Way night sky" },
+    { title: "Astronomical night", text: "Use Current Location to calculate local dark-time windows.", image: media.milkyWay.src, alt: "Milky Way night sky" },
     { title: "Planet pairing", text: "Venus and Jupiter form the headline evening pairing.", image: media.planets.src, alt: "Planet pairing" },
     { title: "June solstice", text: "21 Jun. Short northern nights, long southern nights.", image: media.sun.src, alt: "Sun" }
   ];

@@ -1,10 +1,14 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en-GB">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>After Dark Calendar - Astromaniac Magazine</title>
+  <title>After Dark Calendar | Sky Calendar & Astrophotography Planner</title>
   <meta name="description" content="Astromaniac Magazine's After Dark Calendar is a monthly sky calendar, celestial calendar and night sky calendar for astrophotographers, with moon phases, astronomical night, key sky events, launch dates, local Moon and Sun timings, and a live 3-day observing forecast.">
+  <meta name="keywords" content="sky calendar, astrophotography planner, night calendar, night sky calendar, what is in the sky this month">
+  <meta property="og:title" content="After Dark Calendar | Sky Calendar & Astrophotography Planner">
+  <meta property="og:description" content="A monthly sky calendar and astrophotography planner with Moon phases, celestial events, local dark-time windows and a live 3-day observing forecast.">
+  <meta name="twitter:card" content="summary">
   <meta name="robots" content="index,follow">
   <script type="application/ld+json">
   {
@@ -60,15 +64,16 @@
         </div>
         <div class="amc-actions">
           <div class="amc-location-controls">
-            <button class="amc-button" type="button" id="amc-use-location">Use location</button>
+            <button class="amc-button" type="button" id="amc-use-location">Use Current Location</button>
             <span class="amc-location-status" id="amc-location-label" aria-live="polite">Location not set</span>
           </div>
           <button class="amc-button secondary amc-icon-button" type="button" id="amc-theme-toggle" aria-pressed="false" aria-label="Switch to dark mode" title="Dark mode"></button>
           <form class="amc-manual-location" id="amc-manual-location" aria-label="Set calendar location manually">
-            <input class="amc-location-input" id="amc-location-input" type="search" autocomplete="off" inputmode="search" placeholder="Enter your city or Lat/Lon">
+            <input class="amc-location-input" id="amc-location-input" type="search" autocomplete="off" inputmode="search" placeholder="Enter your city or Lat/Lon" aria-controls="amc-location-results" aria-expanded="false">
             <button class="amc-button secondary" type="submit">Set</button>
+            <div class="amc-location-results" id="amc-location-results" role="listbox" hidden></div>
           </form>
-          <span class="amc-location-prompt" id="amc-location-prompt">Click USE LOCATION for local timing and forecast.</span>
+          <span class="amc-location-prompt" id="amc-location-prompt">Click USE CURRENT LOCATION for local timing and forecast.</span>
         </div>
       </div>
 
@@ -99,11 +104,14 @@
         <aside class="amc-detail" id="amc-detail" aria-live="polite" aria-label="Selected day details"></aside>
       </div>
 
+      <section class="amc-recommendations" id="amc-recommendations" aria-live="polite" aria-label="Night photography targets and related articles"></section>
+
       <div class="amc-reference-row">
         <details class="amc-sources">
           <summary>Sources and References</summary>
           <ul class="amc-source-list" id="amc-source-list"></ul>
         </details>
+        <span class="amc-version-note">Beta v0.2 · location fixes, UI adjustments, target thumbnails and related articles</span>
         <button class="amc-button secondary" type="button" id="amc-download-pdf">Download PDF</button>
       </div>
       <span class="amc-weather-tooltip" id="amc-weather-tooltip" role="status" aria-live="polite"></span>
@@ -112,8 +120,7 @@
 
   <script src="assets/astronomy.browser.js"></script>
   <script src="data/month-manifest.js"></script>
-  <script src="data/2026-06.js"></script>
-  <script src="data/2026-07.js"></script>
   <script src="assets/after-dark-calendar.js"></script>
 </body>
 </html>
+

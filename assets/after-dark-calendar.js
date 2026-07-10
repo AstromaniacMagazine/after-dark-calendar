@@ -5,11 +5,13 @@
       const grid = root.querySelector("#amc-grid");
       const detail = root.querySelector("#amc-detail");
       const mobilePlanning = root.querySelector("#amc-mobile-planning");
+      const recommendations = root.querySelector("#amc-recommendations");
       const intel = root.querySelector("#amc-intel");
       const themeToggle = root.querySelector("#amc-theme-toggle");
       const useLocationButton = root.querySelector("#amc-use-location");
       const manualLocationForm = root.querySelector("#amc-manual-location");
       const manualLocationInput = root.querySelector("#amc-location-input");
+      const locationResults = root.querySelector("#amc-location-results");
       const downloadPdfButton = root.querySelector("#amc-download-pdf");
       const locationLabel = root.querySelector("#amc-location-label");
       const weatherTooltip = root.querySelector("#amc-weather-tooltip");
@@ -25,6 +27,7 @@
       const monthShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
       const monthLong = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
       const locationStorageKey = "amc-sky-calendar-location";
+      const useCurrentLocationText = "Use Current Location";
       const weatherRefreshMs = 75 * 60 * 1000;
       const monthManifest = Array.isArray(window.AMC_MONTH_MANIFEST) ? window.AMC_MONTH_MANIFEST : [];
 
@@ -63,6 +66,9 @@
       let weatherUpdatedAt = null;
       let weatherRefreshTimer = null;
       let weatherRequestId = 0;
+      let locationSearchTimer = null;
+      let locationSearchRequestId = 0;
+      let locationMatches = [];
       const monthLoadPromises = {};
 
       if (brandLogo && printLogo) printLogo.src = brandLogo.src;
@@ -72,6 +78,9 @@
       themeToggle.addEventListener("click", toggleTheme);
       useLocationButton.addEventListener("click", useBrowserLocation);
       manualLocationForm.addEventListener("submit", useManualLocation);
+      manualLocationInput.addEventListener("input", handleManualLocationInput);
+      locationResults?.addEventListener("click", handleLocationResultClick);
+      document.addEventListener("click", handleLocationResultOutsideClick);
       downloadPdfButton.addEventListener("click", downloadPdf);
       previousMonthButton?.addEventListener("click", () => goToAdjacentMonth(-1));
       nextMonthButton?.addEventListener("click", () => goToAdjacentMonth(1));
@@ -300,6 +309,7 @@
       function renderSelectedDay() {
         renderCalendar();
         renderDetail(selectedDay);
+        renderRecommendations(selectedDay);
       }
 
       function scrollExpandedDayIntoView(day) {
@@ -338,26 +348,31 @@
             </ul>` : ""}
             ${moonChart(skyInfo, nightInfo)}
             ${weatherPanel()}
-            ${recommendationsPanel(day, events, moon)}
           </div>
         `;
 
-        mobilePlanning.innerHTML = `
-          ${weatherPanel()}
-          ${recommendationsPanel(day, events, moon)}
-        `;
+        mobilePlanning.innerHTML = "";
+      }
+
+      function renderRecommendations(day) {
+        if (!recommendations) return;
+        const moon = moonForDay(day);
+        const events = dayEvents(day);
+        recommendations.innerHTML = recommendationsPanel(day, events, moon);
       }
 
       function recommendationsPanel(day, events, moon) {
-        const article = recommendedArticle(day, events, moon);
-        return `<div class="amc-tonight">
-          <h3>Tonight point your camera to:</h3>
-          <ol>${tonightBest(day, events, moon).map((target, index) => `<li><span>${index + 1}</span>${target}</li>`).join("")}</ol>
-          <a class="amc-article-promo" href="${article.url}" target="_blank" rel="noopener">
-            <small>Astromaniac article</small>
-            <b>${article.title}</b>
-          </a>
-        </div>`;
+        const targets = tonightBest(day, events, moon);
+        const articles = recommendedArticles(day, events, moon);
+        return `
+          <div class="amc-recommendation-group">
+            <h3>Tonight point your camera to:</h3>
+            <ol class="amc-target-list">${targets.map(target => targetItem(target, day)).join("")}</ol>
+          </div>
+          <div class="amc-recommendation-group">
+            <h3>Related Articles</h3>
+            <div class="amc-related-grid">${articles.map(articlePromo).join("")}</div>
+          </div>`;
       }
 
       function dayEvents(day) {
@@ -414,12 +429,12 @@
         const mobileExtra = cellMobileExtra(day, events, moon, skyInfo, nightInfo);
         if (!skyInfo) {
           return `${identity}${head}<span class="amc-mini-grid">
-            ${miniItem("alt", "Altitude", "Use location")}
-            ${miniItem("az", "Azimuth", "Use location")}
-            ${miniItem("moonrise", "Moonrise", "Use location")}
-            ${miniItem("moonset", "Moonset", "Use location")}
-            ${miniItem("sunrise", "Sunrise", "Use location")}
-            ${miniItem("sunset", "Sunset", "Use location")}
+            ${miniItem("alt", "Altitude", useCurrentLocationText)}
+            ${miniItem("az", "Azimuth", useCurrentLocationText)}
+            ${miniItem("moonrise", "Moonrise", useCurrentLocationText)}
+            ${miniItem("moonset", "Moonset", useCurrentLocationText)}
+            ${miniItem("sunrise", "Sunrise", useCurrentLocationText)}
+            ${miniItem("sunset", "Sunset", useCurrentLocationText)}
           </span>${mobileExtra}`;
         }
 
@@ -443,14 +458,6 @@
             </span>
           </span>` : ""}
           ${cellWeatherPanel()}
-          <span class="amc-cell-section">
-            <b>Tonight point your camera to:</b>
-            <span class="amc-cell-recs">${tonightBest(day, events, moon).map((target, index) => `<span>${index + 1}. ${target}</span>`).join("")}</span>
-            <a class="amc-article-promo" href="${recommendedArticle(day, events, moon).url}" target="_blank" rel="noopener">
-              <small>Astromaniac article</small>
-              <b>${recommendedArticle(day, events, moon).title}</b>
-            </a>
-          </span>
         </span>`;
       }
 
@@ -458,7 +465,7 @@
         if (!skyInfo?.timeline) {
           return `<span class="amc-cell-section amc-cell-alt-chart" aria-label="Moon altitude and darkness chart">
             <b>Moon Altitude & Darkness</b>
-            <span class="amc-chart-empty">Use location to show Moon altitude and darkness phases.</span>
+            <span class="amc-chart-empty">Use Current Location to show Moon altitude and darkness phases.</span>
           </span>`;
         }
         return `<span class="amc-cell-section amc-cell-alt-chart" aria-label="Moon altitude and darkness chart">
@@ -536,7 +543,7 @@
         if (!skyInfo?.timeline) {
           return `<section class="amc-alt-chart" aria-label="Moon altitude and darkness chart">
             <h3>Moon Altitude & Darkness</h3>
-            <span class="amc-chart-empty">Use location to show Moon altitude and darkness phases.</span>
+            <span class="amc-chart-empty">Use Current Location to show Moon altitude and darkness phases.</span>
           </section>`;
         }
 
@@ -550,8 +557,8 @@
       function chartNightLabels(nightInfo) {
         if (!nightInfo || nightInfo.minutes === null) {
           return `<span class="amc-alt-labels">
-            <span><b>Astro night:</b> Use location</span>
-            <span>Night duration: Use location</span>
+            <span><b>Astro night:</b> ${useCurrentLocationText}</span>
+            <span>Night duration: ${useCurrentLocationText}</span>
           </span>`;
         }
         if (!nightInfo.minutes) {
@@ -673,7 +680,7 @@
         if (!hasLocation) {
           return `<section class="amc-weather" aria-label="Local 3-day weather forecast">
             <h3>3-Day Forecast</h3>
-            <span class="amc-weather-note">Use location to show night-time cloud cover and transparency.</span>
+            <span class="amc-weather-note">Use Current Location to show night-time cloud cover and transparency.</span>
           </section>`;
         }
 
@@ -716,7 +723,7 @@
 
       function cellWeatherPanel() {
         if (!hasLocation) {
-          return `<span class="amc-cell-section"><b>3-Day Forecast</b><span class="amc-weather-note">Use location to show night-time conditions.</span></span>`;
+          return `<span class="amc-cell-section"><b>3-Day Forecast</b><span class="amc-weather-note">Use Current Location to show night-time conditions.</span></span>`;
         }
         if (weatherState === "loading") {
           return `<span class="amc-cell-section"><b>3-Day Forecast</b><span class="amc-weather-note">Loading local observing conditions.</span></span>`;
@@ -843,6 +850,71 @@
         return ["Moonrise", "Lunar disc", "Saturn"];
       }
 
+      function targetItem(target, day) {
+        const thumbnail = targetThumbnail(target, day);
+        return `<li>
+          <img src="${escapeHtml(thumbnail.src)}" alt="${escapeHtml(thumbnail.alt)}" loading="lazy" decoding="async" width="46" height="46">
+          <span>${escapeHtml(target)}</span>
+        </li>`;
+      }
+
+      function targetThumbnail(target, day) {
+        const text = String(target || "").toLowerCase();
+        if (/moon|crater|lunar|occultation/.test(text)) {
+          return { src: moonImage(day, 216), alt: `${target} Moon thumbnail` };
+        }
+        if (/lagoon|m8/.test(text) && media.lagoon?.src) return { src: media.lagoon.src, alt: "Lagoon Nebula thumbnail" };
+        if (/trifid|m20/.test(text) && media.trifid?.src) return { src: media.trifid.src, alt: "Trifid Nebula thumbnail" };
+        if (/comet/.test(text) && media.comet?.src) return { src: media.comet.src, alt: "Comet thumbnail" };
+        if (/pleiades|cluster/.test(text) && media.pleiades?.src) return { src: media.pleiades.src, alt: "Pleiades thumbnail" };
+        if (/aquariid|capricornid|meteor/.test(text) && media.meteor?.src) return { src: media.meteor.src, alt: "Meteor shower thumbnail" };
+        if (/saturn|pluto|mars|uranus|venus|planet/.test(text) && media.saturn?.src) return { src: media.saturn.src, alt: "Planet thumbnail" };
+        if (/milky way/.test(text) && media.milkyWay?.src) return { src: media.milkyWay.src, alt: "Milky Way thumbnail" };
+        return { src: media.milkyWay?.src || moonImage(day, 216), alt: `${target} thumbnail` };
+      }
+
+      function articlePromo(article) {
+        const image = article?.image || media.milkyWay?.src || "";
+        const label = article?.kind || "Article";
+        return `<a class="amc-article-promo" href="${escapeHtml(article.url)}" target="_blank" rel="noopener">
+          <img src="${escapeHtml(image)}" alt="" loading="lazy" decoding="async" width="70" height="52">
+          <span class="amc-article-copy">
+            <small>${escapeHtml(label)}</small>
+            <b>${escapeHtml(article.title)}</b>
+          </span>
+        </a>`;
+      }
+
+      function recommendedArticles(day, events, moon) {
+        const primary = recommendedArticle(day, events, moon) || articleData.deepSky;
+        const secondary = relatedArticleFor(primary, events, moon);
+        return uniqueArticles([primary, secondary, articleData.deepSky, articleData.numbers]).slice(0, 2);
+      }
+
+      function relatedArticleFor(primary, events, moon) {
+        const eventTypes = new Set(events.map(item => item.type));
+        if (primary === articleData.deepSky) {
+          if (eventTypes.has("meteor") || moon.phase < 18) return articleData.lightPollution || articleData.sqmReview || articleData.numbers;
+          return articleData.numbers || articleData.lightPollution;
+        }
+        if (primary === articleData.telescope) return articleData.zwoReview || articleData.accessories || articleData.numbers;
+        if (primary === articleData.planetary) return articleData.telescope || articleData.numbers;
+        if (primary === articleData.launch) return articleData.planetary || articleData.numbers;
+        if (primary === articleData.moon) return articleData.lightPollution || articleData.deepSky;
+        if (primary === articleData.lightPollution) return articleData.sqmReview || articleData.deepSky;
+        if (primary === articleData.accessories) return articleData.numbers || articleData.zwoReview;
+        return articleData.accessories || articleData.deepSky;
+      }
+
+      function uniqueArticles(items) {
+        const seen = new Set();
+        return items.filter(item => {
+          if (!item?.title || !item?.url || seen.has(item.url)) return false;
+          seen.add(item.url);
+          return true;
+        });
+      }
+
       function recommendedArticle(day, events, moon) {
         const eventTypes = new Set(events.map(item => item.type));
         const titleText = events.map(item => item.title).join(" ").toLowerCase();
@@ -901,13 +973,13 @@
       }
 
       function nightSummary(nightInfo) {
-        if (nightInfo.minutes === null) return nightInfo.label || "Use location";
+        if (nightInfo.minutes === null) return nightInfo.label || useCurrentLocationText;
         if (!nightInfo.minutes) return "None";
         return `${nightInfo.label}, ${nightInfo.window}`;
       }
 
       function durationClock(nightInfo) {
-        if (!nightInfo || nightInfo.minutes === null) return nightInfo?.label || "Use location";
+        if (!nightInfo || nightInfo.minutes === null) return nightInfo?.label || useCurrentLocationText;
         const minutes = Math.max(0, Math.round(nightInfo.minutes || 0));
         const h = Math.floor(minutes / 60);
         const m = minutes % 60;
@@ -917,8 +989,8 @@
       function locationNeeded() {
         return {
           minutes: null,
-          label: "Use location",
-          window: "Use location"
+          label: useCurrentLocationText,
+          window: useCurrentLocationText
         };
       }
 
@@ -975,7 +1047,7 @@
         if (!saved) return;
         locationName = saved.name || "Saved location";
         applyCoordinates(saved.lat, saved.lon, { fromStorage: true, timeZone: saved.timeZone });
-        useLocationButton.textContent = "Using location";
+        useLocationButton.textContent = useCurrentLocationText;
       }
 
       function readSavedLocation() {
@@ -1118,6 +1190,15 @@
         if (!navigator.geolocation) {
           useLocationButton.textContent = "Unavailable";
           locationLabel.textContent = "Location unavailable";
+          window.setTimeout(() => {
+            useLocationButton.textContent = useCurrentLocationText;
+          }, 2200);
+          return;
+        }
+
+        if (!window.isSecureContext && !["localhost", "127.0.0.1"].includes(window.location.hostname)) {
+          locationLabel.textContent = "HTTPS required for current location";
+          useLocationButton.textContent = useCurrentLocationText;
           return;
         }
 
@@ -1130,14 +1211,20 @@
             const lon = position.coords.longitude;
             applyCoordinates(lat, lon);
             useLocationButton.disabled = false;
-            useLocationButton.textContent = "Using location";
+            useLocationButton.textContent = "Using Current Location";
           },
-          () => {
+          error => {
             useLocationButton.disabled = false;
-            locationLabel.textContent = locationName || "Location blocked";
-            useLocationButton.textContent = "Location blocked";
+            if (error?.code === error.PERMISSION_DENIED) {
+              locationLabel.textContent = "Location permission denied";
+            } else if (error?.code === error.POSITION_UNAVAILABLE) {
+              locationLabel.textContent = "Current location unavailable";
+            } else {
+              locationLabel.textContent = "Current location timed out";
+            }
+            useLocationButton.textContent = useCurrentLocationText;
             window.setTimeout(() => {
-              useLocationButton.textContent = "Use location";
+              updateLocationLabel();
             }, 2200);
           },
           { enableHighAccuracy: false, timeout: 8000, maximumAge: 3600000 }
@@ -1158,12 +1245,22 @@
             locationName = parsed.name;
             applyCoordinates(parsed.lat, parsed.lon, { name: parsed.name });
             manualLocationInput.value = "";
+            hideLocationResults();
             return;
           }
-          const result = await geocodeLocationQuery(query);
+          const results = await geocodeLocationQuery(query);
+          if (results.length > 1) {
+            locationMatches = results;
+            renderLocationResults(results);
+            locationLabel.textContent = "Choose your location";
+            return;
+          }
+          const result = results[0];
+          if (!result) throw new Error("Manual location not found");
           locationName = result.name;
           applyCoordinates(result.lat, result.lon, { name: result.name, timeZone: result.timeZone, skipReverseGeocode: true });
           manualLocationInput.value = "";
+          hideLocationResults();
         } catch {
           locationLabel.textContent = "Location not found";
         } finally {
@@ -1183,24 +1280,111 @@
         return { lat, lon, name: `Manual location ${lat.toFixed(2)}, ${lon.toFixed(2)}` };
       }
 
+      function handleManualLocationInput() {
+        const query = manualLocationInput.value.trim();
+        if (locationSearchTimer) window.clearTimeout(locationSearchTimer);
+        if (query.length < 2 || parseCoordinateQuery(query)) {
+          hideLocationResults();
+          return;
+        }
+        locationSearchTimer = window.setTimeout(() => previewLocationQuery(query), 260);
+      }
+
+      async function previewLocationQuery(query) {
+        const requestId = ++locationSearchRequestId;
+        try {
+          const results = await geocodeLocationQuery(query);
+          if (requestId !== locationSearchRequestId || manualLocationInput.value.trim() !== query) return;
+          locationMatches = results;
+          renderLocationResults(results);
+        } catch {
+          if (requestId === locationSearchRequestId) hideLocationResults();
+        }
+      }
+
+      function handleLocationResultClick(event) {
+        const option = event.target.closest?.(".amc-location-option");
+        if (!option || !locationResults?.contains(option)) return;
+        const result = locationMatches[Number(option.dataset.locationIndex)];
+        if (!result) return;
+        selectLocationResult(result);
+      }
+
+      function handleLocationResultOutsideClick(event) {
+        if (!locationResults || locationResults.hidden) return;
+        if (manualLocationForm.contains(event.target)) return;
+        hideLocationResults();
+      }
+
+      function selectLocationResult(result) {
+        locationName = result.name;
+        applyCoordinates(result.lat, result.lon, { name: result.name, timeZone: result.timeZone, skipReverseGeocode: true });
+        manualLocationInput.value = "";
+        hideLocationResults();
+      }
+
+      function renderLocationResults(results) {
+        if (!locationResults) return;
+        const safeResults = Array.isArray(results) ? results.filter(item => Number.isFinite(item.lat) && Number.isFinite(item.lon)).slice(0, 10) : [];
+        if (!safeResults.length) {
+          hideLocationResults();
+          return;
+        }
+        locationResults.innerHTML = safeResults.map((result, index) => `
+          <button class="amc-location-option" type="button" role="option" data-location-index="${index}">
+            <b>${escapeHtml(result.name)}</b>
+            <span>${escapeHtml(result.detail)}</span>
+          </button>
+        `).join("");
+        locationResults.hidden = false;
+        manualLocationInput.setAttribute("aria-expanded", "true");
+      }
+
+      function hideLocationResults() {
+        if (locationSearchTimer) window.clearTimeout(locationSearchTimer);
+        locationSearchTimer = null;
+        locationSearchRequestId += 1;
+        locationMatches = [];
+        if (!locationResults) return;
+        locationResults.hidden = true;
+        locationResults.innerHTML = "";
+        manualLocationInput.setAttribute("aria-expanded", "false");
+      }
+
       async function geocodeLocationQuery(query) {
         const params = new URLSearchParams({
           name: query,
-          count: "1",
+          count: "10",
           language: "en",
           format: "json"
         });
         const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?${params.toString()}`, { cache: "no-store" });
         if (!response.ok) throw new Error("Manual location lookup failed");
         const payload = await response.json();
-        const result = payload.results?.[0];
-        if (!result) throw new Error("Manual location not found");
+        const results = Array.isArray(payload.results) ? payload.results.map(normaliseLocationResult).filter(Boolean) : [];
+        if (!results.length) throw new Error("Manual location not found");
+        return results;
+      }
+
+      function normaliseLocationResult(result) {
         const lat = Number(result.latitude);
         const lon = Number(result.longitude);
-        if (!Number.isFinite(lat) || !Number.isFinite(lon)) throw new Error("Manual location invalid");
-        const parts = [cleanName(result.name), cleanName(result.admin1), cleanName(result.country)].filter(Boolean);
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+        const place = cleanName(result.name);
+        const county = cleanName(result.admin2);
+        const region = cleanName(result.admin1);
+        const country = cleanName(result.country);
+        const parts = [place, county, region, country].filter(Boolean);
         const deduped = parts.filter((part, index) => parts.indexOf(part) === index);
-        return { lat, lon, name: deduped.slice(0, 2).join(", ") || query, timeZone: cleanTimeZone(result.timezone) };
+        const detailParts = [cleanTimeZone(result.timezone), `${lat.toFixed(3)}, ${lon.toFixed(3)}`].filter(Boolean);
+        const detail = detailParts.join(" · ");
+        return {
+          lat,
+          lon,
+          name: deduped.join(", ") || place || "Selected location",
+          detail: detail || `${lat.toFixed(3)}, ${lon.toFixed(3)}`,
+          timeZone: cleanTimeZone(result.timezone)
+        };
       }
 
       function applyCoordinates(lat, lon, options = {}) {
