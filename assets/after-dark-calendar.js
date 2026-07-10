@@ -20,6 +20,7 @@
       const printLogo = root.querySelector(".amc-print-logo");
       const previousMonthButton = root.querySelector("[data-month-prev]");
       const nextMonthButton = root.querySelector("[data-month-next]");
+      const todayButton = root.querySelector("#amc-today-button");
 
       const emptyEvent = { type: "none", title: "", copy: "", fact: "", sourceIds: [], media: null };
       const emptyEventMeta = { label: "", css: "no-event" };
@@ -31,6 +32,11 @@
       const useCurrentLocationText = "Use Current Location";
       const weatherRefreshMs = 75 * 60 * 1000;
       const monthManifest = Array.isArray(window.AMC_MONTH_MANIFEST) ? window.AMC_MONTH_MANIFEST : [];
+      const wikimediaSource = {
+        label: "Wikimedia Commons image files",
+        url: "https://commons.wikimedia.org/wiki/Main_Page",
+        note: "Target recommendation thumbnails are loaded from Wikimedia Commons file images used across Wikipedia and related projects."
+      };
 
       const categoryMeta = {
         moon: { label: "Moon", css: "moon" },
@@ -71,6 +77,8 @@
       let locationSearchTimer = null;
       let locationSearchRequestId = 0;
       let locationMatches = [];
+      let isMonthTransitioning = false;
+      let monthTransitionTimer = null;
       const monthLoadPromises = {};
 
       if (brandLogo && printLogo) printLogo.src = brandLogo.src;
@@ -86,6 +94,7 @@
       downloadPdfButton.addEventListener("click", downloadPdf);
       previousMonthButton?.addEventListener("click", () => goToAdjacentMonth(-1));
       nextMonthButton?.addEventListener("click", () => goToAdjacentMonth(1));
+      todayButton?.addEventListener("click", goToToday);
       root.addEventListener("pointerover", handleWeatherTipIn);
       root.addEventListener("pointerout", handleWeatherTipOut);
       root.addEventListener("focusin", handleWeatherTipIn);
@@ -105,10 +114,10 @@
         }
       }
 
-      async function showMonth(monthId) {
+      async function showMonth(monthId, options = {}) {
         const data = await loadMonthData(monthId);
         setMonthData(data, monthId);
-        selectedDay = initialSelectedDay();
+        selectedDay = validDay(options.selectedDay) ? Number(options.selectedDay) : initialSelectedDay();
         expandedDay = null;
         nightData = {};
         skyData = {};
@@ -176,7 +185,54 @@
       function goToAdjacentMonth(direction) {
         const entry = adjacentMonth(direction);
         if (!entry) return;
-        showMonth(entry.id);
+        transitionToMonth(entry.id, direction);
+      }
+
+      async function goToToday() {
+        const today = new Date();
+        const todayId = monthIdFromParts(today.getFullYear(), today.getMonth());
+        if (!monthManifest.some(item => item.id === todayId)) return;
+        const todayDay = today.getDate();
+        if (activeMonthId === todayId) {
+          selectedDay = todayDay;
+          expandedDay = null;
+          renderSelectedDay();
+          updateTodayButton();
+          scrollSelectedDayIntoView(todayDay);
+          return;
+        }
+        const currentIndex = monthManifest.findIndex(item => item.id === activeMonthId);
+        const todayIndex = monthManifest.findIndex(item => item.id === todayId);
+        const direction = todayIndex >= currentIndex ? 1 : -1;
+        await transitionToMonth(todayId, direction, { selectedDay: todayDay });
+      }
+
+      async function transitionToMonth(monthId, direction = 1, options = {}) {
+        if (isMonthTransitioning) return;
+        if (monthId === activeMonthId && !validDay(options.selectedDay)) return;
+        isMonthTransitioning = true;
+        setMonthNavigationDisabled(true);
+        window.clearTimeout(monthTransitionTimer);
+        root.classList.remove("is-month-entering", "is-month-leaving", "is-month-forward", "is-month-backward");
+        root.classList.add(direction < 0 ? "is-month-backward" : "is-month-forward", "is-month-leaving");
+        await delay(160);
+        await showMonth(monthId, options);
+        root.classList.remove("is-month-leaving");
+        root.classList.add("is-month-entering");
+        monthTransitionTimer = window.setTimeout(() => {
+          root.classList.remove("is-month-entering", "is-month-forward", "is-month-backward");
+          isMonthTransitioning = false;
+          renderMonthShell();
+        }, 260);
+      }
+
+      function delay(ms) {
+        return new Promise(resolve => window.setTimeout(resolve, ms));
+      }
+
+      function validDay(day) {
+        const value = Number(day);
+        return Number.isInteger(value) && value >= 1 && value <= (MONTH?.days || 31);
       }
 
       function adjacentMonth(direction) {
@@ -209,16 +265,35 @@
         const previousEntry = adjacentMonth(-1);
         const nextEntry = adjacentMonth(1);
         if (previous) {
-          previous.disabled = !previousEntry;
+          previous.disabled = isMonthTransitioning || !previousEntry;
           previous.title = previousEntry ? `Show ${previousEntry.label}` : `No loaded month before ${monthTitle()}`;
           previous.setAttribute("aria-label", previousEntry ? `Show ${previousEntry.label}` : `Previous month unavailable`);
         }
         if (next) {
-          next.disabled = !nextEntry;
+          next.disabled = isMonthTransitioning || !nextEntry;
           next.title = nextEntry ? `Show ${nextEntry.label}` : `No loaded month after ${monthTitle()}`;
           next.setAttribute("aria-label", nextEntry ? `Show ${nextEntry.label}` : `Next month unavailable`);
         }
+        updateTodayButton();
         grid.setAttribute("aria-label", `${monthTitle()} day selector`);
+      }
+
+      function updateTodayButton() {
+        if (!todayButton) return;
+        const today = new Date();
+        const todayId = monthIdFromParts(today.getFullYear(), today.getMonth());
+        const todayDay = today.getDate();
+        const isLoaded = monthManifest.some(item => item.id === todayId);
+        const isSelected = activeMonthId === todayId && selectedDay === todayDay;
+        todayButton.disabled = isMonthTransitioning || !isLoaded || isSelected;
+        todayButton.title = isLoaded ? `Show today, ${todayDay} ${monthLong[today.getMonth()]} ${today.getFullYear()}` : "Today's month is not loaded";
+        todayButton.setAttribute("aria-label", todayButton.title);
+      }
+
+      function setMonthNavigationDisabled(disabled) {
+        [previousMonthButton, nextMonthButton, todayButton].forEach(button => {
+          if (button) button.disabled = disabled;
+        });
       }
 
       function monthTitle() {
@@ -242,7 +317,8 @@
       }
 
       function renderSources() {
-        root.querySelector("#amc-source-list").innerHTML = Object.values(sources).map(source => `
+        const sourceList = { ...sources, wikimediaThumbs: wikimediaSource };
+        root.querySelector("#amc-source-list").innerHTML = Object.values(sourceList).map(source => `
           <li><a href="${source.url}" target="_blank" rel="noopener">${source.label}</a><br>${source.note}</li>
         `).join("");
       }
@@ -306,6 +382,7 @@
         selectedDay = day;
         expandedDay = wasExpanded ? null : day;
         renderSelectedDay();
+        updateTodayButton();
         if (!wasExpanded) scrollExpandedDayIntoView(day);
       }
 
@@ -320,6 +397,13 @@
           if (root.getBoundingClientRect().width > 820) return;
           const expandedButton = grid.querySelector(`.amc-day[data-day="${day}"]`);
           expandedButton?.scrollIntoView({ block: "start", inline: "nearest", behavior: "auto" });
+        });
+      }
+
+      function scrollSelectedDayIntoView(day) {
+        window.requestAnimationFrame(() => {
+          const selectedButton = grid.querySelector(`.amc-day[data-day="${day}"]`);
+          selectedButton?.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
         });
       }
 
@@ -901,22 +985,32 @@
 
       function targetThumbnail(target, day) {
         const text = String(target || "").toLowerCase();
-        if (/moon|crater|lunar|occultation/.test(text)) {
-          return { src: moonImage(day, 216), alt: `${target} Moon thumbnail` };
-        }
-        if (/lagoon|m8/.test(text) && media.lagoon?.src) return { src: media.lagoon.src, alt: "Lagoon Nebula thumbnail" };
-        if (/trifid|m20/.test(text) && media.trifid?.src) return { src: media.trifid.src, alt: "Trifid Nebula thumbnail" };
-        if (/comet/.test(text) && media.comet?.src) return { src: media.comet.src, alt: "Comet thumbnail" };
-        if (/pleiades|m45/.test(text) && media.pleiades?.src) return { src: media.pleiades.src, alt: "Pleiades thumbnail" };
-        if (/aquariid|capricornid|perseid|cygnid|aurigid|sextantid|meteor/.test(text) && media.meteor?.src) return { src: media.meteor.src, alt: "Meteor shower thumbnail" };
-        if (/saturn/.test(text) && media.saturn?.src) return { src: media.saturn.src, alt: "Saturn thumbnail" };
-        if (/venus/.test(text) && media.venus?.src) return { src: media.venus.src, alt: "Venus thumbnail" };
-        if (/jupiter|mars|mercury|neptune|pluto|uranus|planet/.test(text) && media.planets?.src) return { src: media.planets.src, alt: "Planet thumbnail" };
-        if (/eclipse|solar/.test(text) && (media.eclipse?.src || media.sun?.src)) return { src: media.eclipse?.src || media.sun.src, alt: "Solar eclipse thumbnail" };
-        if (/sun/.test(text) && media.sun?.src) return { src: media.sun.src, alt: "Sun thumbnail" };
-        if (/messier|m\d+\b|ngc|47 tuc|cluster/.test(text) && media.cluster?.src) return { src: media.cluster.src, alt: "Deep-sky target thumbnail" };
-        if (/milky way/.test(text) && media.milkyWay?.src) return { src: media.milkyWay.src, alt: "Milky Way thumbnail" };
+        const wikimedia = wikimediaTargetThumbnail(text);
+        if (wikimedia) return wikimedia;
         return { src: media.milkyWay?.src || moonImage(day, 216), alt: `${target} thumbnail` };
+      }
+
+      function wikimediaTargetThumbnail(text) {
+        if (/saturn/.test(text)) return wikimediaImage("Saturn during Equinox.jpg", "Saturn thumbnail from Wikimedia Commons");
+        if (/pleiades|m45/.test(text)) return wikimediaImage("Pleiades large.jpg", "Pleiades thumbnail from Wikimedia Commons");
+        if (/lagoon|m8/.test(text)) return wikimediaImage("Lagoon Nebula.jpg", "Lagoon Nebula thumbnail from Wikimedia Commons");
+        if (/trifid|m20/.test(text)) return wikimediaImage("Trifid.nebula.arp.750pix.jpg", "Trifid Nebula thumbnail from Wikimedia Commons");
+        if (/comet/.test(text)) return wikimediaImage("Comet Hartley 2.jpg", "Comet thumbnail from Wikimedia Commons");
+        if (/aquariid|capricornid|perseid|cygnid|aurigid|sextantid|meteor/.test(text)) return wikimediaImage("Perseid meteor shower.jpg", "Meteor shower thumbnail from Wikimedia Commons");
+        if (/eclipse|solar|corona/.test(text)) return wikimediaImage("Total Solar Eclipse 8-21-17.jpg", "Solar eclipse thumbnail from Wikimedia Commons");
+        if (/venus/.test(text)) return wikimediaImage("Venus-real color.jpg", "Venus thumbnail from Wikimedia Commons");
+        if (/jupiter|mars|mercury|neptune|pluto|uranus|planet/.test(text)) return wikimediaImage("Solar System true color.jpg", "Planet thumbnail from Wikimedia Commons");
+        if (/milky way/.test(text)) return wikimediaImage("ESO - Milky Way.jpg", "Milky Way thumbnail from Wikimedia Commons");
+        if (/messier|m\d+\b|ngc|47 tuc|cluster|bright clusters/.test(text)) return wikimediaImage("Pleiades large.jpg", "Star cluster thumbnail from Wikimedia Commons");
+        if (/moon|crater|lunar|occultation/.test(text)) return wikimediaImage("Full Moon Luc Viatour.jpg", "Moon thumbnail from Wikimedia Commons");
+        return null;
+      }
+
+      function wikimediaImage(fileName, alt) {
+        return {
+          src: `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(fileName)}?width=320`,
+          alt
+        };
       }
 
       function articlePromo(article) {
@@ -1232,7 +1326,7 @@
         safeStorageSet("amc-sky-calendar-theme", theme);
       }
 
-      function useBrowserLocation() {
+      async function useBrowserLocation() {
         if (!navigator.geolocation) {
           useLocationButton.textContent = "Unavailable";
           locationLabel.textContent = "Location unavailable";
@@ -1247,6 +1341,11 @@
           locationLabel.textContent = "HTTPS required for current location";
           setLocationPrompt("Current location only works on HTTPS. GitHub Pages is fine once the site is published.", true);
           useLocationButton.textContent = useCurrentLocationText;
+          return;
+        }
+
+        if (await isGeolocationPermissionDenied()) {
+          showLocationPermissionDenied();
           return;
         }
 
@@ -1265,9 +1364,7 @@
           error => {
             useLocationButton.disabled = false;
             if (error?.code === error.PERMISSION_DENIED) {
-              locationLabel.textContent = "Location permission denied";
-              setLocationPrompt("Location permission is denied in your browser or site settings. Allow it there, or search for a city below.", true);
-              manualLocationInput?.focus({ preventScroll: true });
+              showLocationPermissionDenied();
             } else if (error?.code === error.POSITION_UNAVAILABLE) {
               locationLabel.textContent = "Current location unavailable";
               setLocationPrompt("Your device could not provide a location. Search for a city below.", true);
@@ -1284,6 +1381,24 @@
           },
           { enableHighAccuracy: false, timeout: 8000, maximumAge: 3600000 }
         );
+      }
+
+      async function isGeolocationPermissionDenied() {
+        if (!navigator.permissions?.query) return false;
+        try {
+          const status = await navigator.permissions.query({ name: "geolocation" });
+          return status.state === "denied";
+        } catch {
+          return false;
+        }
+      }
+
+      function showLocationPermissionDenied() {
+        useLocationButton.disabled = false;
+        useLocationButton.textContent = useCurrentLocationText;
+        locationLabel.textContent = "Location permission denied";
+        setLocationPrompt("Location is blocked for this site. Click the lock or site settings icon by the address bar, set Location to Allow, reload, then try again. Or search for a city below.", true);
+        manualLocationInput?.focus({ preventScroll: true });
       }
 
       async function useManualLocation(event) {
