@@ -42,7 +42,7 @@
     openMeteo: {
       label: "Open-Meteo Forecast API",
       url: "https://open-meteo.com/en/docs",
-      note: "The local 3-day forecast uses Open-Meteo hourly cloud cover, humidity, temperature, precipitation probability, wind speed, WMO weather codes and location timezone. Seeing is an in-calendar planning estimate from those variables, not a dedicated CMC seeing model."
+      note: "The local 7-night forecast uses Open-Meteo hourly cloud cover, humidity, temperature, precipitation probability, wind speed, WMO weather codes and location timezone. Seeing is an in-calendar planning estimate from those variables, not a dedicated CMC seeing model."
     },
     openMeteoGeo: {
       label: "Open-Meteo Geocoding API",
@@ -132,15 +132,11 @@
   const media = {
     milkyWay: nasaImage("https://images-assets.nasa.gov/image/PIA13974/PIA13974~medium.jpg", "https://images.nasa.gov/details/PIA13974"),
     lagoon: nasaImage("https://assets.science.nasa.gov/content/dam/science/missions/hubble/nebulae/emission/Hubble_M8_ACS_1_flat_FINAL.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-8/"),
-    trifid: nasaImage("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/releases/2026/04/STScI-01KM5VPG2R1WX1SY7ASDJ9JEV5.jpg?w=900", "https://science.nasa.gov/asset/hubble/trifid-nebula-wide-field-camera-3-image/"),
+    trifid: nasaImage("https://assets.science.nasa.gov/content/dam/science/missions/hubble/nebulae/emission/hubble_2026_trifid.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-20/"),
     comet: nasaImage("https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/07/hartley2_main.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "https://science.nasa.gov/solar-system/comets/"),
-    pleiades: nasaImage("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/releases/2000/12/STScI-01EVT9S49SBSG3HS70G8GW5PRJ.tif?w=900", "https://science.nasa.gov/asset/hubble/ghostly-reflections-in-the-pleiades/"),
-    saturn: nasaImage("https://svs.gsfc.nasa.gov/vis/a030000/a030300/a030348/saturn_full_disk_PIA06193_print.jpg", "https://svs.gsfc.nasa.gov/30348/"),
-    meteor: nasaImage("https://images-assets.nasa.gov/image/NHQ202508030001/NHQ202508030001~medium.jpg", "https://images.nasa.gov/details/NHQ202508030001"),
-    cluster: nasaImage("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/releases/2000/12/STScI-01EVT9S49SBSG3HS70G8GW5PRJ.tif?w=900", "https://science.nasa.gov/asset/hubble/ghostly-reflections-in-the-pleiades/"),
     planets: nasaImage("https://images-assets.nasa.gov/image/PIA00405/PIA00405~medium.jpg", "https://images.nasa.gov/details/PIA00405"),
     venus: nasaImage("https://images-assets.nasa.gov/image/PIA00104/PIA00104~medium.jpg", "https://images.nasa.gov/details/PIA00104"),
-    sun: nasaImage("https://svs.gsfc.nasa.gov/vis/a010000/a014200/a014263/133DaysontheSun_StillSept15_print.jpg", "https://svs.gsfc.nasa.gov/14263/")
+    sun: nasaImage("https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e000982/GSFC_20171208_Archive_e000982~medium.jpg", "https://images.nasa.gov/details/GSFC_20171208_Archive_e000982")
   };
 
   const moonData = {
@@ -190,16 +186,6 @@
     { title: "June solstice", text: "21 Jun. Short northern nights, long southern nights.", image: media.sun.src, alt: "Sun" }
   ];
 
-  const targetData = {
-    8: ["Last Quarter Moon", "Lunar terminator", "Saturn"],
-    9: ["Venus and Jupiter", "Twilight planets", "Mercury"],
-    12: ["Mercury", "Venus", "Jupiter"],
-    15: ["Milky Way core", "Lagoon Nebula (M8)", "Trifid Nebula (M20)"],
-    17: ["Moon-Venus pairing", "Crescent Moon", "Twilight planets"],
-    21: ["First Quarter Moon", "Lunar terminator", "Venus"],
-    29: ["Full Moon", "Moonrise", "Lunar disc"]
-  };
-
   const eventData = {
     8: [
       event("moon", "Last Quarter Moon", "Exact phase 10:01 UTC. The Moon rises late, improving early-night dark-sky windows.", "Moon phase marker.", ["astronomyEngine", "nasaSvs"])
@@ -235,7 +221,6 @@
     moonData,
     exactMoon,
     monthIntel,
-    targetData,
     eventData
   };
 })();

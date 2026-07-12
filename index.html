@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>After Dark Calendar | Sky Calendar & Astrophotography Planner</title>
-  <meta name="description" content="Astromaniac Magazine's After Dark Calendar is a monthly sky calendar, celestial calendar and night sky calendar for astrophotographers, with moon phases, astronomical night, key sky events, launch dates, local Moon and Sun timings, and a live 3-day observing forecast.">
+  <meta name="description" content="Astromaniac Magazine's After Dark Calendar is a monthly sky calendar, celestial calendar and night sky calendar for astrophotographers, with moon phases, astronomical night, key sky events, launch dates, local Moon and Sun timings, and a live 7-night observing forecast.">
   <meta name="keywords" content="sky calendar, astrophotography planner, night calendar, night sky calendar, what is in the sky this month">
   <meta property="og:title" content="After Dark Calendar | Sky Calendar & Astrophotography Planner">
-  <meta property="og:description" content="A monthly sky calendar and astrophotography planner with Moon phases, celestial events, local dark-time windows and a live 3-day observing forecast.">
+  <meta property="og:description" content="A monthly sky calendar and astrophotography planner with Moon phases, celestial events, local dark-time windows and a live 7-night observing forecast.">
   <meta name="twitter:card" content="summary">
   <meta name="robots" content="index,follow">
   <script type="application/ld+json">
@@ -15,7 +15,7 @@
     "@context": "https://schema.org",
     "@type": "WebPage",
     "name": "After Dark Calendar",
-    "description": "Astromaniac Magazine's monthly sky calendar and night sky calendar for astrophotography planning, with Moon phases, astronomical night, key celestial events, launch-watch dates, local timings and a live 3-day observing forecast.",
+    "description": "Astromaniac Magazine's monthly sky calendar and night sky calendar for astrophotography planning, with Moon phases, astronomical night, key celestial events, launch-watch dates, local timings and a live 7-night observing forecast.",
     "publisher": {
       "@type": "Organization",
       "name": "Astromaniac Magazine"
@@ -52,7 +52,6 @@
           <h1 class="amc-title" id="amc-title">After Dark Calendar<span>by Astromaniac Magazine</span></h1>
         </div>
         <div class="amc-month-strip">
-          <button class="amc-button secondary amc-today-button" type="button" id="amc-today-button">Today</button>
           <nav class="amc-month-nav" aria-label="Calendar month">
             <button class="amc-month-button" type="button" aria-label="Previous month unavailable" title="Previous loaded month" data-month-prev disabled>
               <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18 9 12l6-6"/></svg>
@@ -74,7 +73,7 @@
             <button class="amc-button secondary" type="submit">Set</button>
             <div class="amc-location-results" id="amc-location-results" role="listbox" hidden></div>
           </form>
-          <span class="amc-location-prompt" id="amc-location-prompt">Click Use Current Location for local timing and forecast.</span>
+          <span class="amc-location-prompt" id="amc-location-prompt">Click USE CURRENT LOCATION for local timing and forecast.</span>
         </div>
       </div>
 
@@ -103,21 +102,16 @@
 
         <div class="amc-mobile-planning" id="amc-mobile-planning" aria-live="polite"></div>
         <aside class="amc-detail" id="amc-detail" aria-live="polite" aria-label="Selected day details"></aside>
-        <section class="amc-recommendations" id="amc-recommendations" aria-live="polite" aria-label="Night photography targets and related articles"></section>
       </div>
+
+      <section class="amc-recommendations" id="amc-recommendations" aria-live="polite" aria-label="Night photography targets and related articles"></section>
 
       <div class="amc-reference-row">
         <details class="amc-sources">
-          <summary>Sources, References and Version</summary>
-          <div class="amc-version-panel">
-            <h3>Current version: Beta 0.3</h3>
-            <ul class="amc-version-list">
-              <li><b>Beta 0.3:</b> clearer browser-location permission guidance, Today button, lower month controls, smaller title, smooth month slide transitions, stronger highlight markers, separated recommendation panels, Wikimedia target thumbnails, merged sources/version drawer, compact recommendation layout, larger thumbnails, updated Pleiades and Saturn imagery, and May, August and September 2026 month data.</li>
-              <li><b>Beta 0.2:</b> place search picker, event descriptions, target thumbnails, related article cards and canonical index.html for GitHub Pages.</li>
-            </ul>
-          </div>
+          <summary>Sources and References</summary>
           <ul class="amc-source-list" id="amc-source-list"></ul>
         </details>
+        <span class="amc-version-note">Beta v0.2 · location fixes, UI adjustments, target thumbnails and related articles</span>
         <button class="amc-button secondary" type="button" id="amc-download-pdf">Download PDF</button>
       </div>
       <span class="amc-weather-tooltip" id="amc-weather-tooltip" role="status" aria-live="polite"></span>
@@ -125,7 +119,6 @@
   </main>
 
   <script src="assets/astronomy.browser.js"></script>
-  <script src="data/common.js"></script>
   <script src="data/month-manifest.js"></script>
   <script src="assets/after-dark-calendar.js"></script>
 </body>

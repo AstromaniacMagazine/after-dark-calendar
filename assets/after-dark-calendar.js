@@ -14,13 +14,11 @@
       const locationResults = root.querySelector("#amc-location-results");
       const downloadPdfButton = root.querySelector("#amc-download-pdf");
       const locationLabel = root.querySelector("#amc-location-label");
-      const locationPrompt = root.querySelector("#amc-location-prompt");
       const weatherTooltip = root.querySelector("#amc-weather-tooltip");
       const brandLogo = root.querySelector(".amc-brand-logo");
       const printLogo = root.querySelector(".amc-print-logo");
       const previousMonthButton = root.querySelector("[data-month-prev]");
       const nextMonthButton = root.querySelector("[data-month-next]");
-      const todayButton = root.querySelector("#amc-today-button");
 
       const emptyEvent = { type: "none", title: "", copy: "", fact: "", sourceIds: [], media: null };
       const emptyEventMeta = { label: "", css: "no-event" };
@@ -32,11 +30,6 @@
       const useCurrentLocationText = "Use Current Location";
       const weatherRefreshMs = 75 * 60 * 1000;
       const monthManifest = Array.isArray(window.AMC_MONTH_MANIFEST) ? window.AMC_MONTH_MANIFEST : [];
-      const wikimediaSource = {
-        label: "Wikimedia Commons image files",
-        url: "https://commons.wikimedia.org/wiki/Main_Page",
-        note: "Target recommendation thumbnails are loaded from Wikimedia Commons file images used across Wikipedia and related projects."
-      };
 
       const categoryMeta = {
         moon: { label: "Moon", css: "moon" },
@@ -59,7 +52,6 @@
       let exactMoon = {};
       let monthIntel = [];
       let eventData = {};
-      let targetData = {};
       let selectedDay = 1;
       let expandedDay = null;
       let nightData = {};
@@ -77,8 +69,6 @@
       let locationSearchTimer = null;
       let locationSearchRequestId = 0;
       let locationMatches = [];
-      let isMonthTransitioning = false;
-      let monthTransitionTimer = null;
       const monthLoadPromises = {};
 
       if (brandLogo && printLogo) printLogo.src = brandLogo.src;
@@ -94,7 +84,6 @@
       downloadPdfButton.addEventListener("click", downloadPdf);
       previousMonthButton?.addEventListener("click", () => goToAdjacentMonth(-1));
       nextMonthButton?.addEventListener("click", () => goToAdjacentMonth(1));
-      todayButton?.addEventListener("click", goToToday);
       root.addEventListener("pointerover", handleWeatherTipIn);
       root.addEventListener("pointerout", handleWeatherTipOut);
       root.addEventListener("focusin", handleWeatherTipIn);
@@ -114,10 +103,10 @@
         }
       }
 
-      async function showMonth(monthId, options = {}) {
+      async function showMonth(monthId) {
         const data = await loadMonthData(monthId);
         setMonthData(data, monthId);
-        selectedDay = validDay(options.selectedDay) ? Number(options.selectedDay) : initialSelectedDay();
+        selectedDay = initialSelectedDay();
         expandedDay = null;
         nightData = {};
         skyData = {};
@@ -152,7 +141,6 @@
         exactMoon = data.exactMoon || {};
         monthIntel = data.monthIntel || [];
         eventData = data.eventData || {};
-        targetData = data.targetData || data.targets || {};
         root.dataset.month = activeMonthId;
       }
 
@@ -185,54 +173,7 @@
       function goToAdjacentMonth(direction) {
         const entry = adjacentMonth(direction);
         if (!entry) return;
-        transitionToMonth(entry.id, direction);
-      }
-
-      async function goToToday() {
-        const today = new Date();
-        const todayId = monthIdFromParts(today.getFullYear(), today.getMonth());
-        if (!monthManifest.some(item => item.id === todayId)) return;
-        const todayDay = today.getDate();
-        if (activeMonthId === todayId) {
-          selectedDay = todayDay;
-          expandedDay = null;
-          renderSelectedDay();
-          updateTodayButton();
-          scrollSelectedDayIntoView(todayDay);
-          return;
-        }
-        const currentIndex = monthManifest.findIndex(item => item.id === activeMonthId);
-        const todayIndex = monthManifest.findIndex(item => item.id === todayId);
-        const direction = todayIndex >= currentIndex ? 1 : -1;
-        await transitionToMonth(todayId, direction, { selectedDay: todayDay });
-      }
-
-      async function transitionToMonth(monthId, direction = 1, options = {}) {
-        if (isMonthTransitioning) return;
-        if (monthId === activeMonthId && !validDay(options.selectedDay)) return;
-        isMonthTransitioning = true;
-        setMonthNavigationDisabled(true);
-        window.clearTimeout(monthTransitionTimer);
-        root.classList.remove("is-month-entering", "is-month-leaving", "is-month-forward", "is-month-backward");
-        root.classList.add(direction < 0 ? "is-month-backward" : "is-month-forward", "is-month-leaving");
-        await delay(160);
-        await showMonth(monthId, options);
-        root.classList.remove("is-month-leaving");
-        root.classList.add("is-month-entering");
-        monthTransitionTimer = window.setTimeout(() => {
-          root.classList.remove("is-month-entering", "is-month-forward", "is-month-backward");
-          isMonthTransitioning = false;
-          renderMonthShell();
-        }, 260);
-      }
-
-      function delay(ms) {
-        return new Promise(resolve => window.setTimeout(resolve, ms));
-      }
-
-      function validDay(day) {
-        const value = Number(day);
-        return Number.isInteger(value) && value >= 1 && value <= (MONTH?.days || 31);
+        showMonth(entry.id);
       }
 
       function adjacentMonth(direction) {
@@ -265,35 +206,16 @@
         const previousEntry = adjacentMonth(-1);
         const nextEntry = adjacentMonth(1);
         if (previous) {
-          previous.disabled = isMonthTransitioning || !previousEntry;
+          previous.disabled = !previousEntry;
           previous.title = previousEntry ? `Show ${previousEntry.label}` : `No loaded month before ${monthTitle()}`;
           previous.setAttribute("aria-label", previousEntry ? `Show ${previousEntry.label}` : `Previous month unavailable`);
         }
         if (next) {
-          next.disabled = isMonthTransitioning || !nextEntry;
+          next.disabled = !nextEntry;
           next.title = nextEntry ? `Show ${nextEntry.label}` : `No loaded month after ${monthTitle()}`;
           next.setAttribute("aria-label", nextEntry ? `Show ${nextEntry.label}` : `Next month unavailable`);
         }
-        updateTodayButton();
         grid.setAttribute("aria-label", `${monthTitle()} day selector`);
-      }
-
-      function updateTodayButton() {
-        if (!todayButton) return;
-        const today = new Date();
-        const todayId = monthIdFromParts(today.getFullYear(), today.getMonth());
-        const todayDay = today.getDate();
-        const isLoaded = monthManifest.some(item => item.id === todayId);
-        const isSelected = activeMonthId === todayId && selectedDay === todayDay;
-        todayButton.disabled = isMonthTransitioning || !isLoaded || isSelected;
-        todayButton.title = isLoaded ? `Show today, ${todayDay} ${monthLong[today.getMonth()]} ${today.getFullYear()}` : "Today's month is not loaded";
-        todayButton.setAttribute("aria-label", todayButton.title);
-      }
-
-      function setMonthNavigationDisabled(disabled) {
-        [previousMonthButton, nextMonthButton, todayButton].forEach(button => {
-          if (button) button.disabled = disabled;
-        });
       }
 
       function monthTitle() {
@@ -317,8 +239,7 @@
       }
 
       function renderSources() {
-        const sourceList = { ...sources, wikimediaThumbs: wikimediaSource };
-        root.querySelector("#amc-source-list").innerHTML = Object.values(sourceList).map(source => `
+        root.querySelector("#amc-source-list").innerHTML = Object.values(sources).map(source => `
           <li><a href="${source.url}" target="_blank" rel="noopener">${source.label}</a><br>${source.note}</li>
         `).join("");
       }
@@ -355,7 +276,7 @@
                 </span>
               </span>
               <span class="amc-moon-line">
-                <img class="amc-moon-img" src="${moonImage(day, 216)}" alt="" loading="eager" decoding="async" width="52" height="52">
+                <img class="amc-moon-img" src="${moonImage(day, 216)}" alt="" loading="lazy" decoding="async" width="52" height="52">
                 <span class="amc-moon-copy">
                   <b>${moon.name}</b>
                   <span>${moon.phase}% lit</span>
@@ -382,7 +303,6 @@
         selectedDay = day;
         expandedDay = wasExpanded ? null : day;
         renderSelectedDay();
-        updateTodayButton();
         if (!wasExpanded) scrollExpandedDayIntoView(day);
       }
 
@@ -397,13 +317,6 @@
           if (root.getBoundingClientRect().width > 820) return;
           const expandedButton = grid.querySelector(`.amc-day[data-day="${day}"]`);
           expandedButton?.scrollIntoView({ block: "start", inline: "nearest", behavior: "auto" });
-        });
-      }
-
-      function scrollSelectedDayIntoView(day) {
-        window.requestAnimationFrame(() => {
-          const selectedButton = grid.querySelector(`.amc-day[data-day="${day}"]`);
-          selectedButton?.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
         });
       }
 
@@ -449,12 +362,12 @@
       }
 
       function recommendationsPanel(day, events, moon) {
-        const targets = tonightBest(day, events, moon);
+        const targets = tonightTargets(day, events, moon);
         const articles = recommendedArticles(day, events, moon);
         return `
           <div class="amc-recommendation-group">
             <h3>Tonight point your camera to:</h3>
-            <ol class="amc-target-list">${targets.map(target => targetItem(target, day)).join("")}</ol>
+            <ol class="amc-target-list">${targets.map(target => targetCard(target, day, moon)).join("")}</ol>
           </div>
           <div class="amc-recommendation-group">
             <h3>Related Articles</h3>
@@ -502,7 +415,7 @@
         const todayLabel = isTodayDay(day) ? "Today, " : "";
         const meta = eventMeta(primary);
         const identity = `<span class="amc-expanded-identity">
-          <img src="${moonImage(day, 216)}" alt="" loading="eager" decoding="async" width="40" height="40">
+          <img src="${moonImage(day, 216)}" alt="" loading="lazy" decoding="async" width="40" height="40">
           <span>
             <strong>${todayLabel}${weekday} ${day} ${monthLong[MONTH.monthIndex]} ${MONTH.year}</strong>
             <span class="amc-expanded-stat">${moon.name}, ${moon.phase}% illuminated</span>
@@ -649,9 +562,16 @@
           </span>`;
         }
         if (!nightInfo.minutes) {
+          if (nightInfo.nautical?.minutes) {
+            return `<span class="amc-alt-labels">
+              <span><b>Astro night:</b> No astronomical darkness.</span>
+              <span>Best nautical window: ${nightInfo.nautical.window}</span>
+              <span>Nautical duration: ${durationClock(nightInfo.nautical)}</span>
+            </span>`;
+          }
           return `<span class="amc-alt-labels">
-            <span><b>Astro night:</b> N/A</span>
-            <span>Astronomical Twilight Period.</span>
+            <span><b>Astro night:</b> No astronomical darkness.</span>
+            <span>Nautical window unavailable.</span>
           </span>`;
         }
         return `<span class="amc-alt-labels">
@@ -765,81 +685,76 @@
 
       function weatherPanel() {
         if (!hasLocation) {
-          return `<section class="amc-weather" aria-label="Local 3-day weather forecast">
-            <h3>3-Day Forecast</h3>
+          return `<section class="amc-weather" aria-label="Local 7-night observing forecast">
+            <h3>7-Night Forecast</h3>
             <span class="amc-weather-note">Use Current Location to show night-time cloud cover and transparency.</span>
           </section>`;
         }
 
         if (weatherState === "loading") {
-          return `<section class="amc-weather" aria-label="Local 3-day weather forecast">
-            <h3>3-Day Forecast</h3>
+          return `<section class="amc-weather" aria-label="Local 7-night observing forecast">
+            <h3>7-Night Forecast</h3>
             <span class="amc-weather-note">Loading local observing conditions.</span>
           </section>`;
         }
 
         if (weatherState === "error" || !weatherForecast.length) {
-          return `<section class="amc-weather" aria-label="Local 3-day weather forecast">
-            <h3>3-Day Forecast</h3>
+          return `<section class="amc-weather" aria-label="Local 7-night observing forecast">
+            <h3>7-Night Forecast</h3>
             <span class="amc-weather-note">Weather forecast unavailable for this location.</span>
           </section>`;
         }
 
-        return `<section class="amc-weather" aria-label="Local 3-day weather forecast">
-          <span class="amc-weather-title">
-            <h3>3-Day Forecast</h3>
-            ${weatherUpdatedLine()}
-          </span>
+        const visibleDays = weatherForecast.slice(0, 3);
+        const hiddenDays = weatherForecast.slice(3, 7);
+        return `<section class="amc-weather" aria-label="Local 7-night observing forecast">
+          <h3>7-Night Forecast</h3>
           <div class="amc-weather-grid">
-            ${weatherForecast.map(day => `
-              <div class="amc-weather-card">
-                <span class="amc-weather-head">
-                  <b>${day.label}</b>
-                  ${weatherIconsSvg(day.icons)}
-                </span>
-                <span class="amc-weather-metrics">
-                  ${weatherMetric("Cloud", day.cloudLabel, day.cloudSegments, "cloud")}
-                  ${weatherMetric("Temp", day.temperatureLabel, day.temperatureSegments, "temperature", "Temperature")}
-                  ${weatherMetric("Trans.", day.transparency, day.transparencySegments, "transparency", "Transparency")}
-                  ${weatherMetric("Seeing", day.seeingLabel, day.seeingSegments, "seeing")}
-                  ${weatherMetric("Wind", day.windLabel, day.windSegments, "wind")}
-                </span>
-              </div>
-            `).join("")}
+            ${visibleDays.map(day => weatherCard(day)).join("")}
           </div>
+          ${hiddenDays.length ? `<details class="amc-weather-more">
+            <summary>Show next ${hiddenDays.length} nights</summary>
+            <div class="amc-weather-grid">${hiddenDays.map(day => weatherCard(day)).join("")}</div>
+          </details>` : ""}
+          ${weatherUpdatedLine()}
         </section>`;
       }
 
       function cellWeatherPanel() {
         if (!hasLocation) {
-          return `<span class="amc-cell-section"><b>3-Day Forecast</b><span class="amc-weather-note">Use Current Location to show night-time conditions.</span></span>`;
+          return `<span class="amc-cell-section"><b>7-Night Forecast</b><span class="amc-weather-note">Use Current Location to show night-time conditions.</span></span>`;
         }
         if (weatherState === "loading") {
-          return `<span class="amc-cell-section"><b>3-Day Forecast</b><span class="amc-weather-note">Loading local observing conditions.</span></span>`;
+          return `<span class="amc-cell-section"><b>7-Night Forecast</b><span class="amc-weather-note">Loading local observing conditions.</span></span>`;
         }
         if (weatherState === "error" || !weatherForecast.length) {
-          return `<span class="amc-cell-section"><b>3-Day Forecast</b><span class="amc-weather-note">Weather forecast unavailable.</span></span>`;
+          return `<span class="amc-cell-section"><b>7-Night Forecast</b><span class="amc-weather-note">Weather forecast unavailable.</span></span>`;
         }
         return `<span class="amc-cell-section">
-          <b>3-Day Forecast</b>
+          <b>7-Night Forecast</b>
           <span class="amc-cell-weather-list">
-            ${weatherForecast.map(day => `
-              <span class="amc-cell-weather-row">
-                <span class="amc-weather-head">
-                  <b>${day.label}</b>
-                  ${weatherIconsSvg(day.icons)}
-                </span>
-                <span class="amc-cell-weather-copy">
-                  ${weatherMetric("Cloud", day.cloudLabel, day.cloudSegments, "cloud")}
-                  ${weatherMetric("Temp", day.temperatureLabel, day.temperatureSegments, "temperature", "Temperature")}
-                  ${weatherMetric("Trans.", day.transparency, day.transparencySegments, "transparency", "Transparency")}
-                  ${weatherMetric("Seeing", day.seeingLabel, day.seeingSegments, "seeing")}
-                  ${weatherMetric("Wind", day.windLabel, day.windSegments, "wind")}
-                </span>
-              </span>
-            `).join("")}
+            ${weatherForecast.slice(0, 3).map(day => weatherCard(day, true)).join("")}
           </span>
+          ${weatherForecast.length > 3 ? `<span class="amc-weather-note">${weatherForecast.length - 3} more nights are kept in the live forecast feed.</span>` : ""}
           ${weatherUpdatedLine()}
+        </span>`;
+      }
+
+      function weatherCard(day, compact = false) {
+        const cardClass = compact ? "amc-cell-weather-row" : "amc-weather-card";
+        const metricsClass = compact ? "amc-cell-weather-copy" : "amc-weather-metrics";
+        return `<span class="${cardClass}">
+          <span class="amc-weather-head">
+            <b>${day.label}</b>
+            ${weatherIconsSvg(day.icons)}
+          </span>
+          <span class="${metricsClass}">
+            ${weatherMetric("Cloud", day.cloudLabel, day.cloudSegments, "cloud")}
+            ${weatherMetric("Temp", day.temperatureLabel, day.temperatureSegments, "temperature", "Temperature")}
+            ${weatherMetric("Trans.", day.transparency, day.transparencySegments, "transparency", "Transparency")}
+            ${weatherMetric("Seeing", day.seeingLabel, day.seeingSegments, "seeing")}
+            ${weatherMetric("Wind", day.windLabel, day.windSegments, "wind")}
+          </span>
         </span>`;
       }
 
@@ -909,115 +824,247 @@
         return `<span class="amc-weather-icons">${safeKinds.map(kind => weatherIconSvg(kind)).join("")}</span>`;
       }
 
-      function tonightBest(day, events, moon) {
-        if (Array.isArray(targetData[day]) && targetData[day].length) {
-          return fillTargets(targetData[day], moon);
+      function tonightTargets(day, events, moon) {
+        const eventTargets = uniqueTargets(eventTargetCandidates(events))
+          .map(name => targetDetails(name, day, moon));
+        const candidates = targetCandidates(day, events, moon);
+        const ranked = uniqueTargets(candidates)
+          .map(name => targetDetails(name, day, moon))
+          .sort((a, b) => b.score - a.score);
+        return uniqueTargetDetails([...eventTargets, ...ranked]).slice(0, 3);
+      }
+
+      function targetCandidates(day, events, moon) {
+        const names = eventTargetCandidates(events);
+        if (moon.phase < 12) {
+          names.push("Milky Way core", "Lagoon Nebula (M8)", "Trifid Nebula (M20)", "Pleiades (M45)");
+        } else if (moon.phase < 30) {
+          names.push("Crescent Moon", "Milky Way fields", "Lagoon Nebula (M8)", "Saturn");
+        } else if (moon.phase < 70) {
+          names.push("Lunar terminator", "Saturn", "Pleiades (M45)", "Bright clusters");
+        } else {
+          names.push("Lunar disc", "Moonrise", "Saturn", "Pleiades (M45)");
         }
-        const eventTargets = eventDrivenTargets(events);
-        if (eventTargets.length) return fillTargets(eventTargets, moon);
-        return phaseDrivenTargets(moon);
+
+        return names;
       }
 
-      function fillTargets(targets, moon) {
-        const seen = new Set();
-        const filled = [];
-        [...targets, ...phaseDrivenTargets(moon)].forEach(target => {
-          const key = String(target || "").trim().toLowerCase();
-          if (!key || seen.has(key) || filled.length >= 3) return;
-          seen.add(key);
-          filled.push(String(target).trim());
+      function eventTargetCandidates(events) {
+        const names = [];
+        events.forEach(item => {
+          const text = `${item.title || ""} ${item.copy || ""}`.toLowerCase();
+          if (item.type === "meteor" || /aquariid|capricornid|meteor/.test(text)) names.push(item.title);
+          if (/pleiades|matariki/.test(text)) names.push("Pleiades (M45)");
+          if (/milky way/.test(text)) names.push("Milky Way core");
+          if (/comet|tempel/.test(text)) names.push("Comet 10P/Tempel 2");
+          if (/antares/.test(text)) names.push("Antares occultation");
+          if (/mars|uranus/.test(text)) names.push("Mars-Uranus pairing");
+          if (/venus/.test(text)) names.push("Moon-Venus pairing");
+          if (/saturn|pluto|opposition|ring/.test(text)) names.push(item.title);
+          if (item.type === "moon" && !/new moon/i.test(text)) names.push(item.title);
         });
-        return filled;
+        return names;
       }
 
-      function eventDrivenTargets(events) {
-        return uniqueText(events.map(targetFromEvent).filter(Boolean));
-      }
-
-      function targetFromEvent(item) {
-        const text = `${item?.title || ""} ${item?.copy || ""}`.toLowerCase();
-        if (/pleiades|m45|matariki/.test(text)) return "Pleiades (M45)";
-        if (/saturn/.test(text)) return "Saturn";
-        if (/venus/.test(text)) return "Venus";
-        if (/jupiter/.test(text)) return "Jupiter";
-        if (/mars/.test(text)) return "Mars";
-        if (/neptune/.test(text)) return "Neptune";
-        if (/mercury/.test(text)) return "Mercury";
-        if (/comet 10p|tempel/.test(text)) return "Comet 10P/Tempel 2";
-        if (/perseid|aquariid|capricornid|cygnid|aurigid|sextantid|meteor/.test(text)) return item.title;
-        if (/eclipse/.test(text)) return item.title;
-        if (/occultation/.test(text)) return item.title;
-        if (/messier 5|m5\b/.test(text)) return "Messier 5";
-        if (/messier 4|m4\b/.test(text)) return "Messier 4";
-        if (/messier 15|m15\b/.test(text)) return "Messier 15";
-        if (/messier 2|m2\b/.test(text)) return "Messier 2";
-        if (/ngc 55/.test(text)) return "NGC 55";
-        if (/47 tuc/.test(text)) return "47 Tucanae";
-        if (/moon|lunar|quarter|full moon|new moon/.test(text)) return item.title;
-        return "";
-      }
-
-      function uniqueText(items) {
+      function uniqueTargets(names) {
         const seen = new Set();
-        return items.filter(item => {
-          const key = String(item || "").trim().toLowerCase();
+        return names.filter(name => {
+          const key = targetMeta(name).name.toLowerCase();
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      }
+
+      function targetDetails(name, day, moon) {
+        const meta = targetMeta(name);
+        const observing = targetObservingInfo(meta, day);
+        const interference = moonInterference(meta, moon);
+        const difficulty = targetDifficulty(meta, observing, moon);
+        return {
+          ...meta,
+          observing,
+          interference,
+          difficulty,
+          score: targetScore(meta, observing, moon)
+        };
+      }
+
+      function uniqueTargetDetails(targets) {
+        const seen = new Set();
+        return targets.filter(target => {
+          const key = String(target?.name || "").toLowerCase();
           if (!key || seen.has(key)) return false;
           seen.add(key);
           return true;
         });
       }
 
-      function phaseDrivenTargets(moon) {
-        if (moon.phase < 10) return ["Milky Way core", "Lagoon Nebula (M8)", "Trifid Nebula (M20)"];
-        if (moon.phase < 25) return ["Crescent Moon", "Milky Way fields", "Comet 10P/Tempel 2"];
-        if (moon.phase < 60) return ["Lunar terminator", "Saturn", "Bright clusters"];
-        if (moon.phase < 88) return ["Gibbous Moon", "Saturn", "Bright clusters"];
-        return ["Moonrise", "Lunar disc", "Saturn"];
+      function targetMeta(name) {
+        const text = String(name || "").toLowerCase();
+        const catalogue = [
+          { match: /lagoon|m8/, name: "Lagoon Nebula (M8)", type: "Emission nebula", ra: 18.06, dec: -24.38, size: "90 x 40 arcmin", surface: "bright", baseDifficulty: 2 },
+          { match: /trifid|m20/, name: "Trifid Nebula (M20)", type: "Nebula", ra: 18.05, dec: -23.03, size: "28 arcmin", surface: "medium", baseDifficulty: 3 },
+          { match: /milky way core/, name: "Milky Way core", type: "Wide-field", ra: 17.75, dec: -29.0, size: "wide-field", surface: "medium", baseDifficulty: 3 },
+          { match: /milky way fields/, name: "Milky Way fields", type: "Wide-field", ra: 19.0, dec: -5.0, size: "wide-field", surface: "medium", baseDifficulty: 2 },
+          { match: /pleiades|m45|matariki/, name: "Pleiades (M45)", type: "Open cluster", ra: 3.79, dec: 24.12, size: "110 arcmin", surface: "bright", baseDifficulty: 1 },
+          { match: /bright clusters|cluster/, name: "Bright clusters", type: "Star clusters", ra: 20.5, dec: 40.0, size: "varies", surface: "bright", baseDifficulty: 1 },
+          { match: /delta aquariid|aquariids/, name: "Delta Aquariids", type: "Meteor radiant", ra: 22.67, dec: -16.0, size: "wide radiant", surface: "bright meteors", baseDifficulty: 3 },
+          { match: /alpha capricornid|capricornids/, name: "Alpha Capricornids", type: "Meteor radiant", ra: 20.47, dec: -10.0, size: "wide radiant", surface: "bright meteors", baseDifficulty: 3 },
+          { match: /saturn/, name: "Saturn", type: "Planet", body: "Saturn", size: "~18 arcsec", surface: "bright", baseDifficulty: 2 },
+          { match: /pluto/, name: "Pluto", type: "Dwarf planet", body: "Pluto", size: "~0.1 arcsec", surface: "very faint", baseDifficulty: 5 },
+          { match: /mars.*uranus|uranus/, name: "Mars-Uranus pairing", type: "Planet pairing", body: "Mars", size: "arcsec scale", surface: "bright/faint pair", baseDifficulty: 3 },
+          { match: /venus/, name: "Moon-Venus pairing", type: "Twilight pairing", body: "Venus", size: "arcsec scale", surface: "bright", baseDifficulty: 2 },
+          { match: /antares/, name: "Antares occultation", type: "Occultation", ra: 16.49, dec: -26.43, size: "point source", surface: "bright", baseDifficulty: 3 },
+          { match: /comet|tempel/, name: "Comet 10P/Tempel 2", type: "Comet", size: "variable coma", surface: "faint", baseDifficulty: 4 },
+          { match: /moon|lunar|crater|terminator|crescent|gibbous|full|quarter|moonrise/, name: lunarTargetName(name), type: "Moon", body: "Moon", size: "~30 arcmin", surface: "very bright", baseDifficulty: 1 }
+        ];
+        return catalogue.find(item => item.match.test(text)) || {
+          name: String(name || "Night sky target"),
+          type: "Sky target",
+          size: "varies",
+          surface: "varies",
+          baseDifficulty: 3
+        };
       }
 
-      function targetItem(target, day) {
+      function lunarTargetName(name) {
+        const text = String(name || "").toLowerCase();
+        if (/moonrise/.test(text)) return "Moonrise";
+        if (/terminator|quarter|crater/.test(text)) return "Lunar terminator";
+        if (/crescent/.test(text)) return "Crescent Moon";
+        if (/full/.test(text)) return "Full Moon";
+        return "Lunar disc";
+      }
+
+      function targetCard(target, day, moon) {
         const thumbnail = targetThumbnail(target, day);
-        return `<li>
-          <img src="${escapeHtml(thumbnail.src)}" alt="${escapeHtml(thumbnail.alt)}" loading="lazy" decoding="async" width="64" height="64">
-          <span>${escapeHtml(target)}</span>
+        return `<li class="amc-target-card">
+          <img src="${escapeHtml(thumbnail.src)}" alt="${escapeHtml(thumbnail.alt)}" loading="lazy" decoding="async" width="52" height="52">
+          <span class="amc-target-copy">
+            <b class="amc-target-name">${escapeHtml(target.name)}</b>
+            <span class="amc-target-type">${escapeHtml(target.type)}</span>
+            <span class="amc-target-facts">
+              <span><em>Best</em><strong>${escapeHtml(target.observing.window)}</strong></span>
+              <span><em>Max alt</em><strong>${escapeHtml(target.observing.altitude)}</strong></span>
+              <span><em>Moon</em><strong>${escapeHtml(target.interference)}</strong></span>
+              <span><em>Size</em><strong>${escapeHtml(target.size)}</strong></span>
+              <span><em>Difficulty</em><strong>${escapeHtml(target.difficulty)}</strong></span>
+            </span>
+          </span>
         </li>`;
       }
 
+      function targetObservingInfo(meta, day) {
+        if (!hasLocation || !Number.isFinite(currentLat) || !Number.isFinite(currentLon)) {
+          return { window: useCurrentLocationText, altitude: useCurrentLocationText, maxAltitude: null, darkWindow: null };
+        }
+        if (!meta.body && (!Number.isFinite(meta.ra) || !Number.isFinite(meta.dec))) {
+          return { window: "Check ephemeris", altitude: "n/a", maxAltitude: null, darkWindow: null };
+        }
+        const Astronomy = window.Astronomy;
+        if (!Astronomy) return { window: "Unavailable", altitude: "Unavailable", maxAltitude: null, darkWindow: null };
+
+        try {
+          const observer = new Astronomy.Observer(currentLat, currentLon, 0);
+          const start = zonedDate(MONTH.year, MONTH.monthIndex, day, 18, 0, 0);
+          const end = zonedDate(MONTH.year, MONTH.monthIndex, day + 1, 6, 0, 0);
+          const durationMs = Math.max(1, end.getTime() - start.getTime());
+          const samples = [];
+          for (let step = 0; step <= 48; step += 1) {
+            const sample = new Date(start.getTime() + (step / 48) * durationMs);
+            const altitude = targetAltitude(meta, sample, observer);
+            const sunAltitude = bodyAltitude(Astronomy.Body.Sun, sample, observer);
+            samples.push({ date: sample, altitude, darkEnough: sunAltitude <= -12 });
+          }
+          const maxSample = samples.reduce((best, sample) => sample.altitude > best.altitude ? sample : best, samples[0]);
+          if (!maxSample || !Number.isFinite(maxSample.altitude)) {
+            return { window: "Unavailable", altitude: "Unavailable", maxAltitude: null, darkWindow: null };
+          }
+          if (maxSample.altitude < 0) {
+            return { window: "Below horizon", altitude: "Below horizon", maxAltitude: maxSample.altitude, darkWindow: false };
+          }
+          const minimumAltitude = meta.type === "Moon" || /planet|meteor/i.test(meta.type) ? 8 : 18;
+          const usable = samples.filter(sample => sample.altitude >= minimumAltitude && sample.darkEnough);
+          const visible = usable.length ? usable : samples.filter(sample => sample.altitude >= minimumAltitude);
+          const best = (visible.length ? visible : samples).reduce((top, sample) => sample.altitude > top.altitude ? sample : top, maxSample);
+          return {
+            window: targetWindow(best.date, start, end),
+            altitude: `${Math.round(maxSample.altitude)}°`,
+            maxAltitude: maxSample.altitude,
+            darkWindow: Boolean(best.darkEnough)
+          };
+        } catch {
+          return { window: "Unavailable", altitude: "Unavailable", maxAltitude: null, darkWindow: null };
+        }
+      }
+
+      function targetAltitude(meta, sample, observer) {
+        const Astronomy = window.Astronomy;
+        if (meta.body && Astronomy.Body[meta.body]) return bodyAltitude(Astronomy.Body[meta.body], sample, observer);
+        return Astronomy.Horizon(sample, observer, meta.ra, meta.dec, "normal").altitude;
+      }
+
+      function targetWindow(bestDate, start, end) {
+        const from = new Date(Math.max(start.getTime(), bestDate.getTime() - 60 * 60000));
+        const to = new Date(Math.min(end.getTime(), bestDate.getTime() + 60 * 60000));
+        return `${formatTimeValue(from)}-${formatTimeValue(to)}`;
+      }
+
+      function moonInterference(meta, moon) {
+        if (meta.type === "Moon" || meta.body === "Moon") return "target";
+        if (/Planet|pairing|Occultation/.test(meta.type)) return moon.phase > 80 ? "moderate" : "low";
+        if (/Meteor/.test(meta.type)) return moon.phase > 70 ? "high" : moon.phase > 35 ? "moderate" : "low";
+        if (moon.phase < 15) return "low";
+        if (moon.phase < 45) return "moderate";
+        return "high";
+      }
+
+      function targetDifficulty(meta, observing, moon) {
+        let score = Number(meta.baseDifficulty || 3);
+        if (Number.isFinite(observing.maxAltitude) && observing.maxAltitude < 25) score += 1;
+        if (!/Moon|Planet|pairing|Occultation/.test(meta.type) && moon.phase > 45) score += 1;
+        if (/very faint/.test(meta.surface || "")) score += 1;
+        if (score <= 1) return "Easy";
+        if (score === 2) return "Easy-moderate";
+        if (score === 3) return "Moderate";
+        if (score === 4) return "Hard";
+        return "Very hard";
+      }
+
+      function targetScore(meta, observing, moon) {
+        let score = 100 - Number(meta.baseDifficulty || 3) * 7;
+        if (Number.isFinite(observing.maxAltitude)) score += clamp(observing.maxAltitude, -20, 80);
+        if (!Number.isFinite(observing.maxAltitude)) score -= 12;
+        if (observing.maxAltitude !== null && observing.maxAltitude < 0) score -= 70;
+        if (/Moon/.test(meta.type)) score += moon.phase > 30 ? 22 : 6;
+        if (!/Moon|Planet|pairing|Occultation/.test(meta.type) && moon.phase < 20) score += 24;
+        if (!/Moon|Planet|pairing|Occultation/.test(meta.type) && moon.phase > 70) score -= 24;
+        if (!/Moon|Planet|pairing|Occultation/.test(meta.type) && observing.darkWindow === false) score -= 52;
+        if (/Meteor/.test(meta.type) && moon.phase > 70) score -= 18;
+        return score;
+      }
+
       function targetThumbnail(target, day) {
-        const text = String(target || "").toLowerCase();
-        const wikimedia = wikimediaTargetThumbnail(text);
-        if (wikimedia) return wikimedia;
-        return { src: media.milkyWay?.src || moonImage(day, 216), alt: `${target} thumbnail` };
-      }
-
-      function wikimediaTargetThumbnail(text) {
-        if (/saturn/.test(text)) return wikimediaImage("Saturn during Equinox.jpg", "Saturn thumbnail from Wikimedia Commons");
-        if (/pleiades|m45/.test(text)) return wikimediaImage("Pleiades large.jpg", "Pleiades thumbnail from Wikimedia Commons");
-        if (/lagoon|m8/.test(text)) return wikimediaImage("Lagoon Nebula.jpg", "Lagoon Nebula thumbnail from Wikimedia Commons");
-        if (/trifid|m20/.test(text)) return wikimediaImage("Trifid.nebula.arp.750pix.jpg", "Trifid Nebula thumbnail from Wikimedia Commons");
-        if (/comet/.test(text)) return wikimediaImage("Comet Hartley 2.jpg", "Comet thumbnail from Wikimedia Commons");
-        if (/aquariid|capricornid|perseid|cygnid|aurigid|sextantid|meteor/.test(text)) return wikimediaImage("Perseid meteor shower.jpg", "Meteor shower thumbnail from Wikimedia Commons");
-        if (/eclipse|solar|corona/.test(text)) return wikimediaImage("Total Solar Eclipse 8-21-17.jpg", "Solar eclipse thumbnail from Wikimedia Commons");
-        if (/venus/.test(text)) return wikimediaImage("Venus-real color.jpg", "Venus thumbnail from Wikimedia Commons");
-        if (/jupiter|mars|mercury|neptune|pluto|uranus|planet/.test(text)) return wikimediaImage("Solar System true color.jpg", "Planet thumbnail from Wikimedia Commons");
-        if (/milky way/.test(text)) return wikimediaImage("ESO - Milky Way.jpg", "Milky Way thumbnail from Wikimedia Commons");
-        if (/messier|m\d+\b|ngc|47 tuc|cluster|bright clusters/.test(text)) return wikimediaImage("Pleiades large.jpg", "Star cluster thumbnail from Wikimedia Commons");
-        if (/moon|crater|lunar|occultation/.test(text)) return wikimediaImage("Full Moon Luc Viatour.jpg", "Moon thumbnail from Wikimedia Commons");
-        return null;
-      }
-
-      function wikimediaImage(fileName, alt) {
-        return {
-          src: `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(fileName)}?width=320`,
-          alt
-        };
+        const text = String(target?.name || target || "").toLowerCase();
+        if (/moon|crater|lunar|occultation/.test(text)) {
+          return { src: moonImage(day, 216), alt: `${target.name || target} Moon thumbnail` };
+        }
+        if (/lagoon|m8/.test(text) && media.lagoon?.src) return { src: media.lagoon.src, alt: "Lagoon Nebula thumbnail" };
+        if (/trifid|m20/.test(text) && media.trifid?.src) return { src: media.trifid.src, alt: "Trifid Nebula thumbnail" };
+        if (/comet/.test(text) && media.comet?.src) return { src: media.comet.src, alt: "Comet thumbnail" };
+        if (/pleiades|cluster/.test(text) && media.pleiades?.src) return { src: media.pleiades.src, alt: "Pleiades thumbnail" };
+        if (/aquariid|capricornid|meteor/.test(text) && media.meteor?.src) return { src: media.meteor.src, alt: "Meteor shower thumbnail" };
+        if (/saturn|pluto|mars|uranus|venus|planet/.test(text) && media.saturn?.src) return { src: media.saturn.src, alt: "Planet thumbnail" };
+        if (/milky way/.test(text) && media.milkyWay?.src) return { src: media.milkyWay.src, alt: "Milky Way thumbnail" };
+        return { src: media.milkyWay?.src || moonImage(day, 216), alt: `${target.name || target} thumbnail` };
       }
 
       function articlePromo(article) {
         const image = article?.image || media.milkyWay?.src || "";
         const label = article?.kind || "Article";
         return `<a class="amc-article-promo" href="${escapeHtml(article.url)}" target="_blank" rel="noopener">
-          <img src="${escapeHtml(image)}" alt="" loading="lazy" decoding="async" width="96" height="72">
+          <img src="${escapeHtml(image)}" alt="" loading="lazy" decoding="async" width="70" height="52">
           <span class="amc-article-copy">
             <small>${escapeHtml(label)}</small>
             <b>${escapeHtml(article.title)}</b>
@@ -1130,20 +1177,22 @@
         return {
           minutes: null,
           label: useCurrentLocationText,
-          window: useCurrentLocationText
+          window: useCurrentLocationText,
+          nautical: null
         };
       }
 
-      function noDark() {
+      function noDark(nautical = null) {
         return {
           minutes: 0,
           label: "None",
-          window: "Sun stays above -18°"
+          window: "Sun stays above -18°",
+          nautical
         };
       }
 
-      function night(minutes, window) {
-        return { minutes, label: formatDuration(minutes), window };
+      function night(minutes, window, nautical = null) {
+        return { minutes, label: formatDuration(minutes), window, nautical };
       }
 
       function formatDuration(minutes) {
@@ -1326,11 +1375,10 @@
         safeStorageSet("amc-sky-calendar-theme", theme);
       }
 
-      async function useBrowserLocation() {
+      function useBrowserLocation() {
         if (!navigator.geolocation) {
           useLocationButton.textContent = "Unavailable";
           locationLabel.textContent = "Location unavailable";
-          setLocationPrompt("Current location is not available in this browser. Search for a city instead.", true);
           window.setTimeout(() => {
             useLocationButton.textContent = useCurrentLocationText;
           }, 2200);
@@ -1339,20 +1387,13 @@
 
         if (!window.isSecureContext && !["localhost", "127.0.0.1"].includes(window.location.hostname)) {
           locationLabel.textContent = "HTTPS required for current location";
-          setLocationPrompt("Current location only works on HTTPS. GitHub Pages is fine once the site is published.", true);
           useLocationButton.textContent = useCurrentLocationText;
-          return;
-        }
-
-        if (await isGeolocationPermissionDenied()) {
-          showLocationPermissionDenied();
           return;
         }
 
         useLocationButton.disabled = true;
         useLocationButton.textContent = "Locating";
         locationLabel.textContent = "Finding location";
-        setLocationPrompt("Your browser may ask for location permission.", false);
         navigator.geolocation.getCurrentPosition(
           position => {
             const lat = position.coords.latitude;
@@ -1364,41 +1405,19 @@
           error => {
             useLocationButton.disabled = false;
             if (error?.code === error.PERMISSION_DENIED) {
-              showLocationPermissionDenied();
+              locationLabel.textContent = "Location permission denied";
             } else if (error?.code === error.POSITION_UNAVAILABLE) {
               locationLabel.textContent = "Current location unavailable";
-              setLocationPrompt("Your device could not provide a location. Search for a city below.", true);
             } else {
               locationLabel.textContent = "Current location timed out";
-              setLocationPrompt("Current location timed out. Try again, or search for a city below.", true);
             }
             useLocationButton.textContent = useCurrentLocationText;
-            if (hasLocation) {
-              window.setTimeout(() => {
-                updateLocationLabel();
-              }, 2600);
-            }
+            window.setTimeout(() => {
+              updateLocationLabel();
+            }, 2200);
           },
           { enableHighAccuracy: false, timeout: 8000, maximumAge: 3600000 }
         );
-      }
-
-      async function isGeolocationPermissionDenied() {
-        if (!navigator.permissions?.query) return false;
-        try {
-          const status = await navigator.permissions.query({ name: "geolocation" });
-          return status.state === "denied";
-        } catch {
-          return false;
-        }
-      }
-
-      function showLocationPermissionDenied() {
-        useLocationButton.disabled = false;
-        useLocationButton.textContent = useCurrentLocationText;
-        locationLabel.textContent = "Location permission denied";
-        setLocationPrompt("Location is blocked for this site. Click the lock or site settings icon by the address bar, set Location to Allow, reload, then try again. Or search for a city below.", true);
-        manualLocationInput?.focus({ preventScroll: true });
       }
 
       async function useManualLocation(event) {
@@ -1570,7 +1589,6 @@
         hasLocation = true;
         saveLocation(lat, lon, locationName);
         root.classList.add("has-location");
-        setLocationPrompt("Click Use Current Location for local timing and forecast.", false);
         updateLocationLabel();
         renderCalendar();
         renderSelectedDay();
@@ -1617,7 +1635,7 @@
             hourly: "cloud_cover,relative_humidity_2m,precipitation_probability,weather_code,wind_speed_10m,temperature_2m",
             daily: "weather_code",
             timezone: "auto",
-            forecast_days: "4"
+            forecast_days: "8"
           });
           const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params.toString()}`, { cache: "no-store" });
           if (!response.ok) throw new Error("Weather lookup failed");
@@ -1704,12 +1722,6 @@
         }
       }
 
-      function setLocationPrompt(message, isWarning = false) {
-        if (!locationPrompt) return;
-        locationPrompt.textContent = message;
-        locationPrompt.classList.toggle("is-warning", Boolean(isWarning));
-      }
-
       function updateLocationLabel() {
         locationLabel.innerHTML = locationPill(locationDisplay());
       }
@@ -1726,7 +1738,7 @@
       function summariseWeather(payload) {
         const hourly = payload.hourly || {};
         const daily = payload.daily || {};
-        const days = (daily.time || []).slice(0, 3);
+        const days = (daily.time || []).slice(0, 7);
         return days.map((dateKey, index) => {
           const quarters = nightWeatherQuarters(hourly, dateKey);
           const samples = mergeQuarterSamples(quarters);
@@ -2259,6 +2271,21 @@
         return Number((12 * (date.getTime() - start.getTime()) / Math.max(1, end.getTime() - start.getTime())).toFixed(3));
       }
 
+      function twilightWindow(day, observer, altitude) {
+        const Astronomy = window.Astronomy;
+        const noon = zonedDate(MONTH.year, MONTH.monthIndex, day, 12, 0, 0);
+        const dusk = Astronomy.SearchAltitude(Astronomy.Body.Sun, observer, -1, noon, 1, altitude);
+        if (!dusk?.date) return null;
+        const dawn = Astronomy.SearchAltitude(Astronomy.Body.Sun, observer, +1, dusk.date, 1.5, altitude);
+        if (!dawn?.date || dawn.date <= dusk.date) return null;
+        const minutes = Math.round((dawn.date.getTime() - dusk.date.getTime()) / 60000);
+        return {
+          minutes,
+          window: `${formatTimeValue(dusk.date)}-${formatTimeValue(dawn.date)}`,
+          range: `${formatLocal(dusk.date)} to ${formatLocal(dawn.date)}`
+        };
+      }
+
       function calculateAstroNight(day, lat, lon) {
         const Astronomy = window.Astronomy;
         if (!Astronomy) return unavailableNight();
@@ -2266,12 +2293,13 @@
         try {
           const observer = new Astronomy.Observer(lat, lon, 0);
           const noon = zonedDate(MONTH.year, MONTH.monthIndex, day, 12, 0, 0);
+          const nautical = twilightWindow(day, observer, -12);
           const dusk = Astronomy.SearchAltitude(Astronomy.Body.Sun, observer, -1, noon, 1, -18);
-          if (!dusk) return noDark();
+          if (!dusk) return noDark(nautical);
           const dawn = Astronomy.SearchAltitude(Astronomy.Body.Sun, observer, +1, dusk.date, 1.5, -18);
-          if (!dawn || dawn.date <= dusk.date) return noDark();
+          if (!dawn || dawn.date <= dusk.date) return noDark(nautical);
           const minutes = Math.round((dawn.date.getTime() - dusk.date.getTime()) / 60000);
-          return night(minutes, `${formatLocal(dusk.date)} to ${formatLocal(dawn.date)}`);
+          return night(minutes, `${formatLocal(dusk.date)} to ${formatLocal(dawn.date)}`, nautical);
         } catch {
           return unavailableNight();
         }
@@ -2293,7 +2321,8 @@
         return {
           minutes: null,
           label: "Unavailable",
-          window: "Astronomy calculation unavailable"
+          window: "Astronomy calculation unavailable",
+          nautical: null
         };
       }
 
