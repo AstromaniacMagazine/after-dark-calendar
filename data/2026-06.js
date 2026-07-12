@@ -42,12 +42,17 @@
     openMeteo: {
       label: "Open-Meteo Forecast API",
       url: "https://open-meteo.com/en/docs",
-      note: "The local 3-day forecast uses Open-Meteo hourly cloud cover, humidity, temperature, precipitation probability, wind speed, WMO weather codes and location timezone. Seeing is an in-calendar planning estimate from those variables, not a dedicated CMC seeing model."
+      note: "The local 7-night forecast uses Open-Meteo hourly cloud cover, humidity, temperature, precipitation probability, wind speed, WMO weather codes and location timezone. Seeing is an in-calendar planning estimate from those variables, not a dedicated CMC seeing model."
     },
     openMeteoGeo: {
       label: "Open-Meteo Geocoding API",
       url: "https://open-meteo.com/en/docs/geocoding-api",
       note: "Manual place-name search uses Open-Meteo geocoding for coordinates and timezone, then the calendar recalculates local astronomical timing and weather."
+    },
+    targetSizes: {
+      label: "NASA Messier catalogue and LCO angular-size guide",
+      url: "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/",
+      note: "Target-card apparent sizes use catalogue angular dimensions for Messier/deep-sky objects and standard angular-size ranges for the Moon and planets; variable objects are labelled variable."
     },
     inSky: {
       label: "In-The-Sky.org June 2026 calendar",
