@@ -37,6 +37,7 @@
       --good: #2f9e44;
       --ok: #d39a21;
       --bad: #d94a45;
+      --warning: #b95f1b;
       background:
         linear-gradient(180deg, rgba(255,255,255,.74), rgba(255,255,255,.2)),
         var(--bg);
@@ -79,6 +80,7 @@
       --good: #6fdc87;
       --ok: #f2c14e;
       --bad: #ff6b6b;
+      --warning: #ffad5c;
       background:
         radial-gradient(circle at 8% 14%, rgba(255,255,255,.14) 0 1px, transparent 1.5px),
         radial-gradient(circle at 74% 12%, rgba(255,255,255,.1) 0 1px, transparent 1.5px),
@@ -181,15 +183,11 @@
       text-align: right;
     }
 
-<<<<<<< Updated upstream
-    .amc-sky-calendar.has-location .amc-location-prompt {
-=======
     .amc-location-prompt.is-warning {
       color: var(--warning);
     }
 
     .amc-sky-calendar.has-location .amc-location-prompt:not(.is-warning) {
->>>>>>> Stashed changes
       display: none;
     }
 
@@ -530,6 +528,9 @@
       align-items: start;
       display: grid;
       gap: 16px;
+      grid-template-areas:
+        "calendar detail"
+        "recommendations detail";
       grid-template-columns: minmax(0, 1fr) minmax(270px, 300px);
     }
 
@@ -586,6 +587,7 @@
     }
 
     .amc-calendar-wrap {
+      grid-area: calendar;
       min-width: 0;
     }
 
@@ -1195,10 +1197,13 @@
     }
 
     .amc-detail {
+      align-self: stretch;
       background: color-mix(in srgb, var(--panel) 90%, transparent);
       border: 1px solid var(--line);
       border-radius: 14px;
       box-shadow: 0 14px 34px var(--shadow);
+      grid-area: detail;
+      height: 100%;
       min-width: 0;
       overflow: clip;
       position: sticky;
@@ -1210,6 +1215,9 @@
     }
 
     .amc-detail-body {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
       padding: 10px;
     }
 
@@ -1391,7 +1399,8 @@
       background: var(--panel-soft);
       border: 1px solid var(--line);
       border-radius: 7px;
-      margin-bottom: 10px;
+      margin-bottom: 0;
+      margin-top: auto;
       padding: 9px;
     }
 
@@ -1402,6 +1411,20 @@
       letter-spacing: .08em;
       margin: 0 0 8px;
       text-transform: uppercase;
+    }
+
+    .amc-weather-title {
+      align-items: center;
+      display: flex;
+      gap: 8px;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      min-width: 0;
+    }
+
+    .amc-weather-title h3,
+    .amc-weather-title .amc-weather-updated {
+      margin: 0;
     }
 
     .amc-weather-grid {
@@ -1680,14 +1703,9 @@
       display: grid;
       align-self: end;
       gap: 12px;
-<<<<<<< Updated upstream
-      grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr);
-      margin-top: 16px;
-=======
       grid-area: recommendations;
       grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
       margin-top: auto;
->>>>>>> Stashed changes
       padding-top: 12px;
     }
 
@@ -1719,7 +1737,7 @@
 
     .amc-target-list {
       display: grid;
-      gap: 7px;
+      gap: 8px;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       margin: 0;
       padding: 0;
@@ -1731,31 +1749,20 @@
       border: 1px solid var(--line);
       border-radius: 7px;
       display: grid;
-<<<<<<< Updated upstream
-      gap: 8px;
-      grid-template-columns: 46px minmax(0, 1fr);
-=======
       gap: 9px;
       grid-template-columns: 76px minmax(0, 1fr);
->>>>>>> Stashed changes
       list-style: none;
       min-width: 0;
-      padding: 7px;
+      padding: 8px;
     }
 
     .amc-target-list img {
       aspect-ratio: 1;
       border-radius: 6px;
       display: block;
-<<<<<<< Updated upstream
-      height: 46px;
-      object-fit: cover;
-      width: 46px;
-=======
       height: 76px;
       object-fit: cover;
       width: 76px;
->>>>>>> Stashed changes
     }
 
     .amc-target-copy {
@@ -1827,13 +1834,8 @@
 
     .amc-related-grid {
       display: grid;
-<<<<<<< Updated upstream
-      gap: 7px;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-=======
       gap: 8px;
       grid-template-columns: 1fr;
->>>>>>> Stashed changes
     }
 
     .amc-article-promo {
@@ -1843,10 +1845,10 @@
       border-radius: 7px;
       color: var(--text);
       display: grid;
-      gap: 8px;
-      grid-template-columns: 70px minmax(0, 1fr);
+      gap: 9px;
+      grid-template-columns: 96px minmax(0, 1fr);
       min-width: 0;
-      padding: 7px;
+      padding: 8px;
       text-decoration: none;
     }
 
@@ -1854,9 +1856,9 @@
       aspect-ratio: 4 / 3;
       border-radius: 6px;
       display: block;
-      height: 52px;
+      height: 72px;
       object-fit: cover;
-      width: 70px;
+      width: 96px;
     }
 
     .amc-article-copy {
@@ -1933,11 +1935,7 @@
       border-top: 1px solid var(--line);
       display: grid;
       gap: 12px;
-<<<<<<< Updated upstream
-      grid-template-columns: minmax(0, 1fr) auto auto;
-=======
       grid-template-columns: minmax(0, 1fr) auto;
->>>>>>> Stashed changes
       margin-top: 14px;
       padding-top: 11px;
     }
@@ -2006,14 +2004,10 @@
       justify-self: end;
     }
 
-<<<<<<< Updated upstream
-    .amc-version-note {
-=======
     .amc-version-panel {
       background: color-mix(in srgb, var(--panel-soft) 68%, transparent);
       border: 1px solid var(--line);
       border-radius: 8px;
->>>>>>> Stashed changes
       color: var(--faint);
       font-size: .68rem;
       font-weight: 650;
@@ -2022,8 +2016,6 @@
       padding: 9px 10px;
     }
 
-<<<<<<< Updated upstream
-=======
     .amc-version-panel h3 {
       color: var(--muted);
       font-size: .72rem;
@@ -2049,7 +2041,6 @@
       color: var(--muted);
     }
 
->>>>>>> Stashed changes
     .amc-print-brand {
       display: none;
     }
@@ -2084,11 +2075,24 @@
       }
 
       .amc-layout {
+        grid-template-areas:
+          "calendar"
+          "recommendations"
+          "detail";
         grid-template-columns: 1fr;
       }
 
       .amc-detail {
+        align-self: start;
         position: static;
+      }
+
+      .amc-detail-body {
+        height: auto;
+      }
+
+      .amc-weather {
+        margin-top: 0;
       }
     }
 
@@ -2155,14 +2159,8 @@
         justify-self: start;
       }
 
-<<<<<<< Updated upstream
-      .amc-version-note {
-        text-align: left;
-      }
-
-=======
->>>>>>> Stashed changes
       .amc-recommendations {
+        grid-template-areas: none;
         grid-template-columns: 1fr;
       }
 
@@ -2463,10 +2461,7 @@
       .amc-reference-row,
       .amc-detail,
       .amc-mobile-planning,
-<<<<<<< Updated upstream
-=======
       .amc-recommendations,
->>>>>>> Stashed changes
       .amc-sources {
         display: none !important;
       }
