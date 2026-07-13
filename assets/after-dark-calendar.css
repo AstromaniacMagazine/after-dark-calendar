@@ -37,6 +37,7 @@
       --good: #2f9e44;
       --ok: #d39a21;
       --bad: #d94a45;
+      --warning: #b95f1b;
       background:
         linear-gradient(180deg, rgba(255,255,255,.74), rgba(255,255,255,.2)),
         var(--bg);
@@ -79,6 +80,7 @@
       --good: #6fdc87;
       --ok: #f2c14e;
       --bad: #ff6b6b;
+      --warning: #ffad5c;
       background:
         radial-gradient(circle at 8% 14%, rgba(255,255,255,.14) 0 1px, transparent 1.5px),
         radial-gradient(circle at 74% 12%, rgba(255,255,255,.1) 0 1px, transparent 1.5px),
@@ -122,14 +124,14 @@
       aspect-ratio: 1;
       border-radius: 8px;
       display: block;
-      height: clamp(46px, 4.4vw, 58px);
+      height: clamp(42px, 3.9vw, 52px);
       object-fit: cover;
-      width: clamp(46px, 4.4vw, 58px);
+      width: clamp(42px, 3.9vw, 52px);
     }
 
     .amc-title {
       display: grid;
-      font-size: clamp(1.55rem, 2.6vw, 2.35rem);
+      font-size: clamp(1.35rem, 2.1vw, 2rem);
       font-weight: 500;
       letter-spacing: 0;
       line-height: 1;
@@ -139,7 +141,7 @@
 
     .amc-title span {
       color: var(--muted);
-      font-size: clamp(.78rem, 1vw, .9rem);
+      font-size: clamp(.72rem, .9vw, .82rem);
       font-weight: 400;
       letter-spacing: .01em;
       line-height: 1.3;
@@ -181,7 +183,11 @@
       text-align: right;
     }
 
-    .amc-sky-calendar.has-location .amc-location-prompt {
+    .amc-location-prompt.is-warning {
+      color: var(--warning);
+    }
+
+    .amc-sky-calendar.has-location .amc-location-prompt:not(.is-warning) {
       display: none;
     }
 
@@ -345,11 +351,22 @@
     .amc-month-strip {
       align-items: center;
       display: grid;
-      gap: 10px;
-      grid-template-columns: minmax(0, 1fr);
+      gap: clamp(18px, 3vw, 34px);
+      grid-template-columns: auto minmax(240px, 1fr);
       justify-self: center;
-      margin: 0 0 3px;
+      margin: 12px 0 0;
       width: 100%;
+    }
+
+    .amc-today-button {
+      height: 36px;
+      padding-inline: 13px;
+      white-space: nowrap;
+    }
+
+    .amc-today-button:disabled {
+      cursor: default;
+      opacity: .48;
     }
 
     .amc-month-nav {
@@ -455,14 +472,14 @@
       background: color-mix(in srgb, var(--panel) 88%, transparent);
       border: 1px solid var(--line);
       border-radius: 8px;
-      border-left: 5px solid var(--intel-colour, var(--accent));
+      border-left: 9px solid var(--intel-colour, var(--accent));
       box-shadow: 0 10px 24px color-mix(in srgb, var(--intel-colour, var(--accent)) 10%, transparent);
       display: grid;
       gap: 7px;
       grid-template-columns: 72px minmax(0, 1fr);
       min-height: 88px;
       overflow: hidden;
-      padding: 6px;
+      padding: 6px 7px 6px 8px;
     }
 
     .amc-intel-card:nth-child(1) { --intel-colour: var(--moon); }
@@ -511,10 +528,66 @@
       align-items: start;
       display: grid;
       gap: 16px;
+      grid-template-areas:
+        "calendar detail"
+        "recommendations detail";
       grid-template-columns: minmax(0, 1fr) minmax(270px, 300px);
     }
 
+    .amc-intel-strip,
+    .amc-layout {
+      will-change: transform, opacity;
+    }
+
+    .amc-sky-calendar.is-month-leaving .amc-intel-strip,
+    .amc-sky-calendar.is-month-leaving .amc-layout {
+      animation: amc-month-slide-out .16s ease both;
+    }
+
+    .amc-sky-calendar.is-month-entering .amc-intel-strip,
+    .amc-sky-calendar.is-month-entering .amc-layout {
+      animation: amc-month-slide-in .24s ease both;
+    }
+
+    .amc-sky-calendar.is-month-backward .amc-intel-strip,
+    .amc-sky-calendar.is-month-backward .amc-layout {
+      --month-slide-direction: -1;
+    }
+
+    .amc-sky-calendar.is-month-forward .amc-intel-strip,
+    .amc-sky-calendar.is-month-forward .amc-layout {
+      --month-slide-direction: 1;
+    }
+
+    @keyframes amc-month-slide-out {
+      to {
+        opacity: 0;
+        transform: translateX(calc(var(--month-slide-direction, 1) * -18px));
+      }
+    }
+
+    @keyframes amc-month-slide-in {
+      from {
+        opacity: 0;
+        transform: translateX(calc(var(--month-slide-direction, 1) * 18px));
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .amc-sky-calendar.is-month-leaving .amc-intel-strip,
+      .amc-sky-calendar.is-month-leaving .amc-layout,
+      .amc-sky-calendar.is-month-entering .amc-intel-strip,
+      .amc-sky-calendar.is-month-entering .amc-layout {
+        animation: none;
+      }
+    }
+
     .amc-calendar-wrap {
+      grid-area: calendar;
       min-width: 0;
     }
 
@@ -1013,6 +1086,10 @@
     .amc-cell-weather-list {
       display: grid;
       gap: 6px;
+      max-height: 464px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding-right: 3px;
     }
 
     .amc-cell-event {
@@ -1120,10 +1197,13 @@
     }
 
     .amc-detail {
+      align-self: stretch;
       background: color-mix(in srgb, var(--panel) 90%, transparent);
       border: 1px solid var(--line);
       border-radius: 14px;
       box-shadow: 0 14px 34px var(--shadow);
+      grid-area: detail;
+      height: 100%;
       min-width: 0;
       overflow: clip;
       position: sticky;
@@ -1135,6 +1215,9 @@
     }
 
     .amc-detail-body {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
       padding: 10px;
     }
 
@@ -1316,7 +1399,8 @@
       background: var(--panel-soft);
       border: 1px solid var(--line);
       border-radius: 7px;
-      margin-bottom: 10px;
+      margin-bottom: 0;
+      margin-top: auto;
       padding: 9px;
     }
 
@@ -1329,10 +1413,28 @@
       text-transform: uppercase;
     }
 
+    .amc-weather-title {
+      align-items: center;
+      display: flex;
+      gap: 8px;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      min-width: 0;
+    }
+
+    .amc-weather-title h3,
+    .amc-weather-title .amc-weather-updated {
+      margin: 0;
+    }
+
     .amc-weather-grid {
       display: grid;
       gap: 7px;
       grid-template-columns: 1fr;
+      max-height: 464px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding-right: 3px;
     }
 
     .amc-weather-more {
@@ -1388,6 +1490,7 @@
       line-height: 1;
       margin-top: 7px;
       text-transform: uppercase;
+      white-space: nowrap;
     }
 
     .amc-weather-card {
@@ -1642,14 +1745,29 @@
     .amc-recommendations {
       border-top: 1px solid var(--line);
       display: grid;
+      align-self: end;
       gap: 12px;
-      grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr);
-      margin-top: 16px;
+      grid-area: recommendations;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      margin-top: auto;
       padding-top: 12px;
     }
 
     .amc-recommendation-group {
+      border: 1px solid var(--line);
+      border-radius: 8px;
       min-width: 0;
+      padding: 10px;
+    }
+
+    .amc-recommendation-group:first-child {
+      background: color-mix(in srgb, var(--sky) 8%, var(--panel) 92%);
+      border-left: 5px solid var(--sky);
+    }
+
+    .amc-recommendation-group:last-child {
+      background: color-mix(in srgb, var(--panel-soft) 82%, var(--panel) 18%);
+      border-left: 5px solid var(--accent);
     }
 
     .amc-recommendation-group h3 {
@@ -1663,18 +1781,23 @@
 
     .amc-target-list {
       display: grid;
-      gap: 7px;
+      gap: 8px;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       margin: 0;
       padding: 0;
     }
 
+    .amc-target-list li {
     .amc-target-card {
       align-items: start;
       background: color-mix(in srgb, var(--panel-soft) 72%, transparent);
       border: 1px solid var(--line);
       border-radius: 7px;
       display: grid;
+      gap: 9px;
+      grid-template-columns: 76px minmax(0, 1fr);
+      list-style: none;
+      min-width: 0;
       gap: 8px;
       grid-template-columns: 52px minmax(0, 1fr);
       list-style: none;
@@ -1687,6 +1810,17 @@
       aspect-ratio: 1;
       border-radius: 6px;
       display: block;
+      height: 76px;
+      object-fit: cover;
+      width: 76px;
+    }
+
+    .amc-target-copy {
+      display: grid;
+      gap: 4px;
+      min-width: 0;
+    }
+
       height: 52px;
       object-fit: cover;
       width: 52px;
@@ -1710,6 +1844,9 @@
     .amc-target-type {
       color: var(--faint);
       display: block;
+      font-size: .56rem;
+      font-weight: 760;
+      letter-spacing: .07em;
       font-size: .59rem;
       font-weight: 760;
       letter-spacing: .06em;
@@ -1761,8 +1898,50 @@
 
     .amc-related-grid {
       display: grid;
-      gap: 7px;
+      gap: 4px;
       grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 2px;
+      min-width: 0;
+    }
+
+    .amc-target-facts span {
+      background: color-mix(in srgb, var(--panel) 72%, transparent);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+      padding: 5px 6px;
+    }
+
+    .amc-target-facts span:first-child {
+      grid-column: 1 / -1;
+    }
+
+    .amc-target-facts em {
+      color: var(--faint);
+      font-size: .5rem;
+      font-style: normal;
+      font-weight: 800;
+      letter-spacing: .06em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .amc-target-facts strong {
+      color: var(--text);
+      display: block;
+      font-size: .65rem;
+      font-weight: 700;
+      line-height: 1.08;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .amc-related-grid {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: 1fr;
     }
 
     .amc-article-promo {
@@ -1772,10 +1951,10 @@
       border-radius: 7px;
       color: var(--text);
       display: grid;
-      gap: 8px;
-      grid-template-columns: 70px minmax(0, 1fr);
+      gap: 9px;
+      grid-template-columns: 96px minmax(0, 1fr);
       min-width: 0;
-      padding: 7px;
+      padding: 8px;
       text-decoration: none;
     }
 
@@ -1783,9 +1962,9 @@
       aspect-ratio: 4 / 3;
       border-radius: 6px;
       display: block;
-      height: 52px;
+      height: 72px;
       object-fit: cover;
-      width: 70px;
+      width: 96px;
     }
 
     .amc-article-copy {
@@ -1862,7 +2041,7 @@
       border-top: 1px solid var(--line);
       display: grid;
       gap: 12px;
-      grid-template-columns: minmax(0, 1fr) auto auto;
+      grid-template-columns: minmax(0, 1fr) auto;
       margin-top: 14px;
       padding-top: 11px;
     }
@@ -1931,12 +2110,41 @@
       justify-self: end;
     }
 
-    .amc-version-note {
+    .amc-version-panel {
+      background: color-mix(in srgb, var(--panel-soft) 68%, transparent);
+      border: 1px solid var(--line);
+      border-radius: 8px;
       color: var(--faint);
       font-size: .68rem;
       font-weight: 650;
       line-height: 1.3;
-      text-align: right;
+      margin-top: 10px;
+      padding: 9px 10px;
+    }
+
+    .amc-version-panel h3 {
+      color: var(--muted);
+      font-size: .72rem;
+      font-weight: 760;
+      letter-spacing: .08em;
+      line-height: 1;
+      margin: 0 0 7px;
+      text-transform: uppercase;
+    }
+
+    .amc-version-list {
+      display: grid;
+      gap: 5px;
+      margin: 8px 0 0;
+      padding: 0;
+    }
+
+    .amc-version-list li {
+      list-style: none;
+    }
+
+    .amc-version-list b {
+      color: var(--muted);
     }
 
     .amc-print-brand {
@@ -1964,7 +2172,7 @@
       .amc-month-strip {
         grid-column: 1 / -1;
         justify-self: center;
-        width: min(100%, 340px);
+        width: min(100%, 430px);
       }
 
       .amc-actions {
@@ -1973,11 +2181,24 @@
       }
 
       .amc-layout {
+        grid-template-areas:
+          "calendar"
+          "recommendations"
+          "detail";
         grid-template-columns: 1fr;
       }
 
       .amc-detail {
+        align-self: start;
         position: static;
+      }
+
+      .amc-detail-body {
+        height: auto;
+      }
+
+      .amc-weather {
+        margin-top: 0;
       }
     }
 
@@ -2044,11 +2265,8 @@
         justify-self: start;
       }
 
-      .amc-version-note {
-        text-align: left;
-      }
-
       .amc-recommendations {
+        grid-template-areas: none;
         grid-template-columns: 1fr;
       }
 
@@ -2349,6 +2567,7 @@
       .amc-reference-row,
       .amc-detail,
       .amc-mobile-planning,
+      .amc-recommendations,
       .amc-sources {
         display: none !important;
       }
