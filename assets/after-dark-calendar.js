@@ -248,11 +248,13 @@
       const primary = primaryEvent(events);
       const expanded = day === state.expandedDay;
       const css = eventMeta(primary).css;
-      const rowEnd = (state.month.firstDayOffset + day - 1) % 7 === 6;
+      const colIndex = (state.month.firstDayOffset + day - 1) % 7;
+      const rowEnd = colIndex === 6;
+      const rowTail = colIndex >= 5;
       const isToday = day === todayDay;
       const isNewMoon = isNewMoonDay(day);
       html.push(`
-        <button type="button" class="amc-day ${css}${rowEnd ? " is-row-end" : ""}${isToday ? " is-today" : ""}${isNewMoon ? " is-new-moon" : ""}" data-day="${day}" aria-expanded="${expanded}" aria-label="${isToday ? "Today, " : ""}${weekdayShort} ${day} ${monthTitle()}, ${moon.name}, ${moon.phase}% lit, astro night ${durationClock(nightInfo)}">
+        <button type="button" class="amc-day ${css}${rowEnd ? " is-row-end" : ""}${rowTail ? " is-row-tail" : ""}${isToday ? " is-today" : ""}${isNewMoon ? " is-new-moon" : ""}" data-day="${day}" aria-expanded="${expanded}" aria-label="${isToday ? "Today, " : ""}${weekdayShort} ${day} ${monthTitle()}, ${moon.name}, ${moon.phase}% lit, astro night ${durationClock(nightInfo)}">
           <span class="amc-date">
             <strong>${day}</strong>
             <span class="amc-date-badges">
@@ -400,20 +402,16 @@
 
   function targetCard(target) {
     return `<li class="amc-target-card">
-      <span class="amc-target-media">
-        <img src="${escapeHtml(target.image.src)}" alt="${escapeHtml(target.image.alt)}" loading="lazy" decoding="async" width="92" height="92">
-        <span class="amc-target-keyfacts">
-          <span><em>Max altitude</em><strong>${escapeHtml(target.altitude)}</strong></span>
-          <span><em>Moon brightness</em><strong>${escapeHtml(target.moon)}</strong></span>
-          <span><em>Apparent size</em><strong>${escapeHtml(target.size)}</strong></span>
-        </span>
-      </span>
+      <img src="${escapeHtml(target.image.src)}" alt="${escapeHtml(target.image.alt)}" loading="lazy" decoding="async" width="82" height="82">
       <span class="amc-target-copy">
         <span class="amc-target-type">${escapeHtml(target.type)}</span>
         <span class="amc-target-name">${escapeHtml(target.name)}</span>
-        <span class="amc-target-facts">
-          <span><em>Highest point</em><strong>${escapeHtml(target.best)}</strong></span>
-        </span>
+      </span>
+      <span class="amc-target-facts">
+        <span><em>Highest point</em><strong>${escapeHtml(target.best)}</strong></span>
+        <span><em>Max altitude</em><strong>${escapeHtml(target.altitude)}</strong></span>
+        <span><em>Moon brightness</em><strong>${escapeHtml(target.moon)}</strong></span>
+        <span><em>Apparent size</em><strong>${escapeHtml(target.size)}</strong></span>
       </span>
     </li>`;
   }
