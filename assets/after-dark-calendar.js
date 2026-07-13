@@ -449,12 +449,13 @@
       }
 
       function recommendationsPanel(day, events, moon) {
-        const targets = tonightBest(day, events, moon);
+        const targets = tonightTargets(day, events, moon);
         const articles = recommendedArticles(day, events, moon);
         return `
           <div class="amc-recommendation-group">
             <h3>Tonight point your camera to:</h3>
             <ol class="amc-target-list">${targets.map(target => targetItem(target, day, moon)).join("")}</ol>
+            <ol class="amc-target-list">${targets.map(target => targetCard(target, day, moon)).join("")}</ol>
           </div>
           <div class="amc-recommendation-group">
             <h3>Related Articles</h3>
@@ -800,6 +801,18 @@
           <div class="amc-weather-grid">
             ${weatherForecast.map(day => weatherCard(day)).join("")}
           </div>
+        const visibleDays = weatherForecast.slice(0, 3);
+        const hiddenDays = weatherForecast.slice(3, 7);
+        return `<section class="amc-weather" aria-label="Local 7-night observing forecast">
+          <h3>7-Night Forecast</h3>
+          <div class="amc-weather-grid">
+            ${visibleDays.map(day => weatherCard(day)).join("")}
+          </div>
+          ${hiddenDays.length ? `<details class="amc-weather-more">
+            <summary>Show next ${hiddenDays.length} nights</summary>
+            <div class="amc-weather-grid">${hiddenDays.map(day => weatherCard(day)).join("")}</div>
+          </details>` : ""}
+          ${weatherUpdatedLine()}
         </section>`;
       }
 
@@ -817,7 +830,9 @@
           <b>7-Night Forecast</b>
           <span class="amc-cell-weather-list">
             ${weatherForecast.map(day => weatherCard(day, true)).join("")}
+            ${weatherForecast.slice(0, 3).map(day => weatherCard(day, true)).join("")}
           </span>
+          ${weatherForecast.length > 3 ? `<span class="amc-weather-note">${weatherForecast.length - 3} more nights are kept in the live forecast feed.</span>` : ""}
           ${weatherUpdatedLine()}
         </span>`;
       }
@@ -964,6 +979,76 @@
         const seen = new Set();
         return items.filter(item => {
           const key = String(item || "").trim().toLowerCase();
+      function tonightTargets(day, events, moon) {
+        const eventTargets = uniqueTargets(eventTargetCandidates(events))
+          .map(name => targetDetails(name, day, moon));
+        const candidates = targetCandidates(day, events, moon);
+        const ranked = uniqueTargets(candidates)
+          .map(name => targetDetails(name, day, moon))
+          .sort((a, b) => b.score - a.score);
+        return uniqueTargetDetails([...eventTargets, ...ranked]).slice(0, 3);
+      }
+
+      function targetCandidates(day, events, moon) {
+        const names = eventTargetCandidates(events);
+        if (moon.phase < 12) {
+          names.push("Milky Way core", "Lagoon Nebula (M8)", "Trifid Nebula (M20)", "Pleiades (M45)");
+        } else if (moon.phase < 30) {
+          names.push("Crescent Moon", "Milky Way fields", "Lagoon Nebula (M8)", "Saturn");
+        } else if (moon.phase < 70) {
+          names.push("Lunar terminator", "Saturn", "Pleiades (M45)", "Bright clusters");
+        } else {
+          names.push("Lunar disc", "Moonrise", "Saturn", "Pleiades (M45)");
+        }
+
+        return names;
+      }
+
+      function eventTargetCandidates(events) {
+        const names = [];
+        events.forEach(item => {
+          const text = `${item.title || ""} ${item.copy || ""}`.toLowerCase();
+          if (item.type === "meteor" || /aquariid|capricornid|meteor/.test(text)) names.push(item.title);
+          if (/pleiades|matariki/.test(text)) names.push("Pleiades (M45)");
+          if (/milky way/.test(text)) names.push("Milky Way core");
+          if (/comet|tempel/.test(text)) names.push("Comet 10P/Tempel 2");
+          if (/antares/.test(text)) names.push("Antares occultation");
+          if (/mars|uranus/.test(text)) names.push("Mars-Uranus pairing");
+          if (/venus/.test(text)) names.push("Moon-Venus pairing");
+          if (/saturn|pluto|opposition|ring/.test(text)) names.push(item.title);
+          if (item.type === "moon" && !/new moon/i.test(text)) names.push(item.title);
+        });
+        return names;
+      }
+
+      function uniqueTargets(names) {
+        const seen = new Set();
+        return names.filter(name => {
+          const key = targetMeta(name).name.toLowerCase();
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      }
+
+      function targetDetails(name, day, moon) {
+        const meta = targetMeta(name);
+        const observing = targetObservingInfo(meta, day);
+        const interference = moonInterference(meta, moon);
+        const difficulty = targetDifficulty(meta, observing, moon);
+        return {
+          ...meta,
+          observing,
+          interference,
+          difficulty,
+          score: targetScore(meta, observing, moon)
+        };
+      }
+
+      function uniqueTargetDetails(targets) {
+        const seen = new Set();
+        return targets.filter(target => {
+          const key = String(target?.name || "").toLowerCase();
           if (!key || seen.has(key)) return false;
           seen.add(key);
           return true;
@@ -991,6 +1076,57 @@
               <span><em>Max altitude</em><strong>${escapeHtml(details.maxAltitude)}</strong></span>
               <span><em>Moon brightness</em><strong>${escapeHtml(details.moonBrightness)}</strong></span>
               <span><em>Apparent size</em><strong>${escapeHtml(details.apparentSize)}</strong></span>
+
+      function targetMeta(name) {
+        const text = String(name || "").toLowerCase();
+        const catalogue = [
+          { match: /lagoon|m8/, name: "Lagoon Nebula (M8)", type: "Emission nebula", ra: 18.06, dec: -24.38, size: "90 x 40 arcmin", surface: "bright", baseDifficulty: 2 },
+          { match: /trifid|m20/, name: "Trifid Nebula (M20)", type: "Nebula", ra: 18.05, dec: -23.03, size: "28 arcmin", surface: "medium", baseDifficulty: 3 },
+          { match: /milky way core/, name: "Milky Way core", type: "Wide-field", ra: 17.75, dec: -29.0, size: "wide-field", surface: "medium", baseDifficulty: 3 },
+          { match: /milky way fields/, name: "Milky Way fields", type: "Wide-field", ra: 19.0, dec: -5.0, size: "wide-field", surface: "medium", baseDifficulty: 2 },
+          { match: /pleiades|m45|matariki/, name: "Pleiades (M45)", type: "Open cluster", ra: 3.79, dec: 24.12, size: "110 arcmin", surface: "bright", baseDifficulty: 1 },
+          { match: /bright clusters|cluster/, name: "Bright clusters", type: "Star clusters", ra: 20.5, dec: 40.0, size: "varies", surface: "bright", baseDifficulty: 1 },
+          { match: /delta aquariid|aquariids/, name: "Delta Aquariids", type: "Meteor radiant", ra: 22.67, dec: -16.0, size: "wide radiant", surface: "bright meteors", baseDifficulty: 3 },
+          { match: /alpha capricornid|capricornids/, name: "Alpha Capricornids", type: "Meteor radiant", ra: 20.47, dec: -10.0, size: "wide radiant", surface: "bright meteors", baseDifficulty: 3 },
+          { match: /saturn/, name: "Saturn", type: "Planet", body: "Saturn", size: "~18 arcsec", surface: "bright", baseDifficulty: 2 },
+          { match: /pluto/, name: "Pluto", type: "Dwarf planet", body: "Pluto", size: "~0.1 arcsec", surface: "very faint", baseDifficulty: 5 },
+          { match: /mars.*uranus|uranus/, name: "Mars-Uranus pairing", type: "Planet pairing", body: "Mars", size: "arcsec scale", surface: "bright/faint pair", baseDifficulty: 3 },
+          { match: /venus/, name: "Moon-Venus pairing", type: "Twilight pairing", body: "Venus", size: "arcsec scale", surface: "bright", baseDifficulty: 2 },
+          { match: /antares/, name: "Antares occultation", type: "Occultation", ra: 16.49, dec: -26.43, size: "point source", surface: "bright", baseDifficulty: 3 },
+          { match: /comet|tempel/, name: "Comet 10P/Tempel 2", type: "Comet", size: "variable coma", surface: "faint", baseDifficulty: 4 },
+          { match: /moon|lunar|crater|terminator|crescent|gibbous|full|quarter|moonrise/, name: lunarTargetName(name), type: "Moon", body: "Moon", size: "~30 arcmin", surface: "very bright", baseDifficulty: 1 }
+        ];
+        return catalogue.find(item => item.match.test(text)) || {
+          name: String(name || "Night sky target"),
+          type: "Sky target",
+          size: "varies",
+          surface: "varies",
+          baseDifficulty: 3
+        };
+      }
+
+      function lunarTargetName(name) {
+        const text = String(name || "").toLowerCase();
+        if (/moonrise/.test(text)) return "Moonrise";
+        if (/terminator|quarter|crater/.test(text)) return "Lunar terminator";
+        if (/crescent/.test(text)) return "Crescent Moon";
+        if (/full/.test(text)) return "Full Moon";
+        return "Lunar disc";
+      }
+
+      function targetCard(target, day, moon) {
+        const thumbnail = targetThumbnail(target, day);
+        return `<li class="amc-target-card">
+          <img src="${escapeHtml(thumbnail.src)}" alt="${escapeHtml(thumbnail.alt)}" loading="lazy" decoding="async" width="52" height="52">
+          <span class="amc-target-copy">
+            <b class="amc-target-name">${escapeHtml(target.name)}</b>
+            <span class="amc-target-type">${escapeHtml(target.type)}</span>
+            <span class="amc-target-facts">
+              <span><em>Best</em><strong>${escapeHtml(target.observing.window)}</strong></span>
+              <span><em>Max alt</em><strong>${escapeHtml(target.observing.altitude)}</strong></span>
+              <span><em>Moon</em><strong>${escapeHtml(target.interference)}</strong></span>
+              <span><em>Size</em><strong>${escapeHtml(target.size)}</strong></span>
+              <span><em>Difficulty</em><strong>${escapeHtml(target.difficulty)}</strong></span>
             </span>
           </span>
         </li>`;
@@ -1062,6 +1198,16 @@
         }
         const Astronomy = window.Astronomy;
         if (!Astronomy) return { peakTime: "Unavailable", maxAltitude: "Unavailable" };
+      function targetObservingInfo(meta, day) {
+        if (!hasLocation || !Number.isFinite(currentLat) || !Number.isFinite(currentLon)) {
+          return { window: useCurrentLocationText, altitude: useCurrentLocationText, maxAltitude: null, darkWindow: null };
+        }
+        if (!meta.body && (!Number.isFinite(meta.ra) || !Number.isFinite(meta.dec))) {
+          return { window: "Check ephemeris", altitude: "n/a", maxAltitude: null, darkWindow: null };
+        }
+        const Astronomy = window.Astronomy;
+        if (!Astronomy) return { window: "Unavailable", altitude: "Unavailable", maxAltitude: null, darkWindow: null };
+
         try {
           const observer = new Astronomy.Observer(currentLat, currentLon, 0);
           const start = zonedDate(MONTH.year, MONTH.monthIndex, day, 18, 0, 0);
@@ -1095,6 +1241,94 @@
         const wikimedia = wikimediaTargetThumbnail(text);
         if (wikimedia) return wikimedia;
         return { src: media.milkyWay?.src || moonImage(day, 216), alt: `${target} thumbnail` };
+          const samples = [];
+          for (let step = 0; step <= 48; step += 1) {
+            const sample = new Date(start.getTime() + (step / 48) * durationMs);
+            const altitude = targetAltitude(meta, sample, observer);
+            const sunAltitude = bodyAltitude(Astronomy.Body.Sun, sample, observer);
+            samples.push({ date: sample, altitude, darkEnough: sunAltitude <= -12 });
+          }
+          const maxSample = samples.reduce((best, sample) => sample.altitude > best.altitude ? sample : best, samples[0]);
+          if (!maxSample || !Number.isFinite(maxSample.altitude)) {
+            return { window: "Unavailable", altitude: "Unavailable", maxAltitude: null, darkWindow: null };
+          }
+          if (maxSample.altitude < 0) {
+            return { window: "Below horizon", altitude: "Below horizon", maxAltitude: maxSample.altitude, darkWindow: false };
+          }
+          const minimumAltitude = meta.type === "Moon" || /planet|meteor/i.test(meta.type) ? 8 : 18;
+          const usable = samples.filter(sample => sample.altitude >= minimumAltitude && sample.darkEnough);
+          const visible = usable.length ? usable : samples.filter(sample => sample.altitude >= minimumAltitude);
+          const best = (visible.length ? visible : samples).reduce((top, sample) => sample.altitude > top.altitude ? sample : top, maxSample);
+          return {
+            window: targetWindow(best.date, start, end),
+            altitude: `${Math.round(maxSample.altitude)}°`,
+            maxAltitude: maxSample.altitude,
+            darkWindow: Boolean(best.darkEnough)
+          };
+        } catch {
+          return { window: "Unavailable", altitude: "Unavailable", maxAltitude: null, darkWindow: null };
+        }
+      }
+
+      function targetAltitude(meta, sample, observer) {
+        const Astronomy = window.Astronomy;
+        if (meta.body && Astronomy.Body[meta.body]) return bodyAltitude(Astronomy.Body[meta.body], sample, observer);
+        return Astronomy.Horizon(sample, observer, meta.ra, meta.dec, "normal").altitude;
+      }
+
+      function targetWindow(bestDate, start, end) {
+        const from = new Date(Math.max(start.getTime(), bestDate.getTime() - 60 * 60000));
+        const to = new Date(Math.min(end.getTime(), bestDate.getTime() + 60 * 60000));
+        return `${formatTimeValue(from)}-${formatTimeValue(to)}`;
+      }
+
+      function moonInterference(meta, moon) {
+        if (meta.type === "Moon" || meta.body === "Moon") return "target";
+        if (/Planet|pairing|Occultation/.test(meta.type)) return moon.phase > 80 ? "moderate" : "low";
+        if (/Meteor/.test(meta.type)) return moon.phase > 70 ? "high" : moon.phase > 35 ? "moderate" : "low";
+        if (moon.phase < 15) return "low";
+        if (moon.phase < 45) return "moderate";
+        return "high";
+      }
+
+      function targetDifficulty(meta, observing, moon) {
+        let score = Number(meta.baseDifficulty || 3);
+        if (Number.isFinite(observing.maxAltitude) && observing.maxAltitude < 25) score += 1;
+        if (!/Moon|Planet|pairing|Occultation/.test(meta.type) && moon.phase > 45) score += 1;
+        if (/very faint/.test(meta.surface || "")) score += 1;
+        if (score <= 1) return "Easy";
+        if (score === 2) return "Easy-moderate";
+        if (score === 3) return "Moderate";
+        if (score === 4) return "Hard";
+        return "Very hard";
+      }
+
+      function targetScore(meta, observing, moon) {
+        let score = 100 - Number(meta.baseDifficulty || 3) * 7;
+        if (Number.isFinite(observing.maxAltitude)) score += clamp(observing.maxAltitude, -20, 80);
+        if (!Number.isFinite(observing.maxAltitude)) score -= 12;
+        if (observing.maxAltitude !== null && observing.maxAltitude < 0) score -= 70;
+        if (/Moon/.test(meta.type)) score += moon.phase > 30 ? 22 : 6;
+        if (!/Moon|Planet|pairing|Occultation/.test(meta.type) && moon.phase < 20) score += 24;
+        if (!/Moon|Planet|pairing|Occultation/.test(meta.type) && moon.phase > 70) score -= 24;
+        if (!/Moon|Planet|pairing|Occultation/.test(meta.type) && observing.darkWindow === false) score -= 52;
+        if (/Meteor/.test(meta.type) && moon.phase > 70) score -= 18;
+        return score;
+      }
+
+      function targetThumbnail(target, day) {
+        const text = String(target?.name || target || "").toLowerCase();
+        if (/moon|crater|lunar|occultation/.test(text)) {
+          return { src: moonImage(day, 216), alt: `${target.name || target} Moon thumbnail` };
+        }
+        if (/lagoon|m8/.test(text) && media.lagoon?.src) return { src: media.lagoon.src, alt: "Lagoon Nebula thumbnail" };
+        if (/trifid|m20/.test(text) && media.trifid?.src) return { src: media.trifid.src, alt: "Trifid Nebula thumbnail" };
+        if (/comet/.test(text) && media.comet?.src) return { src: media.comet.src, alt: "Comet thumbnail" };
+        if (/pleiades|cluster/.test(text) && media.pleiades?.src) return { src: media.pleiades.src, alt: "Pleiades thumbnail" };
+        if (/aquariid|capricornid|meteor/.test(text) && media.meteor?.src) return { src: media.meteor.src, alt: "Meteor shower thumbnail" };
+        if (/saturn|pluto|mars|uranus|venus|planet/.test(text) && media.saturn?.src) return { src: media.saturn.src, alt: "Planet thumbnail" };
+        if (/milky way/.test(text) && media.milkyWay?.src) return { src: media.milkyWay.src, alt: "Milky Way thumbnail" };
+        return { src: media.milkyWay?.src || moonImage(day, 216), alt: `${target.name || target} thumbnail` };
       }
 
       function wikimediaTargetThumbnail(text) {

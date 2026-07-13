@@ -77,6 +77,7 @@
       label: "Open-Meteo Forecast API",
       url: "https://open-meteo.com/en/docs",
       note: "The local 7-night forecast uses Open-Meteo hourly cloud cover, humidity, temperature, precipitation probability, wind speed, WMO weather codes and location timezone."
+      note: "The local 3-day forecast uses Open-Meteo hourly cloud cover, humidity, temperature, precipitation probability, wind speed, WMO weather codes and location timezone."
     },
     openMeteoGeo: {
       label: "Open-Meteo Geocoding API",
