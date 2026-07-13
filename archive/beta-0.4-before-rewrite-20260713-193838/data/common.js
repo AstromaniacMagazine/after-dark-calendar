@@ -83,11 +83,6 @@
       url: "https://open-meteo.com/en/docs/geocoding-api",
       note: "Manual place-name search uses Open-Meteo geocoding for coordinates and timezone, then the calendar recalculates local astronomical timing and weather."
     },
-    bigDataCloud: {
-      label: "BigDataCloud Reverse Geocoding",
-      url: "https://www.bigdatacloud.com/free-api/free-reverse-geocode-to-city-api",
-      note: "Browser current-location names use BigDataCloud's free reverse geocoding endpoint; coordinates still come directly from the browser geolocation permission flow."
-    },
     targetSizes: {
       label: "NASA Messier catalogue and LCO angular-size guide",
       url: "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/",
@@ -160,18 +155,6 @@
       url: "https://www.astromaniacmagazine.com/reviews/zwo-am5n",
       image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/6795069bb508a23893983874/1737819803394/ZWO+AM5N.jpg?format=750w",
       kind: "Review"
-    },
-    artemis: {
-      title: "Artemis II Mission Report",
-      url: "https://www.astromaniacmagazine.com/artemis-ii-mission-report",
-      image: "",
-      kind: "Mission Report"
-    },
-    jamesWebb: {
-      title: "James Webb: Inside the Mission",
-      url: "https://www.astromaniacmagazine.com/james-webb-space-telescope-inside-the-mission",
-      image: "",
-      kind: "Mission Guide"
     }
   };
 
