@@ -14,6 +14,7 @@
       const locationResults = root.querySelector("#amc-location-results");
       const downloadPdfButton = root.querySelector("#amc-download-pdf");
       const locationLabel = root.querySelector("#amc-location-label");
+      const locationPrompt = root.querySelector("#amc-location-prompt");
       const weatherTooltip = root.querySelector("#amc-weather-tooltip");
       const brandLogo = root.querySelector(".amc-brand-logo");
       const printLogo = root.querySelector(".amc-print-logo");
@@ -58,6 +59,7 @@
       let exactMoon = {};
       let monthIntel = [];
       let eventData = {};
+      let targetData = {};
       let selectedDay = 1;
       let expandedDay = null;
       let nightData = {};
@@ -150,6 +152,7 @@
         exactMoon = data.exactMoon || {};
         monthIntel = data.monthIntel || [];
         eventData = data.eventData || {};
+        targetData = data.targetData || data.targets || {};
         root.dataset.month = activeMonthId;
       }
 
@@ -813,20 +816,14 @@
           </section>`;
         }
 
-<<<<<<< Updated upstream
-        return `<section class="amc-weather" aria-label="Local 3-day weather forecast">
-          <h3>3-Day Forecast</h3>
-=======
         return `<section class="amc-weather" aria-label="Local 7-night observing forecast">
           <span class="amc-weather-title">
             <h3>7-Night Forecast</h3>
             ${weatherUpdatedLine()}
           </span>
->>>>>>> Stashed changes
           <div class="amc-weather-grid">
             ${weatherForecast.map(day => weatherCard(day)).join("")}
           </div>
-          ${weatherUpdatedLine()}
         </section>`;
       }
 
@@ -940,28 +937,64 @@
       }
 
       function tonightBest(day, events, moon) {
-        const overrides = {
-          4: ["Mars-Uranus pairing", "Waning gibbous Moon", "Saturn"],
-          5: ["Carroll Crater", "Waning gibbous Moon", "Saturn"],
-          6: ["Waning gibbous Moon", "Saturn", "Bright clusters"],
-          7: ["Last Quarter Moon", "Saturn", "Bright clusters"],
-          10: ["Pleiades", "Waning crescent Moon", "Saturn"],
-          11: ["Moon-Mars-Saturn line-up", "Waning crescent Moon", "Saturn"],
-          12: ["Delta Aquariids", "Waning crescent Moon", "Saturn"],
-          13: ["Thin crescent Moon", "Delta Aquariids", "Saturn"],
-          14: ["Milky Way core", "Lagoon Nebula (M8)", "Trifid Nebula (M20)"],
-          15: ["Milky Way core", "Lagoon Nebula (M8)", "Comet 10P/Tempel 2"],
-          16: ["Crescent Moon", "Milky Way core", "Comet 10P/Tempel 2"],
-          17: ["Moon-Venus pairing", "Crescent Moon", "Milky Way fields"],
-          24: ["Antares occultation", "Waxing gibbous Moon", "Saturn"],
-          26: ["Saturn", "Waxing gibbous Moon", "Pluto"],
-          27: ["Pluto", "Saturn", "Waxing gibbous Moon"],
-          29: ["Full Moon", "Moonrise", "Saturn"],
-          30: ["Delta Aquariids", "Alpha Capricornids", "Full Moon"],
-          31: ["Saturn", "Waning gibbous Moon", "Bright clusters"]
-        };
+        if (Array.isArray(targetData[day]) && targetData[day].length) {
+          return fillTargets(targetData[day], moon);
+        }
+        const eventTargets = eventDrivenTargets(events);
+        if (eventTargets.length) return fillTargets(eventTargets, moon);
+        return phaseDrivenTargets(moon);
+      }
 
-        if (overrides[day]) return overrides[day];
+      function fillTargets(targets, moon) {
+        const seen = new Set();
+        const filled = [];
+        [...targets, ...phaseDrivenTargets(moon)].forEach(target => {
+          const key = String(target || "").trim().toLowerCase();
+          if (!key || seen.has(key) || filled.length >= 3) return;
+          seen.add(key);
+          filled.push(String(target).trim());
+        });
+        return filled;
+      }
+
+      function eventDrivenTargets(events) {
+        return uniqueText(events.map(targetFromEvent).filter(Boolean));
+      }
+
+      function targetFromEvent(item) {
+        const text = `${item?.title || ""} ${item?.copy || ""}`.toLowerCase();
+        if (/pleiades|m45|matariki/.test(text)) return "Pleiades (M45)";
+        if (/saturn/.test(text)) return "Saturn";
+        if (/venus/.test(text)) return "Venus";
+        if (/jupiter/.test(text)) return "Jupiter";
+        if (/mars/.test(text)) return "Mars";
+        if (/neptune/.test(text)) return "Neptune";
+        if (/mercury/.test(text)) return "Mercury";
+        if (/comet 10p|tempel/.test(text)) return "Comet 10P/Tempel 2";
+        if (/perseid|aquariid|capricornid|cygnid|aurigid|sextantid|meteor/.test(text)) return item.title;
+        if (/eclipse/.test(text)) return item.title;
+        if (/occultation/.test(text)) return item.title;
+        if (/messier 5|m5\b/.test(text)) return "Messier 5";
+        if (/messier 4|m4\b/.test(text)) return "Messier 4";
+        if (/messier 15|m15\b/.test(text)) return "Messier 15";
+        if (/messier 2|m2\b/.test(text)) return "Messier 2";
+        if (/ngc 55/.test(text)) return "NGC 55";
+        if (/47 tuc/.test(text)) return "47 Tucanae";
+        if (/moon|lunar|quarter|full moon|new moon/.test(text)) return item.title;
+        return "";
+      }
+
+      function uniqueText(items) {
+        const seen = new Set();
+        return items.filter(item => {
+          const key = String(item || "").trim().toLowerCase();
+          if (!key || seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      }
+
+      function phaseDrivenTargets(moon) {
         if (moon.phase < 10) return ["Milky Way core", "Lagoon Nebula (M8)", "Trifid Nebula (M20)"];
         if (moon.phase < 25) return ["Crescent Moon", "Milky Way fields", "Comet 10P/Tempel 2"];
         if (moon.phase < 60) return ["Lunar terminator", "Saturn", "Bright clusters"];
@@ -969,13 +1002,6 @@
         return ["Moonrise", "Lunar disc", "Saturn"];
       }
 
-<<<<<<< Updated upstream
-      function targetItem(target, day) {
-        const thumbnail = targetThumbnail(target, day);
-        return `<li>
-          <img src="${escapeHtml(thumbnail.src)}" alt="${escapeHtml(thumbnail.alt)}" loading="lazy" decoding="async" width="46" height="46">
-          <span>${escapeHtml(target)}</span>
-=======
       function targetItem(target, day, moon) {
         const details = targetDetails(target, day, moon);
         const thumbnail = targetThumbnail(details.name, day);
@@ -991,7 +1017,6 @@
               <span><em>Apparent size</em><strong>${escapeHtml(details.apparentSize)}</strong></span>
             </span>
           </span>
->>>>>>> Stashed changes
         </li>`;
       }
 
@@ -1091,21 +1116,8 @@
 
       function targetThumbnail(target, day) {
         const text = String(target || "").toLowerCase();
-<<<<<<< Updated upstream
-        if (/moon|crater|lunar|occultation/.test(text)) {
-          return { src: moonImage(day, 216), alt: `${target} Moon thumbnail` };
-        }
-        if (/lagoon|m8/.test(text) && media.lagoon?.src) return { src: media.lagoon.src, alt: "Lagoon Nebula thumbnail" };
-        if (/trifid|m20/.test(text) && media.trifid?.src) return { src: media.trifid.src, alt: "Trifid Nebula thumbnail" };
-        if (/comet/.test(text) && media.comet?.src) return { src: media.comet.src, alt: "Comet thumbnail" };
-        if (/pleiades|cluster/.test(text) && media.pleiades?.src) return { src: media.pleiades.src, alt: "Pleiades thumbnail" };
-        if (/aquariid|capricornid|meteor/.test(text) && media.meteor?.src) return { src: media.meteor.src, alt: "Meteor shower thumbnail" };
-        if (/saturn|pluto|mars|uranus|venus|planet/.test(text) && media.saturn?.src) return { src: media.saturn.src, alt: "Planet thumbnail" };
-        if (/milky way/.test(text) && media.milkyWay?.src) return { src: media.milkyWay.src, alt: "Milky Way thumbnail" };
-=======
         const wikimedia = wikimediaTargetThumbnail(text);
         if (wikimedia) return wikimedia;
->>>>>>> Stashed changes
         return { src: media.milkyWay?.src || moonImage(day, 216), alt: `${target} thumbnail` };
       }
 
@@ -1136,7 +1148,7 @@
         const image = article?.image || media.milkyWay?.src || "";
         const label = article?.kind || "Article";
         return `<a class="amc-article-promo" href="${escapeHtml(article.url)}" target="_blank" rel="noopener">
-          <img src="${escapeHtml(image)}" alt="" loading="lazy" decoding="async" width="70" height="52">
+          <img src="${escapeHtml(image)}" alt="" loading="lazy" decoding="async" width="96" height="72">
           <span class="amc-article-copy">
             <small>${escapeHtml(label)}</small>
             <b>${escapeHtml(article.title)}</b>
@@ -1451,6 +1463,7 @@
         if (!navigator.geolocation) {
           useLocationButton.textContent = "Unavailable";
           locationLabel.textContent = "Location unavailable";
+          setLocationPrompt("Current location is not available in this browser. Search for a city instead.", true);
           window.setTimeout(() => {
             useLocationButton.textContent = useCurrentLocationText;
           }, 2200);
@@ -1459,6 +1472,7 @@
 
         if (!window.isSecureContext && !["localhost", "127.0.0.1"].includes(window.location.hostname)) {
           locationLabel.textContent = "HTTPS required for current location";
+          setLocationPrompt("Current location only works on HTTPS. GitHub Pages is fine once the site is published.", true);
           useLocationButton.textContent = useCurrentLocationText;
           return;
         }
@@ -1473,6 +1487,7 @@
         useLocationButton.disabled = true;
         useLocationButton.textContent = "Locating";
         locationLabel.textContent = "Finding location";
+        setLocationPrompt("Your browser may ask for location permission.", false);
         navigator.geolocation.getCurrentPosition(
           position => {
             const lat = position.coords.latitude;
@@ -1484,20 +1499,20 @@
           error => {
             useLocationButton.disabled = false;
             if (error?.code === error.PERMISSION_DENIED) {
-<<<<<<< Updated upstream
-              locationLabel.textContent = "Location permission denied";
-=======
               showLocationPermissionDenied();
->>>>>>> Stashed changes
             } else if (error?.code === error.POSITION_UNAVAILABLE) {
               locationLabel.textContent = "Current location unavailable";
+              setLocationPrompt("Your device could not provide a location. Search for a city below.", true);
             } else {
               locationLabel.textContent = "Current location timed out";
+              setLocationPrompt("Current location timed out. Try again, or search for a city below.", true);
             }
             useLocationButton.textContent = useCurrentLocationText;
-            window.setTimeout(() => {
-              updateLocationLabel();
-            }, 2200);
+            if (hasLocation) {
+              window.setTimeout(() => {
+                updateLocationLabel();
+              }, 2600);
+            }
           },
           { enableHighAccuracy: false, timeout: 8000, maximumAge: 3600000 }
         );
@@ -1705,10 +1720,7 @@
         hasLocation = true;
         saveLocation(lat, lon, locationName);
         root.classList.add("has-location");
-<<<<<<< Updated upstream
-=======
         setLocationPrompt("Local timing and forecast are using your saved location.", false);
->>>>>>> Stashed changes
         updateLocationLabel();
         renderCalendar();
         renderSelectedDay();
@@ -1840,6 +1852,12 @@
         } catch {
           return false;
         }
+      }
+
+      function setLocationPrompt(message, isWarning = false) {
+        if (!locationPrompt) return;
+        locationPrompt.textContent = message;
+        locationPrompt.classList.toggle("is-warning", Boolean(isWarning));
       }
 
       function updateLocationLabel() {
