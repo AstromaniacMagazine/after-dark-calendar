@@ -264,12 +264,15 @@
       const expanded = day === state.expandedDay;
       const css = eventMeta(primary).css;
       const colIndex = (state.month.firstDayOffset + day - 1) % 7;
+      const rowIndex = Math.floor((state.month.firstDayOffset + day - 1) / 7);
+      const totalRows = Math.ceil((state.month.firstDayOffset + state.month.days) / 7);
       const rowEnd = colIndex === 6;
       const rowTail = colIndex >= 5;
+      const rowBottom = rowIndex === totalRows - 1;
       const isToday = day === todayDay;
       const isNewMoon = isNewMoonDay(day);
       html.push(`
-        <button type="button" class="amc-day ${css}${rowEnd ? " is-row-end" : ""}${rowTail ? " is-row-tail" : ""}${isToday ? " is-today" : ""}${isNewMoon ? " is-new-moon" : ""}" data-day="${day}" aria-expanded="${expanded}" aria-label="${isToday ? "Today, " : ""}${weekdayShort} ${day} ${monthTitle()}, ${moon.name}, ${moon.phase}% lit, astro night ${durationClock(nightInfo)}">
+        <button type="button" class="amc-day ${css}${rowEnd ? " is-row-end" : ""}${rowTail ? " is-row-tail" : ""}${rowBottom ? " is-row-bottom" : ""}${isToday ? " is-today" : ""}${isNewMoon ? " is-new-moon" : ""}" data-day="${day}" aria-expanded="${expanded}" aria-label="${isToday ? "Today, " : ""}${weekdayShort} ${day} ${monthTitle()}, ${moon.name}, ${moon.phase}% lit, astro night ${durationClock(nightInfo)}">
           <span class="amc-date">
             <strong>${day}</strong>
             <span class="amc-date-badges">

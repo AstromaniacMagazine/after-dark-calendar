@@ -740,14 +740,14 @@ body {
   border-radius: 8px;
   box-shadow: 0 24px 54px rgba(22, 25, 29, .26);
   display: grid;
-  gap: 8px;
-  height: calc(300% + (var(--grid-gap) * 2));
+  gap: 6px;
+  height: calc(200% + var(--grid-gap));
   left: 0;
   overflow: hidden;
-  padding: 10px;
+  padding: 8px;
   position: absolute;
   top: 0;
-  width: calc(300% + (var(--grid-gap) * 2));
+  width: calc(200% + var(--grid-gap));
   z-index: 60;
 }
 
@@ -756,32 +756,39 @@ body {
   right: 0;
 }
 
+.amc-day.is-row-bottom[aria-expanded="true"] .amc-expanded {
+  bottom: 0;
+  top: auto;
+}
+
 .amc-expanded-top {
   align-items: start;
   display: grid;
-  gap: 8px;
+  gap: 6px;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  padding-right: 30px;
+  min-height: 0;
+  padding-right: 28px;
 }
 
 .amc-expanded-identity {
   align-items: center;
   display: grid;
-  gap: 8px;
-  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 7px;
+  grid-template-columns: 40px minmax(0, 1fr);
+  min-width: 0;
 }
 
 .amc-expanded-identity img {
   aspect-ratio: 1;
   border-radius: 50%;
-  height: 44px;
+  height: 40px;
   object-fit: cover;
-  width: 44px;
+  width: 40px;
 }
 
 .amc-expanded-identity strong {
   display: block;
-  font-size: .88rem;
+  font-size: .8rem;
   font-weight: 760;
   line-height: 1.05;
 }
@@ -790,9 +797,12 @@ body {
 .amc-expanded-night {
   color: var(--muted);
   display: block;
-  font-size: .8rem;
+  font-size: .73rem;
   font-weight: 720;
   line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .amc-minimise {
@@ -817,11 +827,11 @@ body {
   border: 1px solid color-mix(in srgb, currentColor 34%, transparent);
   border-radius: 8px;
   display: grid;
-  font-size: .82rem;
+  font-size: .76rem;
   font-weight: 760;
   line-height: 1.12;
-  min-height: 56px;
-  padding: 9px;
+  min-height: 46px;
+  padding: 7px;
 }
 
 .amc-expanded-title.is-empty {
@@ -830,7 +840,7 @@ body {
 
 .amc-mini-grid {
   display: grid;
-  gap: 7px;
+  gap: 5px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -840,27 +850,35 @@ body {
   border: 1px solid var(--line);
   border-radius: 7px;
   display: grid;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
-  min-height: 50px;
-  padding: 8px;
+  min-height: 43px;
+  padding: 6px;
 }
 
 .amc-mini {
   align-items: center;
-  grid-template-columns: 25px minmax(0, 1fr);
+  grid-template-columns: 23px minmax(0, 1fr);
 }
 
 .amc-mini svg {
   color: var(--accent);
-  height: 23px;
-  width: 23px;
+  height: 21px;
+  width: 21px;
+}
+
+.amc-mini > span,
+.amc-zodiac-card > span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
 }
 
 .amc-mini small,
 .amc-zodiac-card small {
   color: var(--muted);
-  font-size: .56rem;
+  display: block;
+  font-size: .53rem;
   font-weight: 820;
   line-height: 1;
   min-width: 0;
@@ -872,9 +890,10 @@ body {
 
 .amc-mini b,
 .amc-zodiac-card b {
-  font-size: .82rem;
+  display: block;
+  font-size: .76rem;
   font-weight: 760;
-  line-height: 1.08;
+  line-height: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -883,12 +902,12 @@ body {
 
 .amc-zodiac-card {
   align-content: center;
-  grid-template-columns: 30px minmax(0, 1fr);
+  grid-template-columns: 25px minmax(0, 1fr);
 }
 
 .amc-zodiac-card em {
   color: var(--accent);
-  font-size: 1.55rem;
+  font-size: 1.3rem;
   font-style: normal;
   line-height: 1;
 }
@@ -1496,7 +1515,7 @@ body {
   }
 
   .amc-day[aria-expanded="true"] .amc-expanded {
-    width: calc(300% + (var(--grid-gap) * 2));
+    width: calc(200% + var(--grid-gap));
   }
 
   .amc-day.is-row-tail[aria-expanded="true"] .amc-expanded {
