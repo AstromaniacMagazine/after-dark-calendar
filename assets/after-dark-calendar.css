@@ -98,6 +98,31 @@ body {
   outline-offset: 3px;
 }
 
+.amc-calendar-wrap,
+.amc-detail,
+.amc-recommendations,
+.amc-intel-strip {
+  will-change: opacity, transform;
+}
+
+.amc-sky-calendar.is-month-entering .amc-calendar-wrap,
+.amc-sky-calendar.is-month-entering .amc-detail,
+.amc-sky-calendar.is-month-entering .amc-recommendations,
+.amc-sky-calendar.is-month-entering .amc-intel-strip {
+  animation: amc-month-shunt .3s cubic-bezier(.22, .72, .2, 1) both;
+}
+
+@keyframes amc-month-shunt {
+  from {
+    opacity: .18;
+    transform: translateX(var(--month-shift, 18px));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 .amc-top {
   align-items: start;
   display: grid;
@@ -148,6 +173,7 @@ body {
   display: grid;
   gap: clamp(16px, 2.6vw, 30px);
   grid-template-columns: auto minmax(0, 1fr);
+  margin-top: 47px;
   justify-self: center;
   width: 100%;
 }
@@ -539,14 +565,14 @@ body {
 .amc-grid {
   display: grid;
   gap: var(--grid-gap);
-  grid-auto-rows: 130px;
+  grid-auto-rows: 134px;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   min-width: 0;
   position: relative;
 }
 
 .amc-empty {
-  min-height: 130px;
+  min-height: 134px;
 }
 
 .amc-day {
@@ -559,7 +585,8 @@ body {
   cursor: pointer;
   display: grid;
   font: inherit;
-  gap: 5px;
+  align-content: start;
+  gap: 4px;
   min-width: 0;
   overflow: hidden;
   padding: 7px 7px 8px;
@@ -640,6 +667,7 @@ body {
   display: grid;
   gap: 6px;
   grid-template-columns: 42px minmax(0, 1fr);
+  margin-top: -2px;
   min-width: 0;
 }
 
@@ -689,8 +717,8 @@ body {
 }
 
 .amc-tags .amc-tag {
-  font-size: .5rem;
-  padding: 4px 5px;
+  font-size: .55rem;
+  padding: 4px 6px;
 }
 
 .amc-day.moon { --event-colour: var(--moon); }
@@ -712,14 +740,14 @@ body {
   border-radius: 8px;
   box-shadow: 0 24px 54px rgba(22, 25, 29, .26);
   display: grid;
-  gap: 6px;
-  height: calc(200% + var(--grid-gap));
+  gap: 8px;
+  height: calc(300% + (var(--grid-gap) * 2));
   left: 0;
   overflow: hidden;
-  padding: 8px;
+  padding: 10px;
   position: absolute;
   top: 0;
-  width: calc(200% + var(--grid-gap));
+  width: calc(300% + (var(--grid-gap) * 2));
   z-index: 60;
 }
 
@@ -731,28 +759,29 @@ body {
 .amc-expanded-top {
   align-items: start;
   display: grid;
-  gap: 6px;
-  grid-template-columns: minmax(0, 1.15fr) minmax(118px, .85fr);
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  padding-right: 30px;
 }
 
 .amc-expanded-identity {
   align-items: center;
   display: grid;
-  gap: 6px;
-  grid-template-columns: 38px minmax(0, 1fr) auto;
+  gap: 8px;
+  grid-template-columns: 44px minmax(0, 1fr);
 }
 
 .amc-expanded-identity img {
   aspect-ratio: 1;
   border-radius: 50%;
-  height: 38px;
+  height: 44px;
   object-fit: cover;
-  width: 38px;
+  width: 44px;
 }
 
 .amc-expanded-identity strong {
   display: block;
-  font-size: .78rem;
+  font-size: .88rem;
   font-weight: 760;
   line-height: 1.05;
 }
@@ -761,7 +790,7 @@ body {
 .amc-expanded-night {
   color: var(--muted);
   display: block;
-  font-size: .72rem;
+  font-size: .8rem;
   font-weight: 720;
   line-height: 1.2;
 }
@@ -774,9 +803,12 @@ body {
   display: inline-flex;
   font-size: 1rem;
   font-weight: 760;
-  height: 22px;
+  height: 24px;
   justify-content: center;
-  width: 22px;
+  position: absolute;
+  right: 9px;
+  top: 9px;
+  width: 24px;
 }
 
 .amc-expanded-title {
@@ -785,11 +817,11 @@ body {
   border: 1px solid color-mix(in srgb, currentColor 34%, transparent);
   border-radius: 8px;
   display: grid;
-  font-size: .74rem;
+  font-size: .82rem;
   font-weight: 760;
   line-height: 1.12;
-  min-height: 40px;
-  padding: 6px;
+  min-height: 56px;
+  padding: 9px;
 }
 
 .amc-expanded-title.is-empty {
@@ -798,8 +830,8 @@ body {
 
 .amc-mini-grid {
   display: grid;
-  gap: 5px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .amc-mini,
@@ -808,25 +840,27 @@ body {
   border: 1px solid var(--line);
   border-radius: 7px;
   display: grid;
-  gap: 2px;
+  gap: 4px;
   min-width: 0;
-  padding: 5px;
+  min-height: 50px;
+  padding: 8px;
 }
 
 .amc-mini {
-  grid-template-columns: 19px minmax(0, 1fr);
+  align-items: center;
+  grid-template-columns: 25px minmax(0, 1fr);
 }
 
 .amc-mini svg {
   color: var(--accent);
-  height: 17px;
-  width: 17px;
+  height: 23px;
+  width: 23px;
 }
 
 .amc-mini small,
 .amc-zodiac-card small {
   color: var(--muted);
-  font-size: .5rem;
+  font-size: .56rem;
   font-weight: 820;
   line-height: 1;
   min-width: 0;
@@ -838,7 +872,7 @@ body {
 
 .amc-mini b,
 .amc-zodiac-card b {
-  font-size: .7rem;
+  font-size: .82rem;
   font-weight: 760;
   line-height: 1.08;
   min-width: 0;
@@ -849,12 +883,12 @@ body {
 
 .amc-zodiac-card {
   align-content: center;
-  grid-template-columns: 22px minmax(0, 1fr);
+  grid-template-columns: 30px minmax(0, 1fr);
 }
 
 .amc-zodiac-card em {
   color: var(--accent);
-  font-size: 1.2rem;
+  font-size: 1.55rem;
   font-style: normal;
   line-height: 1;
 }
@@ -1431,6 +1465,10 @@ body {
     justify-self: stretch;
   }
 
+  .amc-month-strip {
+    margin-top: 0;
+  }
+
   .amc-actions {
     justify-items: start;
   }
@@ -1467,6 +1505,63 @@ body {
   }
 }
 
+@media (max-width: 900px) {
+  .amc-top {
+    align-items: start;
+    grid-template-columns: minmax(0, 1fr) 40px;
+  }
+
+  .amc-brand-lockup {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .amc-actions {
+    display: contents;
+  }
+
+  .amc-icon-button {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .amc-location-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: auto;
+  }
+
+  .amc-location-status {
+    max-width: min(52vw, 220px);
+    width: auto;
+  }
+
+  .amc-manual-location {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-self: start;
+    max-width: 360px;
+    width: min(100%, 360px);
+  }
+
+  .amc-location-prompt {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    text-align: left;
+  }
+
+  .amc-month-strip {
+    gap: 8px;
+    grid-column: 1 / -1;
+    grid-row: 5;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+}
+
 @media (max-width: 760px) {
   .amc-preview-shell {
     padding: 0;
@@ -1478,8 +1573,21 @@ body {
     padding: 12px;
   }
 
+  .amc-top {
+    align-items: start;
+    grid-template-columns: minmax(0, 1fr) 40px;
+  }
+
+  .amc-brand-lockup {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
   .amc-month-strip {
-    grid-template-columns: 1fr;
+    gap: 8px;
+    grid-column: 1 / -1;
+    grid-row: 5;
+    grid-template-columns: auto minmax(0, 1fr);
   }
 
   .amc-month-nav {
@@ -1487,22 +1595,41 @@ body {
   }
 
   .amc-actions {
-    grid-template-columns: 1fr 40px;
+    display: contents;
   }
 
-  .amc-location-controls,
-  .amc-manual-location {
-    width: 100%;
+  .amc-icon-button {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
   }
 
   .amc-location-controls {
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: auto;
   }
 
   .amc-location-status {
-    max-width: none;
-    width: 100%;
+    max-width: min(52vw, 220px);
+    width: auto;
+  }
+
+  .amc-manual-location {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-self: start;
+    max-width: 360px;
+    width: min(100%, 360px);
+  }
+
+  .amc-location-prompt {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    text-align: left;
   }
 
   .amc-intel {
@@ -1560,11 +1687,30 @@ body {
   }
 
   .amc-expanded-top,
-  .amc-mini-grid,
   .amc-recommendations,
   .amc-target-list,
   .amc-source-list {
     grid-template-columns: 1fr;
+  }
+
+  .amc-expanded-top {
+    padding-right: 28px;
+  }
+
+  .amc-mini-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .amc-cell-mobile-extra .amc-alt-svg {
+    max-height: none;
+  }
+
+  .amc-cell-mobile-extra .amc-weather-row {
+    grid-template-columns: minmax(88px, .82fr) minmax(0, 1fr);
+  }
+
+  .amc-cell-mobile-extra .amc-cell-weather-row {
+    min-height: 162px;
   }
 
   .amc-cell-mobile-extra {
@@ -1617,6 +1763,15 @@ body {
   .amc-article-promo img {
     height: 48px;
     width: 64px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .amc-sky-calendar.is-month-entering .amc-calendar-wrap,
+  .amc-sky-calendar.is-month-entering .amc-detail,
+  .amc-sky-calendar.is-month-entering .amc-recommendations,
+  .amc-sky-calendar.is-month-entering .amc-intel-strip {
+    animation: none;
   }
 }
 

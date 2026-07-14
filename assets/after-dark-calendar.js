@@ -82,6 +82,7 @@
     locationMatches: [],
     locationSearchTimer: null,
     locationSearchId: 0,
+    monthTransitionTimer: null,
     monthPromises: Object.create(null)
   };
 
@@ -143,6 +144,7 @@
     state.sky = {};
     if (state.hasLocation) recalculateLocationData();
     renderAll();
+    animateMonthChange(options.direction || 0);
   }
 
   function setMonthData(data, fallbackId) {
@@ -194,6 +196,19 @@
     renderCalendar();
     renderDetail();
     renderRecommendations();
+  }
+
+  function animateMonthChange(direction) {
+    if (!direction) return;
+    if (state.monthTransitionTimer) window.clearTimeout(state.monthTransitionTimer);
+    root.style.setProperty("--month-shift", `${direction < 0 ? "-" : ""}18px`);
+    root.classList.remove("is-month-entering");
+    void root.offsetWidth;
+    root.classList.add("is-month-entering");
+    state.monthTransitionTimer = window.setTimeout(() => {
+      root.classList.remove("is-month-entering");
+      state.monthTransitionTimer = null;
+    }, 320);
   }
 
   function renderMonthHeader() {
@@ -477,9 +492,9 @@
 
   function moonAltitudeSvg(timeline, compact) {
     const maxAltitude = 60;
-    const chart = { x: compact ? 34 : 39, y: compact ? 16 : 22, width: compact ? 282 : 306, height: compact ? 78 : 164 };
+    const chart = { x: compact ? 34 : 39, y: compact ? 18 : 22, width: compact ? 282 : 306, height: compact ? 118 : 164 };
     const viewWidth = compact ? 332 : 360;
-    const viewHeight = compact ? 136 : 244;
+    const viewHeight = compact ? 190 : 244;
     const hours = Array.from({ length: 13 }, (_, i) => (18 + i) % 24);
     const yTicks = compact ? [0, 30, 60] : [0, 20, 40, 60];
     const bands = timeline.bands.map(band => {
@@ -884,7 +899,7 @@
 
   function goToAdjacentMonth(direction) {
     const entry = adjacentMonth(direction);
-    if (entry) showMonth(entry.id);
+    if (entry) showMonth(entry.id, { direction });
   }
 
   function goToToday() {
@@ -897,7 +912,7 @@
       renderAll();
       return;
     }
-    showMonth(todayId, { selectedDay: today.getDate() });
+    showMonth(todayId, { selectedDay: today.getDate(), direction: todayId < state.monthId ? -1 : 1 });
   }
 
   function updateTodayButton() {
