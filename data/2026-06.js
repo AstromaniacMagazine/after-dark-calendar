@@ -214,12 +214,12 @@
 
   const targetData = {
     8: ["Last Quarter Moon", "Lunar terminator", "Saturn"],
-    9: ["Venus and Jupiter", "Twilight planets", "Mercury"],
+    9: ["Venus and Jupiter", "Mercury", "Hercules Cluster (M13)"],
     12: ["Mercury", "Venus", "Jupiter"],
     15: ["Milky Way core", "Lagoon Nebula (M8)", "Trifid Nebula (M20)"],
-    17: ["Moon-Venus pairing", "Crescent Moon", "Twilight planets"],
+    17: ["Moon-Venus pairing", "Ring Nebula (M57)", "Hercules Cluster (M13)"],
     21: ["First Quarter Moon", "Lunar terminator", "Venus"],
-    29: ["Full Moon", "Moonrise", "Lunar disc"]
+    29: ["Full Moon", "Saturn", "Ring Nebula (M57)"]
   };
 
   const eventData = {

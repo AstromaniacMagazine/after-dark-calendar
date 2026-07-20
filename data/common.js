@@ -93,6 +93,11 @@
       url: "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/",
       note: "Target-card apparent sizes use catalogue angular dimensions for Messier/deep-sky objects and standard angular-size ranges for the Moon and planets; variable objects are labelled variable."
     },
+    simbad: {
+      label: "SIMBAD Astronomical Database",
+      url: "https://simbad.cds.unistra.fr/simbad/",
+      note: "Deep-sky target coordinates and catalogue identities are cross-checked against the SIMBAD database operated by CDS, Strasbourg."
+    },
     astromaniacArticles: {
       label: "Astromaniac Magazine articles",
       url: "https://www.astromaniacmagazine.com/articles",
@@ -172,6 +177,54 @@
       url: "https://www.astromaniacmagazine.com/james-webb-space-telescope-inside-the-mission",
       image: "",
       kind: "Mission Guide"
+    },
+    darkStars: {
+      title: "When Darkness Shines: How Dark Stars Could Illuminate The Early Universe",
+      url: "https://www.astromaniacmagazine.com/articles/when-darkness-shines-how-dark-stars-could-illuminate-the-early-universe",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/6a21a49af2f64d69b394e4f8/1780589722203/NASA%E2%80%99s+Webb+Delivers+Deepest+Infrared+Image+of+Universe+Yet.jpg?format=750w",
+      kind: "Article"
+    },
+    lunarLife: {
+      title: "The Unseen Challenges Of Life On The Moon",
+      url: "https://www.astromaniacmagazine.com/articles/the-unseen-challenges-of-life-on-the-moon",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/69d58a8a41aa4877850635b0/1775602318842/NASA+Earthrise.jpg?format=750w",
+      kind: "Article"
+    },
+    marsLife: {
+      title: "Molecules Found In Martian Rock Hint At Ancient Life",
+      url: "https://www.astromaniacmagazine.com/articles/molecules-found-in-martian-rock-hint-at-ancient-life",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/69c06f742b5c1a4793c5a9be/1774219124136/Molecules+found+in+Martian+rock+hint+at+ancient+life+%E2%80%93+new+study.jpg?format=750w",
+      kind: "Article"
+    },
+    spaceDebris: {
+      title: "Space Debris: Will It Take A Catastrophe For Nations To Take The Issue Seriously?",
+      url: "https://www.astromaniacmagazine.com/articles/space-debris-will-it-take-a-catastrophe-for-nations-to-take-the-issue-seriously",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/6945881d78a9133f02890892/1766164509760/Space+debris.jpg?format=750w",
+      kind: "Article"
+    },
+    earthLike: {
+      title: "Our Quest To Find A Truly Earth-like Planet In Deep Space",
+      url: "https://www.astromaniacmagazine.com/articles/our-quest-to-find-a-truly-earth-like-planet-in-deep-space",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/6901f490b715376eb1ae5163/1761735824711/unsplash-image-2ZzOkyyShIc.jpg?format=750w",
+      kind: "Article"
+    },
+    planetNine: {
+      title: "The Hunt For Planet Nine",
+      url: "https://www.astromaniacmagazine.com/articles/the-hunt-for-planet-nine-why-there-could-still-be-something-massive-at-the-edge-of-the-solarnbspsystem",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/689b6a2e04a17d214f5744e8/1755015726825/Planet_nine_artistic_plain.png?format=750w",
+      kind: "Article"
+    },
+    rubin: {
+      title: "Could The First Images From The Vera Rubin Telescope Change How We View Space For Good?",
+      url: "https://www.astromaniacmagazine.com/articles/could-the-first-images-from-the-vera-rubin-telescope-change-how-we-view-space-for-good",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/689a002d2352f55305f9fae7/1754923053949/The+Lagoon+Nebula+-+Astromaniac+Magazine.jpg?format=750w",
+      kind: "Article"
+    },
+    earliestGalaxies: {
+      title: "The Earliest Galaxies Formed Amazingly Fast",
+      url: "https://www.astromaniacmagazine.com/articles/the-earliest-galaxies-formed-amazingly-fast",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/67329fdca137590340b1bcb5/1731370972851/IC+2163+and+NGC+2207+galaxies.jpg?format=750w",
+      kind: "Article"
     }
   };
 

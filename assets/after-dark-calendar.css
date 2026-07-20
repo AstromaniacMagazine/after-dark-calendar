@@ -98,24 +98,18 @@ body {
   outline-offset: 3px;
 }
 
-.amc-calendar-wrap,
-.amc-detail,
-.amc-recommendations,
-.amc-intel-strip {
-  will-change: opacity, transform;
-}
-
 .amc-sky-calendar.is-month-entering .amc-calendar-wrap,
 .amc-sky-calendar.is-month-entering .amc-detail,
 .amc-sky-calendar.is-month-entering .amc-recommendations,
 .amc-sky-calendar.is-month-entering .amc-intel-strip {
-  animation: amc-month-shunt .3s cubic-bezier(.22, .72, .2, 1) both;
+  animation: amc-month-shunt .52s cubic-bezier(.22, .72, .2, 1) both;
+  will-change: opacity, transform;
 }
 
 @keyframes amc-month-shunt {
   from {
-    opacity: .18;
-    transform: translateX(var(--month-shift, 18px));
+    opacity: .28;
+    transform: translateX(var(--month-shift, 14px));
   }
   to {
     opacity: 1;
@@ -508,41 +502,49 @@ body {
 .amc-tag.moon,
 .amc-event.moon,
 .amc-detail-title.moon,
+.amc-event-mini.moon,
 .amc-expanded-title.moon { --event-colour: var(--moon); color: var(--moon); }
 .amc-legend .meteor,
 .amc-tag.meteor,
 .amc-event.meteor,
 .amc-detail-title.meteor,
+.amc-event-mini.meteor,
 .amc-expanded-title.meteor { --event-colour: var(--meteor); color: var(--meteor); }
 .amc-legend .launch,
 .amc-tag.launch,
 .amc-event.launch,
 .amc-detail-title.launch,
+.amc-event-mini.launch,
 .amc-expanded-title.launch { --event-colour: var(--launch); color: var(--launch); }
 .amc-legend .opposition,
 .amc-tag.opposition,
 .amc-event.opposition,
 .amc-detail-title.opposition,
+.amc-event-mini.opposition,
 .amc-expanded-title.opposition { --event-colour: var(--opposition); color: var(--opposition); }
 .amc-legend .eclipse,
 .amc-tag.eclipse,
 .amc-event.eclipse,
 .amc-detail-title.eclipse,
+.amc-event-mini.eclipse,
 .amc-expanded-title.eclipse { --event-colour: var(--eclipse); color: var(--eclipse); }
 .amc-legend .sky,
 .amc-tag.sky,
 .amc-event.sky,
 .amc-detail-title.sky,
+.amc-event-mini.sky,
 .amc-expanded-title.sky { --event-colour: var(--sky); color: var(--sky); }
 .amc-legend .telescope,
 .amc-tag.telescope,
 .amc-event.telescope,
 .amc-detail-title.telescope,
+.amc-event-mini.telescope,
 .amc-expanded-title.telescope { --event-colour: var(--telescope); color: var(--telescope); }
 .amc-legend .occultation,
 .amc-tag.occultation,
 .amc-event.occultation,
 .amc-detail-title.occultation,
+.amc-event-mini.occultation,
 .amc-expanded-title.occultation { --event-colour: var(--occultation); color: var(--occultation); }
 
 .amc-weekdays {
@@ -565,14 +567,14 @@ body {
 .amc-grid {
   display: grid;
   gap: var(--grid-gap);
-  grid-auto-rows: 134px;
+  grid-auto-rows: 138px;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   min-width: 0;
   position: relative;
 }
 
 .amc-empty {
-  min-height: 134px;
+  min-height: 138px;
 }
 
 .amc-day {
@@ -587,6 +589,7 @@ body {
   font: inherit;
   align-content: start;
   gap: 4px;
+  grid-template-rows: auto auto auto minmax(20px, 1fr);
   min-width: 0;
   overflow: hidden;
   padding: 7px 7px 8px;
@@ -687,12 +690,15 @@ body {
 }
 
 .amc-moon-copy b {
+  display: -webkit-box;
   font-size: .74rem;
   font-weight: 740;
   line-height: 1.1;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
 }
 
 .amc-moon-copy span,
@@ -712,13 +718,15 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 3px;
-  min-height: 19px;
+  align-self: end;
+  max-height: 39px;
+  min-height: 21px;
   overflow: hidden;
 }
 
 .amc-tags .amc-tag {
-  font-size: .55rem;
-  padding: 4px 6px;
+  font-size: .59rem;
+  padding: 5px 7px;
 }
 
 .amc-day.moon { --event-colour: var(--moon); }
@@ -741,6 +749,7 @@ body {
   box-shadow: 0 24px 54px rgba(22, 25, 29, .26);
   display: grid;
   gap: 6px;
+  grid-template-rows: auto minmax(0, 1fr);
   height: calc(200% + var(--grid-gap));
   left: 0;
   overflow: hidden;
@@ -763,9 +772,7 @@ body {
 
 .amc-expanded-top {
   align-items: start;
-  display: grid;
-  gap: 6px;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  display: block;
   min-height: 0;
   padding-right: 28px;
 }
@@ -773,17 +780,17 @@ body {
 .amc-expanded-identity {
   align-items: center;
   display: grid;
-  gap: 7px;
-  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 8px;
+  grid-template-columns: 44px minmax(0, 1fr);
   min-width: 0;
 }
 
 .amc-expanded-identity img {
   aspect-ratio: 1;
   border-radius: 50%;
-  height: 40px;
+  height: 44px;
   object-fit: cover;
-  width: 40px;
+  width: 44px;
 }
 
 .amc-expanded-identity strong {
@@ -797,12 +804,11 @@ body {
 .amc-expanded-night {
   color: var(--muted);
   display: block;
-  font-size: .73rem;
+  font-size: .75rem;
   font-weight: 720;
-  line-height: 1.2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.16;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .amc-minimise {
@@ -842,6 +848,8 @@ body {
   display: grid;
   gap: 5px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  min-height: 0;
 }
 
 .amc-mini,
@@ -850,21 +858,21 @@ body {
   border: 1px solid var(--line);
   border-radius: 7px;
   display: grid;
-  gap: 6px;
+  gap: 7px;
   min-width: 0;
-  min-height: 43px;
-  padding: 6px;
+  min-height: 0;
+  padding: 5px 7px;
 }
 
 .amc-mini {
   align-items: center;
-  grid-template-columns: 23px minmax(0, 1fr);
+  grid-template-columns: 25px minmax(0, 1fr);
 }
 
 .amc-mini svg {
   color: var(--accent);
-  height: 21px;
-  width: 21px;
+  height: 24px;
+  width: 24px;
 }
 
 .amc-mini > span,
@@ -878,7 +886,7 @@ body {
 .amc-zodiac-card small {
   color: var(--muted);
   display: block;
-  font-size: .53rem;
+  font-size: .55rem;
   font-weight: 820;
   line-height: 1;
   min-width: 0;
@@ -891,7 +899,7 @@ body {
 .amc-mini b,
 .amc-zodiac-card b {
   display: block;
-  font-size: .76rem;
+  font-size: .78rem;
   font-weight: 760;
   line-height: 1;
   min-width: 0;
@@ -902,14 +910,37 @@ body {
 
 .amc-zodiac-card {
   align-content: center;
-  grid-template-columns: 25px minmax(0, 1fr);
+  grid-template-columns: 27px minmax(0, 1fr);
 }
 
 .amc-zodiac-card em {
   color: var(--accent);
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   font-style: normal;
   line-height: 1;
+}
+
+.amc-event-mini {
+  background: color-mix(in srgb, currentColor 9%, var(--panel-soft) 91%);
+  border-color: color-mix(in srgb, currentColor 36%, transparent);
+}
+
+.amc-event-mini svg {
+  color: currentColor;
+}
+
+.amc-event-mini b {
+  color: currentColor;
+  display: -webkit-box;
+  line-height: 1.12;
+  overflow: hidden;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.amc-event-mini.is-empty {
+  visibility: hidden;
 }
 
 .amc-cell-mobile-extra {
@@ -969,6 +1000,10 @@ body {
   line-height: 1.12;
   margin: 0;
   min-height: 1.25em;
+}
+
+.amc-detail-title + .amc-event-list {
+  margin-top: -5px;
 }
 
 .amc-event-list {
@@ -1055,15 +1090,31 @@ body {
   display: grid;
   font-size: .8rem;
   font-weight: 680;
-  gap: 2px;
+  gap: 6px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   line-height: 1.25;
 }
 
-.amc-alt-labels span {
+.amc-night-stat {
+  display: grid;
+  gap: 2px;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+}
+
+.amc-night-stat b {
+  color: var(--text);
+  font-size: .67rem;
+  font-weight: 780;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.amc-night-stat span {
+  color: var(--muted);
+  font-size: .79rem;
+  font-weight: 680;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
 .amc-weather {
@@ -1522,6 +1573,73 @@ body {
     left: auto;
     right: 0;
   }
+
+  .amc-expanded-top {
+    padding-right: 22px;
+  }
+
+  .amc-expanded-identity {
+    gap: 5px;
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+
+  .amc-expanded-identity img {
+    height: 34px;
+    width: 34px;
+  }
+
+  .amc-expanded-identity strong {
+    font-size: .68rem;
+  }
+
+  .amc-expanded-stat,
+  .amc-expanded-night {
+    font-size: .65rem;
+    line-height: 1.08;
+  }
+
+  .amc-mini,
+  .amc-zodiac-card {
+    gap: 4px;
+    padding: 4px;
+  }
+
+  .amc-mini {
+    grid-template-columns: 20px minmax(0, 1fr);
+  }
+
+  .amc-mini svg {
+    height: 20px;
+    width: 20px;
+  }
+
+  .amc-zodiac-card {
+    grid-template-columns: 21px minmax(0, 1fr);
+  }
+
+  .amc-zodiac-card em {
+    font-size: 1.15rem;
+  }
+
+  .amc-mini small,
+  .amc-zodiac-card small {
+    font-size: .48rem;
+    line-height: 1.04;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  .amc-mini b,
+  .amc-zodiac-card b {
+    font-size: .65rem;
+  }
+
+  .amc-zodiac-card b {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
 }
 
 @media (max-width: 900px) {
@@ -1670,7 +1788,7 @@ body {
   }
 
   .amc-grid {
-    grid-auto-rows: minmax(126px, auto);
+    grid-auto-rows: minmax(130px, auto);
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1685,6 +1803,7 @@ body {
   .amc-day[aria-expanded="true"] {
     grid-column: 1 / -1;
     min-height: auto;
+    scroll-margin-top: 10px;
   }
 
   .amc-day[aria-expanded="true"] > .amc-date,
@@ -1716,8 +1835,62 @@ body {
     padding-right: 28px;
   }
 
+  .amc-expanded-identity {
+    gap: 8px;
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  .amc-expanded-identity img {
+    height: 44px;
+    width: 44px;
+  }
+
+  .amc-expanded-identity strong {
+    font-size: .8rem;
+  }
+
+  .amc-expanded-stat,
+  .amc-expanded-night {
+    font-size: .75rem;
+    line-height: 1.16;
+  }
+
   .amc-mini-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(4, minmax(48px, auto));
+  }
+
+  .amc-mini,
+  .amc-zodiac-card {
+    gap: 7px;
+    padding: 5px 7px;
+  }
+
+  .amc-mini {
+    grid-template-columns: 25px minmax(0, 1fr);
+  }
+
+  .amc-mini svg {
+    height: 24px;
+    width: 24px;
+  }
+
+  .amc-zodiac-card {
+    grid-template-columns: 27px minmax(0, 1fr);
+  }
+
+  .amc-zodiac-card em {
+    font-size: 1.4rem;
+  }
+
+  .amc-mini small,
+  .amc-zodiac-card small {
+    font-size: .55rem;
+  }
+
+  .amc-mini b,
+  .amc-zodiac-card b {
+    font-size: .78rem;
   }
 
   .amc-cell-mobile-extra .amc-alt-svg {
@@ -1749,7 +1922,7 @@ body {
 @media (max-width: 430px) {
   .amc-grid {
     gap: 7px;
-    grid-auto-rows: minmax(126px, auto);
+    grid-auto-rows: minmax(130px, auto);
   }
 
   .amc-day {
