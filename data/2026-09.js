@@ -51,19 +51,19 @@
   ];
 
   const targetData = {
-    1: ["Aurigids", "Late-summer meteors", "Milky Way fields"],
+    1: ["Aurigids", "Milky Way fields", "Andromeda Galaxy (M31)"],
     3: ["Pleiades (M45)", "Moon-Pleiades pairing", "Waning gibbous Moon"],
     6: ["Moon-Mars pairing", "Mars", "Waning crescent Moon"],
     8: ["Moon-Jupiter pairing", "Jupiter", "Waning crescent Moon"],
-    9: ["September Epsilon Perseids", "Meteor watch", "Moon-free morning sky"],
+    9: ["September Epsilon Perseids", "Andromeda Galaxy (M31)", "Dumbbell Nebula (M27)"],
     11: ["Milky Way core", "Lagoon Nebula (M8)", "Trifid Nebula (M20)"],
     14: ["Moon-Venus pairing", "Crescent Moon", "Venus"],
     18: ["First Quarter Moon", "Lunar terminator", "Craters"],
-    22: ["Venus", "Twilight sky", "Crescent Moon"],
-    25: ["NGC 55", "Southern galaxy target", "Dark sky"],
+    22: ["Venus", "Andromeda Galaxy (M31)", "Dumbbell Nebula (M27)"],
+    25: ["NGC 55", "Dumbbell Nebula (M27)", "Pleiades (M45)"],
     26: ["Neptune", "Full Moon", "Moonrise"],
     27: ["Moon-Saturn pairing", "Saturn", "Mercury"],
-    30: ["Pleiades (M45)", "Waning gibbous Moon", "Bright clusters"]
+    30: ["Pleiades (M45)", "Waning gibbous Moon", "Dumbbell Nebula (M27)"]
   };
 
   const eventData = {

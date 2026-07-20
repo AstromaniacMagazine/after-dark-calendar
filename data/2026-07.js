@@ -268,8 +268,8 @@
       const targetData = {
         4: ["Mars-Uranus pairing", "Waning gibbous Moon", "Saturn"],
         5: ["Carroll Crater", "Waning gibbous Moon", "Saturn"],
-        6: ["Waning gibbous Moon", "Saturn", "Bright clusters"],
-        7: ["Last Quarter Moon", "Saturn", "Bright clusters"],
+        6: ["Waning gibbous Moon", "Saturn", "Ring Nebula (M57)"],
+        7: ["Last Quarter Moon", "Saturn", "Dumbbell Nebula (M27)"],
         10: ["Pleiades (M45)", "Waning crescent Moon", "Saturn"],
         11: ["Moon-Mars-Saturn line-up", "Waning crescent Moon", "Saturn"],
         12: ["Delta Aquariids", "Waning crescent Moon", "Saturn"],
@@ -283,7 +283,7 @@
         27: ["Pluto", "Saturn", "Waxing gibbous Moon"],
         29: ["Full Moon", "Moonrise", "Saturn"],
         30: ["Delta Aquariids", "Alpha Capricornids", "Full Moon"],
-        31: ["Saturn", "Waning gibbous Moon", "Bright clusters"]
+        31: ["Saturn", "Waning gibbous Moon", "Ring Nebula (M57)"]
       };
 
       const eventData = {

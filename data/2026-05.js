@@ -52,14 +52,14 @@
   ];
 
   const targetData = {
-    1: ["Full Moon", "Moonrise", "Lunar disc"],
+    1: ["Full Moon", "Saturn", "Messier 5"],
     6: ["Eta Aquariids", "Waning gibbous Moon", "Milky Way fields"],
     12: ["Messier 5", "Globular cluster", "Late-night dark sky"],
     13: ["Moon-Saturn pairing", "Saturn", "Waning crescent Moon"],
     16: ["Milky Way core", "Lagoon Nebula (M8)", "Trifid Nebula (M20)"],
     19: ["Moon-Venus pairing", "Crescent Moon", "Venus"],
     20: ["Moon-Jupiter pairing", "Crescent Moon", "Jupiter"],
-    22: ["Venus", "Twilight sky", "Crescent Moon"],
+    22: ["Venus", "Eagle Nebula (M16)", "Whirlpool Galaxy (M51)"],
     23: ["First Quarter Moon", "Regulus occultation", "Lunar terminator"],
     28: ["Messier 4", "Antares region", "Waxing gibbous Moon"],
     31: ["Blue Moon", "Antares occultation", "Moonrise"]
