@@ -7,7 +7,7 @@ This repository contains the website files for **After Dark Calendar**.
 - `index.html` - main web page
 - `assets/` - CSS, JavaScript, images
 - `data/` - month and shared data files
-- `*.zip` - optional archive files (not required for runtime unless you want to distribute downloads)
+- `*.zip` - optional archive files (not required for runtime; excluded from this repo by default)
 
 ## Updating the repo with a new local version
 
@@ -30,4 +30,5 @@ robocopy $src $dst /MIR /XD .git /XF .git /R:1 /W:1 /NP
 
 - `/MIR` mirrors the source exactly (including deletions).
 - `.git` is excluded so Git history stays safe.
+- ZIP archives are excluded by `.gitignore` to keep commits smaller and cleaner.
 - Always review changes before merging.
