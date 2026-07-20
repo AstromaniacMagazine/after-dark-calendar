@@ -28,6 +28,7 @@
   const manifest = Array.isArray(window.AMC_MONTH_MANIFEST) ? window.AMC_MONTH_MANIFEST : [];
   const locationKey = "amc-sky-calendar-location";
   const themeKey = "amc-sky-calendar-theme";
+  const themeOrder = ["light", "dark", "red"];
   const weatherRefreshMs = 75 * 60 * 1000;
   const useLocationText = "Use Current Location";
   const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -109,6 +110,7 @@
     { match: /messier 5|m5\b/i, name: "Messier 5", type: "Globular cluster", ra: 15.31, dec: 2.08, size: "23 arcmin" },
     { match: /messier 2|m2\b/i, name: "Messier 2", type: "Globular cluster", ra: 21.56, dec: -0.82, size: "16 arcmin" },
     { match: /messier 15|m15\b/i, name: "Messier 15", type: "Globular cluster", ra: 21.5, dec: 12.17, size: "18 arcmin" },
+    { match: /double cluster|ngc\s*869|ngc\s*884/i, name: "Double Cluster (NGC 869 and NGC 884)", type: "Open clusters", ra: 2.34, dec: 57.13, size: "about 60 arcmin" },
     { match: /milky way/i, name: "Milky Way core", type: "Wide-field", ra: 17.76, dec: -29.01, size: "wide-field" },
     { match: /saturn/i, name: "Saturn", type: "Planet", body: "Saturn", size: "15-20 arcsec" },
     { match: /jupiter/i, name: "Jupiter", type: "Planet", body: "Jupiter", size: "30-50 arcsec" },
@@ -127,14 +129,15 @@
   boot();
 
   async function boot() {
-    setTheme(safeStorageGet(themeKey) === "dark" ? "dark" : "light");
+    const savedTheme = safeStorageGet(themeKey);
+    setTheme(themeOrder.includes(savedTheme) ? savedTheme : "light");
     bindEvents();
     await showMonth(defaultMonthId());
     applySavedLocation();
   }
 
   function bindEvents() {
-    els.themeToggle.addEventListener("click", () => setTheme(root.dataset.theme === "dark" ? "light" : "dark"));
+    els.themeToggle.addEventListener("click", cycleTheme);
     els.useLocation.addEventListener("click", useBrowserLocation);
     els.manualForm.addEventListener("submit", useManualLocation);
     els.manualInput.addEventListener("input", handleManualLocationInput);
@@ -441,7 +444,8 @@
       5: ["Dumbbell Nebula (M27)", "Whirlpool Galaxy (M51)", "Hercules Cluster (M13)", "Lagoon Nebula (M8)", "Centaurus A (NGC 5128)"],
       6: ["Dumbbell Nebula (M27)", "Pinwheel Galaxy (M101)", "Lagoon Nebula (M8)", "Hercules Cluster (M13)", "Omega Nebula (M17)"],
       7: ["North America Nebula (NGC 7000)", "Dumbbell Nebula (M27)", "Andromeda Galaxy (M31)", "Ring Nebula (M57)", "Sculptor Galaxy (NGC 253)"],
-      8: ["Andromeda Galaxy (M31)", "North America Nebula (NGC 7000)", "Messier 15", "Triangulum Galaxy (M33)", "Sculptor Galaxy (NGC 253)"]
+      8: ["Andromeda Galaxy (M31)", "North America Nebula (NGC 7000)", "Messier 15", "Triangulum Galaxy (M33)", "Sculptor Galaxy (NGC 253)"],
+      9: ["Andromeda Galaxy (M31)", "Triangulum Galaxy (M33)", "Double Cluster (NGC 869 and NGC 884)", "Sculptor Galaxy (NGC 253)", "Dumbbell Nebula (M27)"]
     };
     const deepSky = deepSkyByMonth[state.month.monthIndex] || ["Andromeda Galaxy (M31)", "Dumbbell Nebula (M27)", "Hercules Cluster (M13)"];
     if (moon.phase <= 35) return deepSky;
@@ -604,15 +608,15 @@
       const y = band.state === "dark" ? chart.y + 14 : band.state === "nautical" ? chart.y + (compact ? 13 : 16) : chart.y + chart.height - (compact ? 8 : 10);
       const fill = band.state === "dark" ? "#fff" : "currentColor";
       const fontSize = band.state === "nautical" && width < (compact ? 38 : 46) ? (compact ? 6.8 : 7.4) : (compact ? 7.2 : 8.6);
-      return `<text x="${x}" y="${y}" text-anchor="middle" fill="${fill}" font-size="${fontSize}" font-weight="760">${label}</text>`;
+      return `<text x="${x}" y="${y}" text-anchor="middle" fill="${fill}" font-size="${fontSize}" font-weight="600">${label}</text>`;
     }).join("");
     const hourTicks = hours.map((hour, index) => {
       const x = chart.x + (index / 12) * chart.width;
-      return `<g><line x1="${x}" x2="${x}" y1="${chart.y}" y2="${chart.y + chart.height}" stroke="rgba(22,25,29,.12)"/><text x="${x}" y="${chart.y + chart.height + (compact ? 16 : 18)}" text-anchor="middle" fill="currentColor" font-size="${compact ? 8.1 : 9.1}" font-weight="720">${String(hour).padStart(2, "0")}</text></g>`;
+      return `<g><line x1="${x}" x2="${x}" y1="${chart.y}" y2="${chart.y + chart.height}" stroke="rgba(22,25,29,.12)"/><text x="${x}" y="${chart.y + chart.height + (compact ? 16 : 18)}" text-anchor="middle" fill="currentColor" font-size="${compact ? 8.1 : 9.1}" font-weight="600">${String(hour).padStart(2, "0")}</text></g>`;
     }).join("");
     const altitudeTicks = yTicks.map(tick => {
       const y = chart.y + chart.height - (tick / maxAltitude) * chart.height;
-      return `<g><line x1="${chart.x}" x2="${chart.x + chart.width}" y1="${y}" y2="${y}" stroke="rgba(22,25,29,.16)"/><text x="${chart.x - 8}" y="${y + 3}" text-anchor="end" fill="currentColor" font-size="${compact ? 8.1 : 9.1}" font-weight="720">${tick}°</text></g>`;
+      return `<g><line x1="${chart.x}" x2="${chart.x + chart.width}" y1="${y}" y2="${y}" stroke="rgba(22,25,29,.16)"/><text x="${chart.x - 8}" y="${y + 3}" text-anchor="end" fill="currentColor" font-size="${compact ? 8.1 : 9.1}" font-weight="600">${tick}°</text></g>`;
     }).join("");
     const paths = timeline.moonSegments
       .map(segment => smoothPath(segment.map(point => chartPoint(point, chart, maxAltitude))))
@@ -621,19 +625,19 @@
       .join("");
     const markers = timeline.markers.map(marker => {
       const point = chartPoint({ hour: marker.hour, altitude: 0 }, chart, maxAltitude);
-      return `<g><circle cx="${point.x}" cy="${point.y}" r="${compact ? 3.2 : 4}" fill="#d08a13"/><text x="${point.x}" y="${point.y - 19}" text-anchor="middle" fill="#8b5f12" font-size="${compact ? 8 : 8.8}" font-weight="760">${marker.label}</text><text x="${point.x}" y="${point.y - 7}" text-anchor="middle" fill="currentColor" font-size="${compact ? 7.4 : 8.2}" font-weight="720">${marker.time}</text></g>`;
+      return `<g><circle cx="${point.x}" cy="${point.y}" r="${compact ? 3.2 : 4}" fill="#d08a13"/><text x="${point.x}" y="${point.y - 19}" text-anchor="middle" fill="#8b5f12" font-size="${compact ? 8 : 8.8}" font-weight="600">${marker.label}</text><text x="${point.x}" y="${point.y - 7}" text-anchor="middle" fill="currentColor" font-size="${compact ? 7.4 : 8.2}" font-weight="600">${marker.time}</text></g>`;
     }).join("");
     const twilightMarkers = timeline.twilightMarkers.map(marker => {
       const x = chart.x + (marker.hour / 12) * chart.width;
       const y = marker.type === "end" ? chart.y + 12 : chart.y + chart.height - 24;
-      return `<g><line x1="${x}" x2="${x}" y1="${chart.y}" y2="${chart.y + chart.height}" stroke="rgba(5,8,18,.46)" stroke-dasharray="3 3"/><text x="${x}" y="${y}" text-anchor="middle" fill="currentColor" font-size="${compact ? 7.2 : 8.2}" font-weight="760">${marker.label}</text></g>`;
+      return `<g><line x1="${x}" x2="${x}" y1="${chart.y}" y2="${chart.y + chart.height}" stroke="rgba(5,8,18,.46)" stroke-dasharray="3 3"/><text x="${x}" y="${y}" text-anchor="middle" fill="currentColor" font-size="${compact ? 7.2 : 8.2}" font-weight="600">${marker.label}</text></g>`;
     }).join("");
     return `<svg class="amc-alt-svg" viewBox="0 0 ${viewWidth} ${viewHeight}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Moon altitude from 18:00 to 06:00, scaled from 0 to 60 degrees">
       <g style="color: var(--text)">
         ${bands}${hourTicks}${altitudeTicks}${bandLabels}
         <line x1="${chart.x}" x2="${chart.x + chart.width}" y1="${chart.y + chart.height}" y2="${chart.y + chart.height}" stroke="rgba(22,25,29,.42)" stroke-width="1.2"/>
         <line x1="${chart.x}" x2="${chart.x}" y1="${chart.y}" y2="${chart.y + chart.height}" stroke="rgba(22,25,29,.36)" stroke-width="1.2"/>
-        <text x="${chart.x + chart.width / 2}" y="${chart.y + chart.height + (compact ? 30 : 33)}" text-anchor="middle" fill="currentColor" font-size="${compact ? 9.4 : 10.6}" font-weight="820">TIME</text>
+        <text x="${chart.x + chart.width / 2}" y="${chart.y + chart.height + (compact ? 31 : 34)}" text-anchor="middle" fill="currentColor" font-size="${compact ? 11.2 : 12.6}" font-weight="400">TIME</text>
         ${twilightMarkers}${paths}${markers}
       </g>
     </svg>`;
@@ -984,23 +988,46 @@
   function selectDay(day) {
     const wasExpanded = state.expandedDay === day;
     const mobile = root.getBoundingClientRect().width <= 760;
-    const currentButton = els.grid.querySelector(`.amc-day[data-day="${day}"]`);
-    const previousTop = currentButton?.getBoundingClientRect().top ?? 0;
     state.selectedDay = day;
     state.expandedDay = wasExpanded ? null : day;
     renderAll();
     if (!mobile) return;
-    requestAnimationFrame(() => {
+    requestAnimationFrame(() => requestAnimationFrame(() => {
       const nextButton = els.grid.querySelector(`.amc-day[data-day="${day}"]`);
       if (!nextButton) return;
       nextButton.focus({ preventScroll: true });
       if (!wasExpanded) {
-        nextButton.scrollIntoView({ block: "start", inline: "nearest", behavior: "smooth" });
+        alignExpandedDay(nextButton, day);
         return;
       }
-      const nextTop = nextButton.getBoundingClientRect().top;
-      window.scrollBy({ top: nextTop - previousTop, left: 0, behavior: "auto" });
-    });
+      alignCollapsedDay(nextButton, day);
+    }));
+  }
+
+  function alignExpandedDay(button, day) {
+    const offset = 12;
+    const targetTop = () => window.scrollY + button.getBoundingClientRect().top - offset;
+    window.scrollTo({ top: targetTop(), left: 0, behavior: "smooth" });
+    window.setTimeout(() => {
+      if (state.expandedDay !== day) return;
+      const current = els.grid.querySelector(`.amc-day[data-day="${day}"]`);
+      if (!current) return;
+      const drift = current.getBoundingClientRect().top - offset;
+      if (Math.abs(drift) > 3) window.scrollBy({ top: drift, left: 0, behavior: "auto" });
+    }, 420);
+  }
+
+  function alignCollapsedDay(button, day) {
+    const offset = 12;
+    const targetTop = window.scrollY + button.getBoundingClientRect().top - offset;
+    window.scrollTo({ top: targetTop, left: 0, behavior: "smooth" });
+    window.setTimeout(() => {
+      if (state.expandedDay !== null || state.selectedDay !== day) return;
+      const current = els.grid.querySelector(`.amc-day[data-day="${day}"]`);
+      if (!current) return;
+      const drift = current.getBoundingClientRect().top - offset;
+      if (Math.abs(drift) > 3) window.scrollBy({ top: drift, left: 0, behavior: "auto" });
+    }, 420);
   }
 
   function goToAdjacentMonth(direction) {
@@ -1202,14 +1229,21 @@
     state.weatherTimer = window.setTimeout(() => updateWeather(true), weatherRefreshMs);
   }
 
+  function cycleTheme() {
+    const currentIndex = themeOrder.indexOf(root.dataset.theme);
+    setTheme(themeOrder[(currentIndex + 1) % themeOrder.length]);
+  }
+
   function setTheme(theme) {
-    root.dataset.theme = theme;
-    const dark = theme === "dark";
-    els.themeToggle.innerHTML = iconSvg(dark ? "themeSun" : "themeMoon");
-    els.themeToggle.setAttribute("aria-label", `Switch to ${dark ? "light" : "dark"} mode`);
-    els.themeToggle.setAttribute("aria-pressed", String(dark));
-    els.themeToggle.title = dark ? "Light mode" : "Night mode";
-    safeStorageSet(themeKey, theme);
+    const safeTheme = themeOrder.includes(theme) ? theme : "light";
+    const nextTheme = themeOrder[(themeOrder.indexOf(safeTheme) + 1) % themeOrder.length];
+    const labels = { light: "Light", dark: "Night", red: "Observatory Red" };
+    const icons = { light: "themeMoon", dark: "themeRed", red: "themeSun" };
+    root.dataset.theme = safeTheme;
+    els.themeToggle.innerHTML = iconSvg(icons[safeTheme]);
+    els.themeToggle.setAttribute("aria-label", `Current theme: ${labels[safeTheme]}. Switch to ${labels[nextTheme]}`);
+    els.themeToggle.title = `Switch to ${labels[nextTheme]}`;
+    safeStorageSet(themeKey, safeTheme);
   }
 
   function downloadPdf() {
@@ -1874,6 +1908,7 @@
     const icons = {
       pin: `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.4 7-12a7 7 0 0 0-14 0c0 6.6 7 12 7 12Z"/><circle cx="12" cy="9" r="2.3"/></svg>`,
       themeMoon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg>`,
+      themeRed: `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 19h8M9 22h6"/><path d="M8.5 16.5A7 7 0 1 1 15.5 16.5L14 19h-4Z"/><circle cx="12" cy="10" r="2.3" fill="currentColor" stroke="none"/></svg>`,
       themeSun: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>`,
       event: `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M7 3v4M17 3v4M3.5 9h17"/><path d="m12 12 .8 1.7 1.9.2-1.4 1.3.4 1.8-1.7-.9-1.7.9.4-1.8-1.4-1.3 1.9-.2Z"/></svg>`,
       altitude: `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19h18"/><path d="M5 17a8 8 0 0 1 14-5"/><circle cx="17.5" cy="9.5" r="2"/><path d="M8 16V7m0 0L5.5 9.5M8 7l2.5 2.5"/></svg>`,

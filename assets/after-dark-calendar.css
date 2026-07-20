@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   color-scheme: light;
   --page-bg: #eef0f3;
 }
@@ -39,11 +39,15 @@ body {
   --bad: #d94a45;
   --warning: #b95f1b;
   --grid-gap: 8px;
+  --radius-shell: 30px;
+  --radius-panel: 14px;
+  --radius-inner: 11px;
+  --radius-small: 9px;
   background:
     linear-gradient(180deg, rgba(255,255,255,.76), rgba(255,255,255,.24)),
     var(--bg);
   border: 1px solid var(--line);
-  border-radius: 25px;
+  border-radius: var(--radius-shell);
   box-shadow: 0 42px 132px var(--shadow), 0 16px 38px rgba(22, 25, 29, .16);
   box-sizing: border-box;
   color: var(--text);
@@ -85,6 +89,39 @@ body {
     radial-gradient(circle at 8% 14%, rgba(255,255,255,.12) 0 1px, transparent 1.5px),
     radial-gradient(circle at 74% 12%, rgba(255,255,255,.1) 0 1px, transparent 1.5px),
     linear-gradient(135deg, #080a0d, #111820 56%, #07090e);
+}
+
+.amc-sky-calendar[data-theme="red"] {
+  color-scheme: dark;
+  --bg: #080202;
+  --panel: #140707;
+  --panel-soft: #210b0a;
+  --text: #ffc0b9;
+  --muted: #d88d86;
+  --faint: #a9635e;
+  --line: rgba(255, 123, 112, .18);
+  --line-strong: rgba(255, 137, 126, .36);
+  --shadow: rgba(20, 0, 0, .58);
+  --moon: #ff9b70;
+  --meteor: #ff715f;
+  --launch: #ff4f4f;
+  --opposition: #e9887f;
+  --eclipse: #ffb2a8;
+  --sky: #e66c62;
+  --telescope: #c95e55;
+  --occultation: #ff8865;
+  --accent: #ff675c;
+  --good: #d87d69;
+  --ok: #ff8a5c;
+  --bad: #ff4c4c;
+  --warning: #ff8c62;
+  background: linear-gradient(145deg, #080202, #160606 55%, #060101);
+}
+
+.amc-sky-calendar[data-theme="red"] img:not(.amc-brand-logo):not(.amc-print-logo),
+.amc-sky-calendar[data-theme="red"] .amc-alt-svg,
+.amc-sky-calendar[data-theme="red"] .amc-weather-segments {
+  filter: sepia(1) saturate(4.2) hue-rotate(312deg) brightness(.72) contrast(1.08);
 }
 
 .amc-sky-calendar *,
@@ -129,13 +166,26 @@ body {
   align-items: center;
   display: inline-grid;
   gap: 10px;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr) auto;
   max-width: 100%;
+}
+
+.amc-version-badge {
+  align-self: start;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--faint);
+  font-size: .58rem;
+  font-weight: 600;
+  line-height: 1;
+  margin-top: 1px;
+  padding: 4px 6px;
+  white-space: nowrap;
 }
 
 .amc-brand-logo {
   aspect-ratio: 1;
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   display: block;
   height: clamp(42px, 3.8vw, 52px);
   object-fit: cover;
@@ -146,7 +196,7 @@ body {
   color: var(--text);
   display: grid;
   font-size: clamp(1.14rem, 1.72vw, 1.68rem);
-  font-weight: 500;
+  font-weight: 400;
   letter-spacing: 0;
   line-height: 1;
   margin: 0;
@@ -169,23 +219,26 @@ body {
   grid-template-columns: auto minmax(0, 1fr);
   margin-top: 47px;
   justify-self: center;
-  width: 100%;
+  max-width: 100%;
+  width: max-content;
 }
 
 .amc-month-nav {
   align-items: center;
   display: grid;
   gap: 10px;
-  grid-template-columns: 36px minmax(190px, 260px) 36px;
+  grid-template-columns: 36px max-content 36px;
   justify-content: center;
+  width: max-content;
 }
 
 .amc-month-label {
   color: var(--text);
   font-size: clamp(1.25rem, 2vw, 1.9rem);
-  font-weight: 640;
+  font-weight: 600;
   line-height: 1;
   text-align: center;
+  padding-inline: clamp(18px, 2.5vw, 38px);
   white-space: nowrap;
 }
 
@@ -195,13 +248,13 @@ body {
   appearance: none;
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   color: var(--text);
   cursor: pointer;
   display: inline-flex;
   font: inherit;
   font-size: .74rem;
-  font-weight: 760;
+  font-weight: 600;
   height: 40px;
   justify-content: center;
   letter-spacing: .02em;
@@ -239,6 +292,10 @@ body {
   color: #fff;
 }
 
+.amc-sky-calendar[data-theme="red"] .amc-month-button {
+  color: #ff8178;
+}
+
 .amc-month-button svg,
 .amc-icon-button svg {
   fill: none;
@@ -269,11 +326,11 @@ body {
 .amc-location-status {
   align-items: center;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   color: var(--muted);
   display: inline-flex;
   font-size: .73rem;
-  font-weight: 650;
+  font-weight: 600;
   gap: 5px;
   height: 40px;
   line-height: 1;
@@ -311,11 +368,11 @@ body {
   appearance: none;
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   color: var(--text);
   font: inherit;
   font-size: .76rem;
-  font-weight: 560;
+  font-weight: 600;
   height: 40px;
   line-height: 1.1;
   min-width: 0;
@@ -330,7 +387,7 @@ body {
 .amc-location-results {
   background: var(--panel);
   border: 1px solid var(--line-strong);
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   box-shadow: 0 16px 30px rgba(22, 25, 29, .16);
   display: grid;
   left: 0;
@@ -364,7 +421,7 @@ body {
 .amc-location-prompt {
   color: var(--accent);
   font-size: .74rem;
-  font-weight: 650;
+  font-weight: 600;
   grid-column: 1 / -1;
   line-height: 1.2;
   text-align: right;
@@ -391,7 +448,7 @@ body {
   background: color-mix(in srgb, var(--panel) 82%, transparent);
   border: 1px solid var(--line);
   border-left: 7px solid var(--accent);
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   display: grid;
   gap: 3px;
   padding: 10px;
@@ -400,13 +457,13 @@ body {
 .amc-intel-heading span {
   color: var(--muted);
   font-size: .64rem;
-  font-weight: 760;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
 .amc-intel-heading b {
   font-size: .95rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.05;
 }
 
@@ -420,7 +477,7 @@ body {
   background: color-mix(in srgb, var(--panel) 88%, transparent);
   border: 1px solid var(--line);
   border-left: 8px solid var(--intel-colour, var(--accent));
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   box-shadow: 0 10px 24px color-mix(in srgb, var(--intel-colour, var(--accent)) 10%, transparent);
   display: grid;
   gap: 7px;
@@ -437,7 +494,7 @@ body {
 
 .amc-intel-card img {
   aspect-ratio: 1;
-  border-radius: 6px;
+  border-radius: var(--radius-small);
   height: 70px;
   object-fit: cover;
   width: 70px;
@@ -452,7 +509,7 @@ body {
 
 .amc-intel-copy b {
   font-size: .78rem;
-  font-weight: 760;
+  font-weight: 600;
   line-height: 1.05;
 }
 
@@ -492,7 +549,7 @@ body {
   color: var(--event-colour, var(--accent));
   display: inline-flex;
   font-size: .58rem;
-  font-weight: 820;
+  font-weight: 600;
   line-height: 1;
   padding: 5px 7px;
   text-transform: uppercase;
@@ -549,11 +606,11 @@ body {
 
 .amc-weekdays {
   background: #0a2342;
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   color: #fff;
   display: grid;
   font-size: .76rem;
-  font-weight: 820;
+  font-weight: 600;
   gap: var(--grid-gap);
   grid-template-columns: repeat(7, minmax(0, 1fr));
   letter-spacing: .03em;
@@ -582,7 +639,7 @@ body {
   background: color-mix(in srgb, var(--panel) 88%, transparent);
   border: 1px solid var(--line);
   border-left: 4px solid var(--event-colour, var(--line-strong));
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   color: var(--text);
   cursor: pointer;
   display: grid;
@@ -636,7 +693,7 @@ body {
 
 .amc-date strong {
   font-size: 1.02rem;
-  font-weight: 780;
+  font-weight: 600;
 }
 
 .amc-date-badges {
@@ -650,7 +707,7 @@ body {
   color: var(--muted);
   display: none;
   font-size: .62rem;
-  font-weight: 800;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
@@ -659,7 +716,7 @@ body {
   border-radius: 999px;
   color: #fff;
   font-size: .52rem;
-  font-weight: 820;
+  font-weight: 600;
   line-height: 1;
   padding: 4px 5px;
   text-transform: uppercase;
@@ -692,7 +749,7 @@ body {
 .amc-moon-copy b {
   display: -webkit-box;
   font-size: .74rem;
-  font-weight: 740;
+  font-weight: 600;
   line-height: 1.1;
   overflow: hidden;
   overflow-wrap: anywhere;
@@ -705,7 +762,7 @@ body {
 .amc-dark-line {
   color: var(--muted);
   font-size: .72rem;
-  font-weight: 680;
+  font-weight: 400;
   line-height: 1.1;
 }
 
@@ -745,18 +802,18 @@ body {
 .amc-day[aria-expanded="true"] .amc-expanded {
   background: var(--panel);
   border: 1px solid var(--line-strong);
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   box-shadow: 0 24px 54px rgba(22, 25, 29, .26);
   display: grid;
   gap: 6px;
   grid-template-rows: auto minmax(0, 1fr);
-  height: calc(200% + var(--grid-gap));
+  height: calc(200% + var(--grid-gap) + 14px);
   left: 0;
   overflow: hidden;
   padding: 8px;
   position: absolute;
   top: 0;
-  width: calc(200% + var(--grid-gap));
+  width: calc(200% + var(--grid-gap) + 14px);
   z-index: 60;
 }
 
@@ -796,7 +853,7 @@ body {
 .amc-expanded-identity strong {
   display: block;
   font-size: .8rem;
-  font-weight: 760;
+  font-weight: 600;
   line-height: 1.05;
 }
 
@@ -805,7 +862,7 @@ body {
   color: var(--muted);
   display: block;
   font-size: .75rem;
-  font-weight: 720;
+  font-weight: 400;
   line-height: 1.16;
   overflow-wrap: anywhere;
   white-space: normal;
@@ -818,7 +875,7 @@ body {
   color: var(--muted);
   display: inline-flex;
   font-size: 1rem;
-  font-weight: 760;
+  font-weight: 600;
   height: 24px;
   justify-content: center;
   position: absolute;
@@ -831,10 +888,10 @@ body {
   align-self: stretch;
   background: color-mix(in srgb, currentColor 9%, var(--panel-soft) 91%);
   border: 1px solid color-mix(in srgb, currentColor 34%, transparent);
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   display: grid;
   font-size: .76rem;
-  font-weight: 760;
+  font-weight: 600;
   line-height: 1.12;
   min-height: 46px;
   padding: 7px;
@@ -846,7 +903,7 @@ body {
 
 .amc-mini-grid {
   display: grid;
-  gap: 5px;
+  gap: 6px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-template-rows: repeat(4, minmax(0, 1fr));
   min-height: 0;
@@ -856,12 +913,12 @@ body {
 .amc-zodiac-card {
   background: var(--panel-soft);
   border: 1px solid var(--line);
-  border-radius: 7px;
+  border-radius: var(--radius-inner);
   display: grid;
   gap: 7px;
   min-width: 0;
   min-height: 0;
-  padding: 5px 7px;
+  padding: 6px 8px;
 }
 
 .amc-mini {
@@ -886,8 +943,8 @@ body {
 .amc-zodiac-card small {
   color: var(--muted);
   display: block;
-  font-size: .55rem;
-  font-weight: 820;
+  font-size: .57rem;
+  font-weight: 600;
   line-height: 1;
   min-width: 0;
   overflow: hidden;
@@ -899,8 +956,8 @@ body {
 .amc-mini b,
 .amc-zodiac-card b {
   display: block;
-  font-size: .78rem;
-  font-weight: 760;
+  font-size: .82rem;
+  font-weight: 600;
   line-height: 1;
   min-width: 0;
   overflow: hidden;
@@ -951,7 +1008,7 @@ body {
   align-self: stretch;
   background: color-mix(in srgb, var(--panel) 88%, transparent);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   display: grid;
   grid-area: detail;
   min-width: 0;
@@ -977,7 +1034,7 @@ body {
 .amc-detail-date {
   color: var(--muted);
   font-size: .72rem;
-  font-weight: 820;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
@@ -986,7 +1043,7 @@ body {
   color: var(--muted);
   display: inline-flex;
   font-size: .7rem;
-  font-weight: 680;
+  font-weight: 400;
   gap: 4px;
   min-width: 0;
   overflow: hidden;
@@ -996,7 +1053,7 @@ body {
 
 .amc-detail-title {
   font-size: clamp(1rem, 1.4vw, 1.22rem);
-  font-weight: 680;
+  font-weight: 400;
   line-height: 1.12;
   margin: 0;
   min-height: 1.25em;
@@ -1017,7 +1074,7 @@ body {
   background: color-mix(in srgb, var(--panel-soft) 78%, transparent);
   border: 1px solid var(--line);
   border-left: 5px solid currentColor;
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   display: grid;
   gap: 3px;
   list-style: none;
@@ -1027,7 +1084,7 @@ body {
 .amc-event small {
   color: currentColor;
   font-size: .56rem;
-  font-weight: 820;
+  font-weight: 600;
   letter-spacing: .05em;
   line-height: 1;
   text-transform: uppercase;
@@ -1041,7 +1098,7 @@ body {
 
 .amc-event h4 {
   font-size: .82rem;
-  font-weight: 760;
+  font-weight: 600;
   line-height: 1.12;
 }
 
@@ -1056,7 +1113,7 @@ body {
 .amc-recommendation-group {
   background: color-mix(in srgb, var(--panel) 88%, transparent);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   min-width: 0;
 }
 
@@ -1071,7 +1128,7 @@ body {
 .amc-recommendation-group h3 {
   color: var(--text);
   font-size: .78rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1;
   margin: 0;
   text-transform: uppercase;
@@ -1089,7 +1146,7 @@ body {
   color: var(--muted);
   display: grid;
   font-size: .8rem;
-  font-weight: 680;
+  font-weight: 400;
   gap: 6px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   line-height: 1.25;
@@ -1104,7 +1161,7 @@ body {
 .amc-night-stat b {
   color: var(--text);
   font-size: .67rem;
-  font-weight: 780;
+  font-weight: 600;
   line-height: 1.1;
   text-transform: uppercase;
 }
@@ -1112,15 +1169,20 @@ body {
 .amc-night-stat span {
   color: var(--muted);
   font-size: .79rem;
-  font-weight: 680;
+  font-weight: 400;
   line-height: 1.2;
   overflow-wrap: anywhere;
+}
+
+.amc-alt-labels .amc-night-stat + .amc-night-stat {
+  border-left: 1px solid var(--line-strong);
+  padding-left: 10px;
 }
 
 .amc-weather {
   background: var(--panel-soft);
   border: 1px solid var(--line);
-  border-radius: 7px;
+  border-radius: var(--radius-inner);
   display: grid;
   gap: 8px;
   margin-bottom: 0;
@@ -1132,7 +1194,7 @@ body {
 .amc-weather-updated {
   color: var(--muted);
   font-size: .62rem;
-  font-weight: 760;
+  font-weight: 600;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -1140,7 +1202,7 @@ body {
 .amc-weather-note {
   color: var(--muted);
   font-size: .76rem;
-  font-weight: 620;
+  font-weight: 400;
 }
 
 .amc-weather-grid,
@@ -1159,7 +1221,7 @@ body {
 .amc-cell-weather-row {
   background: color-mix(in srgb, var(--panel) 72%, transparent);
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius-small);
   display: grid;
   gap: 7px;
   min-width: 0;
@@ -1186,14 +1248,14 @@ body {
 
 .amc-weather-card-date b {
   font-size: .84rem;
-  font-weight: 780;
+  font-weight: 600;
   line-height: 1;
 }
 
 .amc-weather-card-date span {
   color: var(--muted);
   font-size: .66rem;
-  font-weight: 680;
+  font-weight: 400;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1231,7 +1293,7 @@ body {
 
 .amc-weather-row b {
   font-size: .66rem;
-  font-weight: 740;
+  font-weight: 600;
   line-height: 1;
   min-width: 0;
   overflow: hidden;
@@ -1256,11 +1318,11 @@ body {
 
 .amc-weather-tooltip {
   background: var(--text);
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   box-shadow: 0 14px 30px rgba(0, 0, 0, .24);
   color: var(--panel);
   font-size: .78rem;
-  font-weight: 680;
+  font-weight: 400;
   left: 0;
   line-height: 1.25;
   max-width: min(290px, calc(100% - 28px));
@@ -1317,7 +1379,7 @@ body {
   align-items: start;
   background: color-mix(in srgb, var(--panel-soft) 74%, transparent);
   border: 1px solid var(--line);
-  border-radius: 7px;
+  border-radius: var(--radius-inner);
   display: grid;
   gap: 8px;
   grid-template-columns: 82px minmax(0, 1fr);
@@ -1328,7 +1390,7 @@ body {
 
 .amc-target-card img {
   aspect-ratio: 1;
-  border-radius: 6px;
+  border-radius: var(--radius-small);
   display: block;
   height: 82px;
   object-fit: cover;
@@ -1338,7 +1400,7 @@ body {
 .amc-target-facts span {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius-small);
   display: grid;
   gap: 2px;
   min-width: 0;
@@ -1349,7 +1411,7 @@ body {
   color: var(--muted);
   font-size: .56rem;
   font-style: normal;
-  font-weight: 820;
+  font-weight: 600;
   line-height: 1;
   text-transform: uppercase;
 }
@@ -1363,14 +1425,14 @@ body {
 .amc-target-name {
   color: var(--text);
   font-size: .8rem;
-  font-weight: 780;
+  font-weight: 600;
   line-height: 1.1;
 }
 
 .amc-target-type {
   color: var(--faint);
   font-size: .56rem;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: .07em;
   line-height: 1;
   text-transform: uppercase;
@@ -1387,7 +1449,7 @@ body {
 .amc-target-facts strong {
   color: var(--text);
   font-size: .72rem;
-  font-weight: 760;
+  font-weight: 600;
   line-height: 1.08;
 }
 
@@ -1400,7 +1462,7 @@ body {
   align-items: center;
   background: color-mix(in srgb, var(--panel-soft) 74%, transparent);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   color: inherit;
   display: grid;
   gap: 9px;
@@ -1412,7 +1474,7 @@ body {
 
 .amc-article-promo img {
   aspect-ratio: 4 / 3;
-  border-radius: 6px;
+  border-radius: var(--radius-small);
   height: 66px;
   object-fit: cover;
   width: 88px;
@@ -1426,14 +1488,14 @@ body {
 .amc-article-copy small {
   color: var(--accent);
   font-size: .56rem;
-  font-weight: 820;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
 .amc-article-copy b {
   color: var(--text);
   font-size: .76rem;
-  font-weight: 740;
+  font-weight: 600;
   line-height: 1.16;
 }
 
@@ -1448,7 +1510,7 @@ body {
 .amc-sources {
   background: color-mix(in srgb, var(--panel) 88%, transparent);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   min-width: 0;
   padding: 0;
 }
@@ -1456,7 +1518,7 @@ body {
 .amc-sources summary {
   cursor: pointer;
   font-size: .78rem;
-  font-weight: 760;
+  font-weight: 600;
   list-style: none;
   padding: 10px 12px;
   text-transform: uppercase;
@@ -1469,7 +1531,7 @@ body {
 .amc-sources summary::before {
   content: ">";
   display: inline-block;
-  font-weight: 820;
+  font-weight: 600;
   margin-right: 8px;
   transition: transform .16s ease;
 }
@@ -1485,7 +1547,7 @@ body {
 
 .amc-version-panel h3 {
   font-size: .76rem;
-  font-weight: 720;
+  font-weight: 600;
   margin: 8px 0;
 }
 
@@ -1518,7 +1580,7 @@ body {
 
 .amc-source-list a {
   color: var(--accent);
-  font-weight: 760;
+  font-weight: 600;
 }
 
 .amc-print-brand {
@@ -1537,6 +1599,7 @@ body {
 
   .amc-month-strip {
     margin-top: 0;
+    width: 100%;
   }
 
   .amc-actions {
@@ -1566,7 +1629,7 @@ body {
   }
 
   .amc-day[aria-expanded="true"] .amc-expanded {
-    width: calc(200% + var(--grid-gap));
+    width: calc(200% + var(--grid-gap) + 10px);
   }
 
   .amc-day.is-row-tail[aria-expanded="true"] .amc-expanded {
@@ -1728,7 +1791,11 @@ body {
   }
 
   .amc-month-nav {
-    grid-template-columns: 34px minmax(0, 1fr) 34px;
+    grid-template-columns: 34px max-content 34px;
+  }
+
+  .amc-month-label {
+    padding-inline: clamp(7px, 2.5vw, 15px);
   }
 
   .amc-actions {
@@ -1803,7 +1870,7 @@ body {
   .amc-day[aria-expanded="true"] {
     grid-column: 1 / -1;
     min-height: auto;
-    scroll-margin-top: 10px;
+    scroll-margin-top: 12px;
   }
 
   .amc-day[aria-expanded="true"] > .amc-date,
@@ -1822,6 +1889,10 @@ body {
     right: auto;
     top: auto;
     width: 100%;
+  }
+
+  .amc-alt-labels .amc-night-stat + .amc-night-stat {
+    padding-left: 8px;
   }
 
   .amc-expanded-top,
@@ -2020,3 +2091,4 @@ body {
     display: none;
   }
 }
+

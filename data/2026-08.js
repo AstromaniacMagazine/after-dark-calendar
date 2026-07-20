@@ -36,6 +36,21 @@
       label: "NASA SVS 2026 total solar eclipse map",
       url: "https://svs.gsfc.nasa.gov/5647",
       note: "NASA visualisation reference for the August 2026 eclipse path."
+    },
+    usnoPhases: {
+      label: "US Naval Observatory 2026 Moon phases",
+      url: "https://aa.usno.navy.mil/calculated/moon/phases?year=2026",
+      note: "Primary Moon phase dates and times are checked against the USNO table in Universal Time."
+    },
+    nasaLunarEclipse: {
+      label: "NASA 2026 lunar eclipses",
+      url: "https://science.nasa.gov/moon/eclipses/",
+      note: "Reference for the 28 August partial lunar eclipse and its visibility region."
+    },
+    nasaSkyCal: {
+      label: "NASA 2026 Sky Events Calendar",
+      url: "https://eclipse.gsfc.nasa.gov/SKYCAL/SKYCAL.html?cal=2026",
+      note: "UTC cross-check for August planetary events, lunar pairings, meteor peaks and primary Moon phases."
     }
   };
 
@@ -47,16 +62,16 @@
   }
 
   const exactMoon = {
-    5: "Last Quarter",
+    6: "Last Quarter",
     12: "New Moon",
-    19: "First Quarter",
-    27: "Full Moon"
+    20: "First Quarter",
+    28: "Full Moon"
   };
 
   const monthIntel = [
-    { title: "Solar eclipse", text: "12 Aug. Totality crosses Greenland, Iceland and Spain.", image: media.eclipse.src, alt: "Solar eclipse planning" },
+    { title: "Solar eclipse", text: "12 Aug. Total on the central path; partial across much of Europe and beyond.", image: media.eclipse.src, alt: "Solar eclipse planning" },
     { title: "Perseids", text: "13 Aug. Peak near New Moon, a strong meteor opportunity.", image: media.meteor.src, alt: "Meteor shower" },
-    { title: "Venus elongation", text: "14 Aug. Venus reaches greatest evening elongation.", image: media.venus.src, alt: "Venus" },
+    { title: "Venus elongation", text: "15 Aug. Venus reaches greatest evening elongation.", image: media.venus.src, alt: "Venus" },
     { title: "Comet 10P", text: "2-3 Aug. Perihelion and peak brightness are listed close together.", image: media.comet.src, alt: "Comet" }
   ];
 
@@ -64,14 +79,15 @@
     2: ["Comet 10P/Tempel 2", "Mercury", "Pre-dawn eastern sky"],
     3: ["Moon-Saturn pairing", "Saturn", "Comet 10P/Tempel 2"],
     7: ["Pleiades (M45)", "Waning crescent Moon", "Ring Nebula (M57)"],
-    8: ["Moon-Mars pairing", "Mars", "Waning crescent Moon"],
-    12: ["Total solar eclipse", "New Moon", "Solar corona"],
+    9: ["Moon-Mars pairing", "Mars", "Waning crescent Moon"],
+    12: ["Solar eclipse", "New Moon", "Solar corona"],
     13: ["Perseids", "Milky Way fields", "Andromeda Galaxy (M31)"],
-    14: ["Venus", "Messier 15", "Comet 10P/Tempel 2"],
+    14: ["Messier 15", "Andromeda Galaxy (M31)", "Comet 10P/Tempel 2"],
+    15: ["Venus", "Messier 15", "Comet 10P/Tempel 2"],
     16: ["Moon-Venus pairing", "Crescent Moon", "Venus"],
     18: ["Kappa Cygnids", "Summer Milky Way", "Dumbbell Nebula (M27)"],
-    19: ["First Quarter Moon", "Lunar terminator", "Messier 2"],
-    27: ["Partial lunar eclipse", "Full Moon", "Moonrise"],
+    20: ["First Quarter Moon", "Lunar terminator", "Messier 2"],
+    28: ["Partial lunar eclipse", "Full Moon", "Moonrise"],
     30: ["Moon-Saturn pairing", "Saturn", "Waning gibbous Moon"],
     31: ["Moon-Saturn conjunction", "Saturn", "Waning gibbous Moon"]
   };
@@ -85,25 +101,27 @@
       event("sky", "Moon and Saturn", "The Moon passes close to Saturn in the sky.", "Moon-planet pairing.", ["inSky"], media.saturn),
       event("sky", "Comet 10P peak brightness", "In-The-Sky lists Comet 10P near peak brightness and closest approach around this date.", "Comet planning marker.", ["inSky"], media.comet)
     ],
-    5: [
-      event("moon", "Last Quarter Moon", "The Moon rises late, improving early-night sky contrast.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "inSky"])
+    6: [
+      event("moon", "Last Quarter Moon", "The phase occurs at 02:21 UTC; the Moon rises late, improving early-night sky contrast.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "usnoPhases", "nasaSkyCal"])
     ],
     7: [
       event("sky", "Moon near the Pleiades", "The waning Moon passes near the Pleiades cluster.", "Moon-cluster pairing.", ["inSky"], media.pleiades)
     ],
-    8: [
-      event("sky", "Moon and Mars", "The crescent Moon passes Mars before sunrise.", "Moon-planet pairing.", ["inSky"], media.planets)
+    9: [
+      event("sky", "Moon and Mars", "The waning crescent Moon passes Mars before sunrise.", "Moon-planet pairing.", ["nasaSkyCal", "inSky"], media.planets)
     ],
     12: [
-      event("moon", "New Moon", "Lunar illumination is near zero, coinciding with the solar eclipse.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "inSky"]),
-      event("eclipse", "Total solar eclipse", "Totality crosses Greenland, Iceland and Spain; partial eclipse visibility extends more widely.", "Use certified solar filters outside totality.", ["nasaEclipse", "nasaSvsEclipse", "inSky"], media.eclipse)
+      event("moon", "New Moon", "New Moon occurs at 17:37 UTC, coinciding with the solar eclipse.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "usnoPhases", "nasaSkyCal"]),
+      event("eclipse", "Solar eclipse: total and partial", "Totality crosses Greenland, Iceland, northern Russia, Spain and a small part of Portugal. A partial eclipse is visible across much of Europe, including London, and parts of Africa and North America.", "Use certified solar filters throughout every partial phase.", ["nasaEclipse", "nasaSvsEclipse", "nasaSkyCal"], media.eclipse)
     ],
     13: [
       event("meteor", "Perseid meteor shower peak", "Peak night falls close to New Moon, making this one of the strongest meteor opportunities of the year.", "Meteor shower peak.", ["inSky", "rmg2026"], media.meteor)
     ],
     14: [
-      event("sky", "Venus at greatest eastern elongation", "Venus reaches a favourable evening separation from the Sun.", "Evening planet highlight.", ["inSky"], media.venus),
       event("telescope", "Messier 15 well placed", "The globular cluster M15 is well placed for telescope and long-focal-length imaging.", "Deep-sky target.", ["inSky"], media.cluster)
+    ],
+    15: [
+      event("sky", "Venus at greatest eastern elongation", "Venus reaches a favourable evening separation from the Sun at about 46 degrees east of the Sun.", "Evening planet highlight.", ["nasaSkyCal", "inSky"], media.venus)
     ],
     16: [
       event("sky", "Moon and Venus", "A young Moon passes Venus in evening twilight.", "Twilight pairing.", ["inSky"], media.venus)
@@ -111,12 +129,12 @@
     18: [
       event("meteor", "Kappa Cygnid meteor shower", "A minor shower known for occasional bright meteors.", "Meteor shower peak.", ["inSky"], media.meteor)
     ],
-    19: [
-      event("moon", "First Quarter Moon", "The lunar terminator is well placed for visual observing and lunar imaging.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "inSky"])
+    20: [
+      event("moon", "First Quarter Moon", "The phase occurs at 02:46 UTC; the lunar terminator is well placed for visual observing and lunar imaging.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "usnoPhases", "nasaSkyCal"])
     ],
-    27: [
-      event("eclipse", "Partial lunar eclipse", "A partial lunar eclipse occurs around Full Moon; visibility is location-dependent.", "Eclipse marker.", ["inSky", "rmg2026"]),
-      event("moon", "Full Moon", "The Moon is effectively fully illuminated.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "inSky"])
+    28: [
+      event("eclipse", "Partial lunar eclipse", "The eclipse peaks at 04:14 UTC and is visible from the Americas, Europe, Africa and the eastern Pacific, subject to local Moon altitude and weather.", "Partial lunar eclipse.", ["nasaLunarEclipse", "nasaSkyCal"]),
+      event("moon", "Full Moon", "Full Moon occurs at 04:18 UTC, four minutes after the eclipse maximum.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "usnoPhases", "nasaSkyCal"])
     ],
     30: [
       event("sky", "Moon and Saturn", "The Moon passes close to Saturn again near the end of the month.", "Moon-planet pairing.", ["inSky"], media.saturn)
