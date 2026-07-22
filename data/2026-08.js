@@ -27,6 +27,11 @@
       url: "https://www.rmg.co.uk/stories/space-astronomy/2026-guide-night-sky",
       note: "High-level 2026 observing context and seasonal sky highlights."
     },
+    imo2026: {
+      label: "International Meteor Organization 2026 calendar",
+      url: "https://www.imo.net/files/meteor-shower/cal2026.pdf",
+      note: "Primary meteor-calendar cross-check for the Perseid and minor-shower activity windows, maxima and Moon conditions."
+    },
     nasaEclipse: {
       label: "NASA August 12 2026 total solar eclipse",
       url: "https://science.nasa.gov/eclipses/future-eclipses/total-solar-eclipse-on-august-12-2026/",
@@ -70,8 +75,8 @@
 
   const monthIntel = [
     { title: "Solar eclipse", text: "12 Aug. Total on the central path; partial across much of Europe and beyond.", image: media.eclipse.src, alt: "Solar eclipse planning" },
-    { title: "Perseids", text: "13 Aug. Peak near New Moon, a strong meteor opportunity.", image: media.meteor.src, alt: "Meteor shower" },
-    { title: "Venus elongation", text: "15 Aug. Venus reaches greatest evening elongation.", image: media.venus.src, alt: "Venus" },
+    { title: "Perseids", text: "12-13 Aug. Maximum near New Moon, with the strongest rates expected overnight.", image: media.meteor.src, alt: "Meteor shower" },
+    { title: "Venus elongation", text: "14 Aug. Venus reaches greatest evening elongation.", image: media.venus.src, alt: "Venus" },
     { title: "Comet 10P", text: "2-3 Aug. Perihelion and peak brightness are listed close together.", image: media.comet.src, alt: "Comet" }
   ];
 
@@ -79,15 +84,19 @@
     2: ["Comet 10P/Tempel 2", "Mercury", "Pre-dawn eastern sky"],
     3: ["Moon-Saturn pairing", "Saturn", "Comet 10P/Tempel 2"],
     7: ["Pleiades (M45)", "Waning crescent Moon", "Ring Nebula (M57)"],
+    8: ["Moon-Elnath pairing", "Elnath (Beta Tauri)", "Waning crescent Moon"],
     9: ["Moon-Mars pairing", "Mars", "Waning crescent Moon"],
+    11: ["Moon-Mercury pairing", "Mercury", "Very thin crescent Moon"],
     12: ["Solar eclipse", "New Moon", "Solar corona"],
     13: ["Perseids", "Milky Way fields", "Andromeda Galaxy (M31)"],
-    14: ["Messier 15", "Andromeda Galaxy (M31)", "Comet 10P/Tempel 2"],
-    15: ["Venus", "Messier 15", "Comet 10P/Tempel 2"],
+    14: ["Venus", "Messier 15", "Comet 10P/Tempel 2"],
+    15: ["Messier 2", "Jupiter-Mercury pairing", "Andromeda Galaxy (M31)"],
     16: ["Moon-Venus pairing", "Crescent Moon", "Venus"],
     18: ["Kappa Cygnids", "Summer Milky Way", "Dumbbell Nebula (M27)"],
     20: ["First Quarter Moon", "Lunar terminator", "Messier 2"],
-    28: ["Partial lunar eclipse", "Full Moon", "Moonrise"],
+    21: ["Moon-Antares pairing", "Antares", "Lunar terminator"],
+    27: ["Mercury solar conjunction", "Saturn", "Andromeda Galaxy (M31)"],
+    28: ["Partial lunar eclipse", "Full Moon", "Asteroid 9 Metis"],
     30: ["Moon-Saturn pairing", "Saturn", "Waning gibbous Moon"],
     31: ["Moon-Saturn conjunction", "Saturn", "Waning gibbous Moon"]
   };
@@ -107,21 +116,29 @@
     7: [
       event("sky", "Moon near the Pleiades", "The waning Moon passes near the Pleiades cluster.", "Moon-cluster pairing.", ["inSky"], media.pleiades)
     ],
+    8: [
+      event("occultation", "Lunar occultation of Elnath", "The Moon occults Elnath (Beta Tauri) between 18:18 and 22:04 UTC across parts of Australia, Papua New Guinea, south-eastern Indonesia and the Solomon Islands. A close Moon-Elnath pairing is visible more widely.", "The occultation itself is location-limited; check the linked visibility map.", ["inSky"], media.pleiades)
+    ],
     9: [
       event("sky", "Moon and Mars", "The waning crescent Moon passes Mars before sunrise.", "Moon-planet pairing.", ["nasaSkyCal", "inSky"], media.planets)
     ],
+    11: [
+      event("sky", "Moon and Mercury", "The Moon passes 2 degrees 05 arcminutes north of Mercury at 12:48 UTC. Depending on location, the very thin crescent and Mercury may be visible low in the dawn sky.", "A clear eastern horizon is essential; never sweep for Mercury with optics after sunrise.", ["inSky"], media.planets)
+    ],
     12: [
       event("moon", "New Moon", "New Moon occurs at 17:37 UTC, coinciding with the solar eclipse.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "usnoPhases", "nasaSkyCal"]),
-      event("eclipse", "Solar eclipse: total and partial", "Totality crosses Greenland, Iceland, northern Russia, Spain and a small part of Portugal. A partial eclipse is visible across much of Europe, including London, and parts of Africa and North America.", "Use certified solar filters throughout every partial phase.", ["nasaEclipse", "nasaSvsEclipse", "nasaSkyCal"], media.eclipse)
+      event("eclipse", "Solar eclipse: total and partial", "Totality crosses Greenland, Iceland, northern Russia, Spain and a small part of Portugal. A partial eclipse is visible across much of Europe, including London, and parts of Africa and North America.", "Use ISO 12312-2 compliant eclipse viewers or correctly fitted front-mounted solar filters throughout every partial phase.", ["nasaEclipse", "nasaSvsEclipse", "nasaSkyCal"], media.eclipse)
     ],
     13: [
-      event("meteor", "Perseid meteor shower peak", "Peak night falls close to New Moon, making this one of the strongest meteor opportunities of the year.", "Meteor shower peak.", ["inSky", "rmg2026"], media.meteor)
+      event("meteor", "Perseid meteor shower peak", "The broad maximum runs from 21:00 UTC on 12 August to 09:00 UTC on 13 August, with the strongest rates expected around 02:00-04:00 UTC on the 13th. The Moon is only about 1% illuminated.", "Best from a dark site after the radiant rises; allow at least 20 minutes for dark adaptation.", ["imo2026", "inSky", "rmg2026"], media.meteor)
     ],
     14: [
-      event("telescope", "Messier 15 well placed", "The globular cluster M15 is well placed for telescope and long-focal-length imaging.", "Deep-sky target.", ["inSky"], media.cluster)
+      event("telescope", "Messier 15 well placed", "The globular cluster M15 is well placed for telescope and long-focal-length imaging.", "Deep-sky target.", ["inSky"], media.cluster),
+      event("sky", "Venus at greatest eastern elongation", "Venus reaches its greatest evening separation from the Sun at 21:59 UTC, about 46 degrees east of the Sun.", "Evening planet highlight; visibility and altitude depend on latitude and the western horizon.", ["nasaSkyCal", "inSky"], media.venus)
     ],
     15: [
-      event("sky", "Venus at greatest eastern elongation", "Venus reaches a favourable evening separation from the Sun at about 46 degrees east of the Sun.", "Evening planet highlight.", ["nasaSkyCal", "inSky"], media.venus)
+      event("sky", "Jupiter-Mercury conjunction", "Jupiter passes 33 arcminutes south of Mercury at 09:13 UTC, but the pair lies only 12 degrees from the Sun and is difficult or impossible to observe from many locations.", "Do not point binoculars, a telescope or a camera with an optical finder near the Sun.", ["inSky"], media.planets),
+      event("telescope", "Messier 2 well placed", "The globular cluster M2 is well placed for evening telescope observing and long-focal-length imaging.", "Deep-sky target in Aquarius.", ["inSky"], media.cluster)
     ],
     16: [
       event("sky", "Moon and Venus", "A young Moon passes Venus in evening twilight.", "Twilight pairing.", ["inSky"], media.venus)
@@ -132,9 +149,16 @@
     20: [
       event("moon", "First Quarter Moon", "The phase occurs at 02:46 UTC; the lunar terminator is well placed for visual observing and lunar imaging.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "usnoPhases", "nasaSkyCal"])
     ],
+    21: [
+      event("occultation", "Lunar occultation of Antares", "The Moon occults Antares from 02:55 to 06:49 UTC, visible along a path across Antarctica, southern Argentina, Chile and the Falkland Islands. A close Moon-Antares pairing is visible more widely.", "The occultation itself is location-limited; check the linked visibility map.", ["inSky"], media.planets)
+    ],
+    27: [
+      event("sky", "Mercury at superior solar conjunction", "Mercury passes behind the Sun at 17:11 UTC and is unobservable while it transitions from the morning to the evening sky.", "Never attempt to find Mercury with binoculars or a telescope when it is close to the Sun.", ["inSky"], media.planets)
+    ],
     28: [
       event("eclipse", "Partial lunar eclipse", "The eclipse peaks at 04:14 UTC and is visible from the Americas, Europe, Africa and the eastern Pacific, subject to local Moon altitude and weather.", "Partial lunar eclipse.", ["nasaLunarEclipse", "nasaSkyCal"]),
-      event("moon", "Full Moon", "Full Moon occurs at 04:18 UTC, four minutes after the eclipse maximum.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "usnoPhases", "nasaSkyCal"])
+      event("moon", "Full Moon", "Full Moon occurs at 04:18 UTC, four minutes after the eclipse maximum.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "usnoPhases", "nasaSkyCal"]),
+      event("opposition", "Asteroid 9 Metis at opposition", "Asteroid 9 Metis reaches opposition at 14:22 UTC in Aquarius, peaking near magnitude 9.2 and remaining above the horizon for much of the local night.", "Binoculars or a moderate-aperture telescope are required; the Full Moon will reduce contrast.", ["inSky"])
     ],
     30: [
       event("sky", "Moon and Saturn", "The Moon passes close to Saturn again near the end of the month.", "Moon-planet pairing.", ["inSky"], media.saturn)
