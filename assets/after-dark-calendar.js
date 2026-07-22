@@ -998,47 +998,24 @@
 
   function selectDay(day) {
     const wasExpanded = state.expandedDay === day;
-    const mobile = root.getBoundingClientRect().width <= 1050;
+    const preservePosition = root.getBoundingClientRect().width <= 1050;
+    const currentButton = els.grid.querySelector(`.amc-day[data-day="${day}"]`);
+    const previousTop = preservePosition && currentButton ? currentButton.getBoundingClientRect().top : null;
     state.selectedDay = day;
     state.expandedDay = wasExpanded ? null : day;
     renderAll();
-    if (!mobile) return;
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      const nextButton = els.grid.querySelector(`.amc-day[data-day="${day}"]`);
-      if (!nextButton) return;
-      nextButton.focus({ preventScroll: true });
-      if (!wasExpanded) {
-        alignExpandedDay(nextButton, day);
-        return;
-      }
-      alignCollapsedDay(nextButton, day);
-    }));
-  }
-
-  function alignExpandedDay(button, day) {
-    const offset = 12;
-    const targetTop = () => window.scrollY + button.getBoundingClientRect().top - offset;
-    window.scrollTo({ top: targetTop(), left: 0, behavior: "smooth" });
-    window.setTimeout(() => {
-      if (state.expandedDay !== day) return;
-      const current = els.grid.querySelector(`.amc-day[data-day="${day}"]`);
-      if (!current) return;
-      const drift = current.getBoundingClientRect().top - offset;
-      if (Math.abs(drift) > 3) window.scrollBy({ top: drift, left: 0, behavior: "auto" });
-    }, 420);
-  }
-
-  function alignCollapsedDay(button, day) {
-    const offset = 12;
-    const targetTop = window.scrollY + button.getBoundingClientRect().top - offset;
-    window.scrollTo({ top: targetTop, left: 0, behavior: "smooth" });
-    window.setTimeout(() => {
-      if (state.expandedDay !== null || state.selectedDay !== day) return;
-      const current = els.grid.querySelector(`.amc-day[data-day="${day}"]`);
-      if (!current) return;
-      const drift = current.getBoundingClientRect().top - offset;
-      if (Math.abs(drift) > 3) window.scrollBy({ top: drift, left: 0, behavior: "auto" });
-    }, 420);
+    const nextButton = els.grid.querySelector(`.amc-day[data-day="${day}"]`);
+    nextButton?.focus({ preventScroll: true });
+    if (nextButton && previousTop !== null) {
+      const keepPosition = () => {
+        const current = els.grid.querySelector(`.amc-day[data-day="${day}"]`);
+        if (!current) return;
+        const drift = current.getBoundingClientRect().top - previousTop;
+        if (Math.abs(drift) > .5) window.scrollBy({ top: drift, left: 0, behavior: "auto" });
+      };
+      keepPosition();
+      requestAnimationFrame(keepPosition);
+    }
   }
 
   function goToAdjacentMonth(direction) {
