@@ -29,6 +29,10 @@
   const locationKey = "amc-sky-calendar-location";
   const themeKey = "amc-sky-calendar-theme";
   const themeOrder = ["light", "dark", "red"];
+  const chartStartHour = 16;
+  const chartEndHour = 8;
+  const chartDurationHours = 16;
+  const chartSampleCount = 64;
   const weatherRefreshMs = 75 * 60 * 1000;
   const useLocationText = "Use Current Location";
   const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -346,6 +350,7 @@
         ${miniItem("sunset", "Sunset", skyInfo?.sunsetLabel || "Use location")}
       </span>
       <span class="amc-cell-mobile-extra">
+        ${events.length ? `<span class="amc-expanded-event-list">${events.map(expandedEventItem).join("")}</span>` : ""}
         ${moonChart(skyInfo, nightInfo, true)}
         ${cellWeatherPanel()}
       </span>
@@ -360,6 +365,11 @@
     if (!primary?.title) return `<span class="amc-mini amc-event-mini is-empty" aria-hidden="true"></span>`;
     const meta = eventMeta(primary);
     return `<span class="amc-mini amc-event-mini ${meta.css}">${iconSvg("event")}<span><small>Event</small><b>${escapeHtml(primary.title)}</b></span></span>`;
+  }
+
+  function expandedEventItem(item) {
+    const meta = eventMeta(item);
+    return `<span class="amc-expanded-event ${meta.css}"><small>${escapeHtml(meta.label)}</small><b>${escapeHtml(item.title)}</b><span>${escapeHtml(item.copy || "")}</span></span>`;
   }
 
   function zodiacCard(day) {
@@ -592,26 +602,27 @@
     const chart = { x: compact ? 34 : 39, y: compact ? 18 : 22, width: compact ? 282 : 306, height: compact ? 118 : 164 };
     const viewWidth = compact ? 332 : 360;
     const viewHeight = compact ? 190 : 244;
-    const hours = Array.from({ length: 13 }, (_, i) => (18 + i) % 24);
+    const tickStep = 2;
+    const hours = Array.from({ length: (chartDurationHours / tickStep) + 1 }, (_, i) => (chartStartHour + (i * tickStep)) % 24);
     const yTicks = compact ? [0, 30, 60] : [0, 20, 40, 60];
     const bands = timeline.bands.map(band => {
-      const x = chart.x + (band.startHour / 12) * chart.width;
-      const width = ((band.endHour - band.startHour) / 12) * chart.width;
+      const x = chart.x + (band.startHour / chartDurationHours) * chart.width;
+      const width = ((band.endHour - band.startHour) / chartDurationHours) * chart.width;
       return `<rect x="${x}" y="${chart.y}" width="${Math.max(.5, width)}" height="${chart.height}" fill="${darknessColour(band.state)}"/>`;
     }).join("");
     const bandLabels = timeline.bands.map(band => {
-      const width = ((band.endHour - band.startHour) / 12) * chart.width;
+      const width = ((band.endHour - band.startHour) / chartDurationHours) * chart.width;
       const label = darknessBandLabel(band.state, width, compact);
       const minWidth = band.state === "nautical" ? (compact ? 18 : 22) : (compact ? 50 : 64);
       if (!label || width < minWidth) return "";
-      const x = chart.x + ((band.startHour + band.endHour) / 24) * chart.width;
+      const x = chart.x + ((band.startHour + band.endHour) / (chartDurationHours * 2)) * chart.width;
       const y = band.state === "dark" ? chart.y + 14 : band.state === "nautical" ? chart.y + (compact ? 13 : 16) : chart.y + chart.height - (compact ? 8 : 10);
       const fill = band.state === "dark" ? "#fff" : "currentColor";
       const fontSize = band.state === "nautical" && width < (compact ? 38 : 46) ? (compact ? 6.8 : 7.4) : (compact ? 7.2 : 8.6);
       return `<text x="${x}" y="${y}" text-anchor="middle" fill="${fill}" font-size="${fontSize}" font-weight="600">${label}</text>`;
     }).join("");
     const hourTicks = hours.map((hour, index) => {
-      const x = chart.x + (index / 12) * chart.width;
+      const x = chart.x + ((index * tickStep) / chartDurationHours) * chart.width;
       return `<g><line x1="${x}" x2="${x}" y1="${chart.y}" y2="${chart.y + chart.height}" stroke="rgba(22,25,29,.12)"/><text x="${x}" y="${chart.y + chart.height + (compact ? 16 : 18)}" text-anchor="middle" fill="currentColor" font-size="${compact ? 8.1 : 9.1}" font-weight="600">${String(hour).padStart(2, "0")}</text></g>`;
     }).join("");
     const altitudeTicks = yTicks.map(tick => {
@@ -628,11 +639,11 @@
       return `<g><circle cx="${point.x}" cy="${point.y}" r="${compact ? 3.2 : 4}" fill="#d08a13"/><text x="${point.x}" y="${point.y - 19}" text-anchor="middle" fill="#8b5f12" font-size="${compact ? 8 : 8.8}" font-weight="600">${marker.label}</text><text x="${point.x}" y="${point.y - 7}" text-anchor="middle" fill="currentColor" font-size="${compact ? 7.4 : 8.2}" font-weight="600">${marker.time}</text></g>`;
     }).join("");
     const twilightMarkers = timeline.twilightMarkers.map(marker => {
-      const x = chart.x + (marker.hour / 12) * chart.width;
+      const x = chart.x + (marker.hour / chartDurationHours) * chart.width;
       const y = marker.type === "end" ? chart.y + 12 : chart.y + chart.height - 24;
       return `<g><line x1="${x}" x2="${x}" y1="${chart.y}" y2="${chart.y + chart.height}" stroke="rgba(5,8,18,.46)" stroke-dasharray="3 3"/><text x="${x}" y="${y}" text-anchor="middle" fill="currentColor" font-size="${compact ? 7.2 : 8.2}" font-weight="600">${marker.label}</text></g>`;
     }).join("");
-    return `<svg class="amc-alt-svg" viewBox="0 0 ${viewWidth} ${viewHeight}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Moon altitude from 18:00 to 06:00, scaled from 0 to 60 degrees">
+    return `<svg class="amc-alt-svg" viewBox="0 0 ${viewWidth} ${viewHeight}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Moon altitude from 16:00 to 08:00, scaled from 0 to 60 degrees">
       <g style="color: var(--text)">
         ${bands}${hourTicks}${altitudeTicks}${bandLabels}
         <line x1="${chart.x}" x2="${chart.x + chart.width}" y1="${chart.y + chart.height}" y2="${chart.y + chart.height}" stroke="rgba(22,25,29,.42)" stroke-width="1.2"/>
@@ -933,19 +944,19 @@
 
   function buildNightTimeline(day, observer) {
     const Astronomy = window.Astronomy;
-    const start = zonedDate(state.month.year, state.month.monthIndex, day, 18, 0, 0);
-    const end = zonedDate(state.month.year, state.month.monthIndex, day + 1, 6, 0, 0);
+    const start = zonedDate(state.month.year, state.month.monthIndex, day, chartStartHour, 0, 0);
+    const end = zonedDate(state.month.year, state.month.monthIndex, day + 1, chartEndHour, 0, 0);
     const durationMs = Math.max(1, end.getTime() - start.getTime());
     const moonSamples = [];
     const darknessStates = [];
-    for (let step = 0; step < 48; step += 1) {
-      const sample = new Date(start.getTime() + (step / 48) * durationMs);
+    for (let step = 0; step < chartSampleCount; step += 1) {
+      const sample = new Date(start.getTime() + (step / chartSampleCount) * durationMs);
       moonSamples.push({ hour: chartHour(sample, start, end), altitude: bodyAltitude(Astronomy.Body.Moon, sample, observer) });
       darknessStates.push(darknessState(bodyAltitude(Astronomy.Body.Sun, sample, observer)));
     }
-    moonSamples.push({ hour: 12, altitude: bodyAltitude(Astronomy.Body.Moon, end, observer) });
-    const rise = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, +1, start, .55);
-    const set = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, -1, start, .55);
+    moonSamples.push({ hour: chartDurationHours, altitude: bodyAltitude(Astronomy.Body.Moon, end, observer) });
+    const rise = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, +1, start, .75);
+    const set = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, -1, start, .75);
     return {
       bands: compressBands(darknessStates),
       moonSegments: moonVisibleSegments(moonSamples),
@@ -987,7 +998,7 @@
 
   function selectDay(day) {
     const wasExpanded = state.expandedDay === day;
-    const mobile = root.getBoundingClientRect().width <= 760;
+    const mobile = root.getBoundingClientRect().width <= 1050;
     state.selectedDay = day;
     state.expandedDay = wasExpanded ? null : day;
     renderAll();
@@ -1498,12 +1509,12 @@
   }
 
   function compressBands(states) {
-    if (!states.length) return [{ startHour: 0, endHour: 12, state: "light" }];
+    if (!states.length) return [{ startHour: 0, endHour: chartDurationHours, state: "light" }];
     const bands = [];
     let start = 0;
     for (let index = 1; index <= states.length; index += 1) {
       if (states[index] === states[start]) continue;
-      bands.push({ startHour: Number(((start / states.length) * 12).toFixed(3)), endHour: Number(((index / states.length) * 12).toFixed(3)), state: states[start] });
+      bands.push({ startHour: Number(((start / states.length) * chartDurationHours).toFixed(3)), endHour: Number(((index / states.length) * chartDurationHours).toFixed(3)), state: states[start] });
       start = index;
     }
     return bands;
@@ -1536,12 +1547,12 @@
   }
 
   function chartHour(date, start, end) {
-    return Number((12 * (date.getTime() - start.getTime()) / Math.max(1, end.getTime() - start.getTime())).toFixed(3));
+    return Number((chartDurationHours * (date.getTime() - start.getTime()) / Math.max(1, end.getTime() - start.getTime())).toFixed(3));
   }
 
   function chartPoint(point, chart, maxAltitude) {
     return {
-      x: Number((chart.x + (point.hour / 12) * chart.width).toFixed(2)),
+      x: Number((chart.x + (point.hour / chartDurationHours) * chart.width).toFixed(2)),
       y: Number((chart.y + chart.height - (clamp(point.altitude, 0, maxAltitude) / maxAltitude) * chart.height).toFixed(2))
     };
   }
