@@ -67,7 +67,7 @@
         openMeteo: {
           label: "Open-Meteo Forecast API",
           url: "https://open-meteo.com/en/docs",
-          note: "The local 7-night forecast uses Open-Meteo hourly cloud cover, humidity, temperature, precipitation probability, wind speed, WMO weather codes and location timezone. Seeing is an in-calendar planning estimate from those variables, not a dedicated CMC seeing model."
+          note: "The local 7-night forecast uses Open-Meteo hourly cloud cover, humidity, temperature, dew point, precipitation probability, wind speed and gusts, visibility, CAPE, WMO weather codes and location timezone. Transparency and seeing are planning estimates derived from these inputs, not dedicated astronomy forecast models."
         },
         openMeteoGeo: {
           label: "Open-Meteo Geocoding API",
@@ -101,13 +101,28 @@
         },
         nasaSoyuz: {
           label: "NASA Soyuz MS-29",
-          url: "https://www.nasa.gov/event/soyuz-ms-29/",
-          note: "NASA mission page for the Soyuz MS-29 crewed ISS launch."
+          url: "https://www.nasa.gov/blogs/spacestation/2026/07/14/soyuz-spacecraft-launches-new-crew-for-station-arrival-today/",
+          note: "NASA confirmation of the 14 July Soyuz MS-29 crewed ISS launch."
         },
         spacex: {
           label: "SpaceX launches",
           url: "https://www.spacex.com/launches",
           note: "Official SpaceX launch page for Falcon 9 mission dates."
+        },
+        spacex1748: {
+          label: "SpaceX Starlink 17-48 mission",
+          url: "https://www.spacex.com/launches/sl-17-48",
+          note: "Official SpaceX mission page confirming the 10 July 2026 launch date."
+        },
+        imo2026: {
+          label: "International Meteor Organization 2026 calendar",
+          url: "https://www.imo.net/files/meteor-shower/cal2026.pdf",
+          note: "Primary meteor-calendar source for the Southern delta Aquariid and alpha Capricornid activity windows and 31 July maxima."
+        },
+        usnoPhases: {
+          label: "US Naval Observatory 2026 Moon phases",
+          url: "https://aa.usno.navy.mil/calculated/moon/phases?year=2026",
+          note: "Primary Moon-phase dates and times checked against the USNO table in Universal Time."
         },
         spaceflightNow: {
           label: "Spaceflight Now launch schedule",
@@ -253,16 +268,16 @@
 
       const exactMoon = {
         7: "Last Quarter 19:29 UTC",
-        14: "New Moon 09:44 UTC",
-        21: "First Quarter 11:06 UTC",
+        14: "New Moon 09:43 UTC",
+        21: "First Quarter 11:05 UTC",
         29: "Full Moon 14:36 UTC"
       };
 
       const monthIntel = [
         { title: "Moon-free dates", text: "14-16 Jul. Lowest Moon interference of the month.", image: moonImage(14, 216), alt: "New Moon" },
         { title: "Astronomical night", text: "Use Current Location to calculate local dark-time windows.", image: media.milkyWay.src, alt: "Milky Way night sky" },
-        { title: "Meteor peak", text: "Delta Aquariids peak 30 Jul. Radiant height depends on latitude.", image: media.meteor.src, alt: "Meteor shower" },
-        { title: "Launch watch", text: "SpaceX and Soyuz launch dates in current listings.", image: media.spacex40.src, alt: "SpaceX rocket launch" }
+        { title: "Meteor peak", text: "Delta Aquariids peak 31 Jul, overnight 30-31 Jul. Radiant height depends on latitude.", image: media.meteor.src, alt: "Meteor shower" },
+        { title: "July launches", text: "SpaceX missions and Soyuz MS-29 launched on their listed dates.", image: media.spacex40.src, alt: "SpaceX rocket launch" }
       ];
 
       const targetData = {
@@ -282,8 +297,8 @@
         26: ["Saturn", "Waxing gibbous Moon", "Pluto"],
         27: ["Pluto", "Saturn", "Waxing gibbous Moon"],
         29: ["Full Moon", "Moonrise", "Saturn"],
-        30: ["Delta Aquariids", "Alpha Capricornids", "Full Moon"],
-        31: ["Saturn", "Waning gibbous Moon", "Ring Nebula (M57)"]
+        30: ["Waning gibbous Moon", "Saturn", "Ring Nebula (M57)"],
+        31: ["Delta Aquariids", "Alpha Capricornids", "Saturn"]
       };
 
       const eventData = {
@@ -292,42 +307,42 @@
         ],
         5: [
           event("telescope", "Carroll Crater libration", "The Moon's western limb tilts more favourably towards Earth.", "Small telescope event.", ["rmg"]),
-          event("launch", "SpaceX Starlink 10-50", "Falcon 9 Starlink mission from SLC-40, Florida.", "Launch-watch item.", ["spacex", "spaceflightNow", "nextSpaceflight"], media.spacex40)
+          event("launch", "SpaceX Starlink 10-50", "Falcon 9 launched the Starlink mission from SLC-40, Florida.", "Completed launch.", ["spacex", "spaceflightNow", "nextSpaceflight"], media.spacex40)
         ],
         6: [
           event("sky", "Earth at aphelion", "Earth is farthest from the Sun at about 17:30 UTC.", "Earth-Sun distance marker.", ["rmg"], media.earth)
         ],
         7: [
           event("moon", "Last Quarter Moon", "Exact phase 19:29 UTC. The terminator crosses the visible lunar disc.", "Moon phase marker.", ["astronomyEngine", "nasaSvs"]),
-          event("launch", "SpaceX Transporter-17", "Falcon 9 rideshare mission from SLC-4E, California.", "Launch-watch item.", ["spacex", "spaceflightNow", "nextSpaceflight"], media.transporter)
+          event("launch", "SpaceX Transporter-17", "Falcon 9 launched the rideshare mission from SLC-4E, California.", "Completed launch.", ["spacex", "spaceflightNow", "nextSpaceflight"], media.transporter)
         ],
         9: [
-          event("launch", "SpaceX Starlink 10-42", "Falcon 9 Starlink mission from SLC-40, Florida.", "Launch-watch item.", ["spacex", "spaceflightNow", "nextSpaceflight"], media.spacex40)
+          event("launch", "SpaceX Starlink 10-42", "Falcon 9 launched the Starlink mission from SLC-40, Florida.", "Completed launch.", ["spacex", "spaceflightNow", "nextSpaceflight"], media.spacex40)
         ],
         10: [
-          event("sky", "Matariki and Pleiades", "Matariki marks the heliacal rising of the Pleiades in Aotearoa New Zealand.", "Visibility depends strongly on latitude and twilight.", ["rmg", "inSky"], media.pleiades)
+          event("sky", "Matariki and Pleiades", "Matariki marks the heliacal rising of the Pleiades in Aotearoa New Zealand.", "Visibility depends strongly on latitude and twilight.", ["rmg", "inSky"], media.pleiades),
+          event("launch", "SpaceX Starlink 17-48", "Falcon 9 launched the Starlink mission from SLC-4E, California.", "Completed launch.", ["spacex1748"], media.spacexVandy)
         ],
         11: [
-          event("sky", "Dawn Moon-planet line-up", "Waning crescent near Mars and Saturn. Uranus remains a binocular or telescope object.", "Pre-sunrise alignment.", ["nasaSky", "inSky"]),
-          event("launch", "SpaceX Starlink 17-48", "Falcon 9 Starlink mission from SLC-4E, California.", "Launch-watch item.", ["spacex", "spaceflightNow", "nextSpaceflight"], media.spacexVandy)
+          event("sky", "Dawn Moon-planet line-up", "Waning crescent near Mars and Saturn. Uranus remains a binocular or telescope object.", "Pre-sunrise alignment.", ["nasaSky", "inSky"])
         ],
         12: [
           event("meteor", "Delta Aquariids active", "The shower is active from today. The radiant is in Aquarius.", "Meteor shower active period begins.", ["rmg"], media.meteor)
         ],
         13: [
           event("moon", "Moon near perigee", "Very thin crescent near closest monthly approach.", "Moon distance marker.", ["inSky", "nasaSvs"]),
-          event("launch", "SpaceX Starlink 15-14", "Falcon 9 Starlink mission from SLC-4E, California.", "Launch-watch item.", ["spacex", "spaceflightNow", "nextSpaceflight"], media.spacexVandy)
+          event("launch", "SpaceX Starlink 15-14", "Falcon 9 launched the Starlink mission from SLC-4E, California.", "Completed launch.", ["spacex", "spaceflightNow", "nextSpaceflight"], media.spacexVandy)
         ],
         14: [
-          event("moon", "New Moon", "Exact phase 09:44 UTC. Lunar illumination is near zero.", "Moon phase marker.", ["astronomyEngine", "nasaSvs", "rmg"]),
+          event("moon", "New Moon", "Exact phase 09:43 UTC. Lunar illumination is near zero.", "Moon phase marker.", ["astronomyEngine", "nasaSvs", "rmg", "usnoPhases"]),
           event("sky", "Milky Way and Comet 10P", "Moonlight is minimal. Comet 10P/Tempel 2 is also in play.", "Dark-sky opportunity.", ["nasaSky"], media.milkyWay),
-          event("launch", "Soyuz MS-29", "Crewed Soyuz launch to the International Space Station.", "Live coverage item.", ["nasaEvents", "nasaSoyuz", "nextSpaceflight"], media.soyuz)
+          event("launch", "Soyuz MS-29", "Soyuz MS-29 launched a new crew to the International Space Station at 14:47 UTC.", "Completed launch.", ["nasaEvents", "nasaSoyuz"], media.soyuz)
         ],
         17: [
           event("sky", "Moon near Venus", "Slim Moon and Venus appear close on the sky.", "Twilight pairing.", ["inSky"])
         ],
         21: [
-          event("moon", "First Quarter Moon", "Exact phase 11:06 UTC. Half the visible disc is illuminated.", "Moon phase marker.", ["astronomyEngine", "nasaSvs"])
+          event("moon", "First Quarter Moon", "Exact phase 11:05 UTC. Half the visible disc is illuminated.", "Moon phase marker.", ["astronomyEngine", "nasaSvs", "usnoPhases"])
         ],
         24: [
           event("occultation", "Antares occultation", "Lunar occultation path depends on observer location.", "Path-dependent event.", ["inSky"])
@@ -344,11 +359,9 @@
         29: [
           event("moon", "Full Moon", "Exact phase 14:36 UTC. Illumination is effectively 100 percent.", "Moon phase marker.", ["astronomyEngine", "nasaSvs", "rmg"])
         ],
-        30: [
-          event("meteor", "Delta Aquariids peak", "Peak night. Radiant altitude depends on latitude and local time; bright Moon will interfere.", "Meteor shower peak.", ["rmg", "inSky", "ams"], media.meteor),
-          event("meteor", "Alpha Capricornids peak", "Low-rate shower known for occasional bright meteors; bright Moon will interfere.", "Meteor shower peak.", ["inSky", "ams"], media.meteor)
-        ],
         31: [
+          event("meteor", "Southern Delta Aquariids peak", "The maximum falls on 31 July, with the main observing window overnight 30-31 July. Radiant altitude depends on latitude and bright Moon will interfere.", "Meteor shower peak.", ["imo2026", "inSky"], media.meteor),
+          event("meteor", "Alpha Capricornids peak", "The low-rate shower reaches maximum on 31 July and is known for occasional bright meteors; bright Moon will interfere.", "Meteor shower peak.", ["imo2026", "inSky"], media.meteor),
           event("telescope", "Saturn ring angle", "Saturn's ring plane remains narrow from Earth's viewpoint.", "Telescope target.", ["nasaSky"], media.saturn)
         ]
       };

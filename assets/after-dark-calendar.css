@@ -641,7 +641,7 @@ body {
 .amc-grid {
   display: grid;
   gap: var(--grid-gap);
-  grid-auto-rows: 138px;
+  grid-auto-rows: 150px;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   min-width: 0;
   overflow-anchor: none;
@@ -793,18 +793,24 @@ body {
 
 .amc-tags {
   align-items: end;
+  align-self: end;
   display: flex;
   flex-wrap: wrap;
   gap: 3px;
-  align-self: end;
-  max-height: 39px;
-  min-height: 21px;
+  max-height: 50px;
+  min-height: 23px;
+  min-width: 0;
   overflow: hidden;
+  width: 100%;
 }
 
 .amc-tags .amc-tag {
-  font-size: .59rem;
+  font-size: .62rem;
   padding: 5px 7px;
+}
+
+.amc-day:not([aria-expanded="true"]) .amc-tags {
+  overflow: hidden;
 }
 
 .amc-day.moon { --event-colour: var(--moon); }
@@ -1578,13 +1584,11 @@ body {
 }
 
 .amc-about {
-  background: color-mix(in srgb, var(--panel) 82%, transparent);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-panel);
+  border-top: 1px solid var(--line);
   display: grid;
   gap: 5px;
-  margin-top: 10px;
-  padding: 11px 13px;
+  margin: 10px 0 0;
+  padding: 10px 0 2px;
 }
 
 .amc-about h2 {
@@ -1692,7 +1696,7 @@ body {
   display: none;
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1320px) {
   .amc-top {
     grid-template-columns: 1fr;
   }
@@ -1716,7 +1720,7 @@ body {
   }
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1320px) {
   .amc-layout {
     grid-template-areas:
       "calendar"
@@ -1960,7 +1964,7 @@ body {
   }
 
   .amc-grid {
-    grid-auto-rows: minmax(130px, auto);
+    grid-auto-rows: minmax(140px, auto);
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
@@ -2151,7 +2155,7 @@ body {
 @media (max-width: 430px) {
   .amc-grid {
     gap: 7px;
-    grid-auto-rows: minmax(130px, auto);
+    grid-auto-rows: minmax(140px, auto);
   }
 
   .amc-day {

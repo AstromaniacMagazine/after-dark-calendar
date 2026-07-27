@@ -2,7 +2,7 @@
   "use strict";
 
   const synodicMonth = 29.530588853;
-  const knownNewMoon = Date.UTC(2026, 6, 14, 9, 44);
+  const knownNewMoon = Date.UTC(2026, 6, 14, 9, 43);
 
   function event(type, title, copy, fact, sourceIds, mediaAsset) {
     return { type, title, copy, fact, sourceIds, media: mediaAsset || null };
@@ -76,7 +76,7 @@
     openMeteo: {
       label: "Open-Meteo Forecast API",
       url: "https://open-meteo.com/en/docs",
-      note: "The local 7-night forecast uses Open-Meteo hourly cloud cover, humidity, temperature, precipitation probability, wind speed, WMO weather codes and location timezone."
+      note: "The local 7-night forecast uses Open-Meteo hourly cloud cover, humidity, temperature, dew point, precipitation probability, wind speed and gusts, visibility, CAPE, WMO weather codes and location timezone. Transparency and seeing are planning estimates derived from these inputs, not dedicated astronomy forecast models."
     },
     openMeteoGeo: {
       label: "Open-Meteo Geocoding API",
