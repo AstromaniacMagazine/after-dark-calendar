@@ -109,6 +109,33 @@ for (const entry of manifest || []) {
   }
 }
 
+function eventTitles(monthId, day) {
+  return (context.window.AMC_MONTH_DATA?.[monthId]?.eventData?.[day] || []).map(event => event.title);
+}
+
+const july = context.window.AMC_MONTH_DATA?.["2026-07"];
+if (july) {
+  const expectedPhases = {
+    7: "Last Quarter 19:29 UTC",
+    14: "New Moon 09:43 UTC",
+    21: "First Quarter 11:05 UTC",
+    29: "Full Moon 14:36 UTC"
+  };
+  for (const [day, label] of Object.entries(expectedPhases)) {
+    if (july.exactMoon?.[day] !== label) fail(`2026-07 day ${day} Moon phase should be "${label}".`);
+  }
+  if (!eventTitles("2026-07", 10).includes("SpaceX Starlink 17-48")) fail("Starlink 17-48 must be listed on 2026-07-10.");
+  if (eventTitles("2026-07", 11).includes("SpaceX Starlink 17-48")) fail("Starlink 17-48 is incorrectly listed on 2026-07-11.");
+  if (!eventTitles("2026-07", 31).includes("Southern Delta Aquariids peak")) fail("The Southern Delta Aquariids maximum must be listed on 2026-07-31.");
+  if (eventTitles("2026-07", 30).some(title => /Aquariid|Capricornid/i.test(title))) fail("July meteor maxima are incorrectly listed on 2026-07-30.");
+}
+
+const august = context.window.AMC_MONTH_DATA?.["2026-08"];
+if (august) {
+  if (!eventTitles("2026-08", 17).includes("Kappa Cygnid meteor shower")) fail("The Kappa Cygnid maximum must be listed on 2026-08-17.");
+  if (eventTitles("2026-08", 18).includes("Kappa Cygnid meteor shower")) fail("The Kappa Cygnid maximum is incorrectly listed on 2026-08-18.");
+}
+
 const html = read("index.html");
 for (const match of html.matchAll(/(?:src|href)="((?:assets|data)\/[^"?#]+)[^\"]*"/g)) {
   if (!fs.existsSync(path.join(rootDir, match[1]))) fail(`index.html references missing local asset ${match[1]}.`);
@@ -124,7 +151,22 @@ else {
   }
 }
 
-if (!html.includes("Beta0.5b")) fail("index.html does not identify Beta0.5b.");
+const declaredVersion = html.match(/data-version="([^"]+)"/)?.[1];
+if (!declaredVersion) fail("index.html does not declare a calendar data-version.");
+else {
+  const versionMentions = [...html.matchAll(/(?:Current version(?::| )|softwareVersion"\s*:\s*")([^"<]+)/g)].map(match => match[1].trim());
+  if (!html.includes(`aria-label="Current version ${declaredVersion}"`)) fail(`The version badge does not match ${declaredVersion}.`);
+  if (!html.includes(`<h3>Current version: ${declaredVersion}</h3>`)) fail(`The version panel does not match ${declaredVersion}.`);
+  if (!html.includes(`"softwareVersion": "${declaredVersion}"`)) fail(`Structured data does not match ${declaredVersion}.`);
+  if (versionMentions.some(version => !version.startsWith(declaredVersion))) fail(`A current-version value does not match ${declaredVersion}.`);
+}
+const metaDescription = html.match(/<meta name="description" content="([^"]+)">/)?.[1] || "";
+if (metaDescription.length < 120 || metaDescription.length > 160) fail(`Meta description should be 120-160 characters; found ${metaDescription.length}.`);
+if (/3-night/i.test(metaDescription)) fail("Meta description still claims a 3-night forecast.");
+const defaultMonth = (manifest || []).find(entry => entry.default);
+if (defaultMonth && !new RegExp(`<script src="${defaultMonth.path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:\\?[^"]*)?"></script>`).test(html)) {
+  fail(`The default month ${defaultMonth.id} is not preloaded in index.html.`);
+}
 if (!html.includes('<link rel="canonical" href="https://www.astromaniacmagazine.com/after-dark-calendar">')) fail("index.html canonical URL is missing or incorrect.");
 if (!html.includes("assets/after-dark-calendar-social.png")) fail("index.html does not reference the social-sharing image.");
 if (!fs.existsSync(path.join(rootDir, "assets", "after-dark-calendar-social.png"))) fail("The social-sharing image is missing.");

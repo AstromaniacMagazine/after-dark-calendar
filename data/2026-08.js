@@ -92,7 +92,7 @@
     14: ["Venus", "Messier 15", "Comet 10P/Tempel 2"],
     15: ["Messier 2", "Jupiter-Mercury pairing", "Andromeda Galaxy (M31)"],
     16: ["Moon-Venus pairing", "Crescent Moon", "Venus"],
-    18: ["Kappa Cygnids", "Summer Milky Way", "Dumbbell Nebula (M27)"],
+    17: ["Kappa Cygnids", "Summer Milky Way", "Dumbbell Nebula (M27)"],
     20: ["First Quarter Moon", "Lunar terminator", "Messier 2"],
     21: ["Moon-Antares pairing", "Antares", "Lunar terminator"],
     27: ["Mercury solar conjunction", "Saturn", "Andromeda Galaxy (M31)"],
@@ -143,8 +143,8 @@
     16: [
       event("sky", "Moon and Venus", "A young Moon passes Venus in evening twilight.", "Twilight pairing.", ["inSky"], media.venus)
     ],
-    18: [
-      event("meteor", "Kappa Cygnid meteor shower", "A minor shower known for occasional bright meteors.", "Meteor shower peak.", ["inSky"], media.meteor)
+    17: [
+      event("meteor", "Kappa Cygnid meteor shower", "The minor shower reaches its 2026 maximum and is known for occasional bright meteors.", "Meteor shower peak.", ["imo2026", "inSky"], media.meteor)
     ],
     20: [
       event("moon", "First Quarter Moon", "The phase occurs at 02:46 UTC; the lunar terminator is well placed for visual observing and lunar imaging.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "usnoPhases", "nasaSkyCal"])

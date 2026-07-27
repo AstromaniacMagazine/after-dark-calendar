@@ -26,6 +26,7 @@
 
   const shared = window.AMC_SHARED || {};
   const manifest = Array.isArray(window.AMC_MONTH_MANIFEST) ? window.AMC_MONTH_MANIFEST : [];
+  const assetVersion = root.dataset.version || "";
   const locationKey = "amc-sky-calendar-location";
   const themeKey = "amc-sky-calendar-theme";
   const themeOrder = ["light", "dark", "red"];
@@ -34,6 +35,7 @@
   const chartDurationHours = 16;
   const chartSampleCount = 64;
   const weatherRefreshMs = 75 * 60 * 1000;
+  const weatherRetryMs = 15 * 60 * 1000;
   const useLocationText = "Use Current Location";
   const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const monthShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -84,6 +86,7 @@
     weatherUpdatedAt: null,
     weatherTimer: null,
     weatherRequestId: 0,
+    nowTimer: null,
     locationMatches: [],
     locationSearchTimer: null,
     locationSearchId: 0,
@@ -138,6 +141,7 @@
     bindEvents();
     await showMonth(defaultMonthId());
     applySavedLocation();
+    scheduleNowRefresh();
   }
 
   function bindEvents() {
@@ -205,7 +209,7 @@
     if (state.monthPromises[monthId]) return state.monthPromises[monthId];
     state.monthPromises[monthId] = new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = entry.path;
+      script.src = assetVersion ? `${entry.path}?v=${encodeURIComponent(assetVersion)}` : entry.path;
       script.async = true;
       script.onload = () => registry[monthId] ? resolve(registry[monthId]) : reject(new Error(`Month data did not register: ${monthId}`));
       script.onerror = () => reject(new Error(`Could not load month data: ${monthId}`));
@@ -221,6 +225,21 @@
     renderCalendar();
     renderDetail();
     renderRecommendations();
+  }
+
+  function refreshExpandedDay() {
+    if (!validDay(state.expandedDay)) return;
+    const day = Number(state.expandedDay);
+    const expanded = els.grid.querySelector(`.amc-day[data-day="${day}"] .amc-expanded`);
+    if (!expanded) return;
+    const date = new Date(Date.UTC(state.month.year, state.month.monthIndex, day, 12));
+    const events = dayEvents(day);
+    expanded.innerHTML = expandedDay(day, weekdays[date.getUTCDay()], moonForDay(day), events, primaryEvent(events));
+  }
+
+  function refreshLivePanels() {
+    renderDetail();
+    refreshExpandedDay();
   }
 
   function animateMonthChange(direction) {
@@ -643,13 +662,22 @@
       const y = marker.type === "end" ? chart.y + 12 : chart.y + chart.height - 24;
       return `<g><line x1="${x}" x2="${x}" y1="${chart.y}" y2="${chart.y + chart.height}" stroke="rgba(5,8,18,.46)" stroke-dasharray="3 3"/><text x="${x}" y="${y}" text-anchor="middle" fill="currentColor" font-size="${compact ? 7.2 : 8.2}" font-weight="600">${marker.label}</text></g>`;
     }).join("");
-    return `<svg class="amc-alt-svg" viewBox="0 0 ${viewWidth} ${viewHeight}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Moon altitude from 16:00 to 08:00, scaled from 0 to 60 degrees">
+    const now = chartNowMarker(timeline.startMs, timeline.endMs);
+    const nowX = chart.x + ((now?.hour || 0) / chartDurationHours) * chart.width;
+    const nowStyle = now ? "" : " style=\"display:none\"";
+    const nowMarker = `<g class="amc-now-marker" data-now-marker${nowStyle}>
+      <title data-now-title>${now ? `Current local time ${now.time}` : "Current time is outside this chart window"}</title>
+      <line data-now-line x1="${nowX}" x2="${nowX}" y1="${chart.y}" y2="${chart.y + chart.height}" stroke="var(--accent)" stroke-width="1.15" stroke-dasharray="4 3"/>
+      <text data-now-label x="${nowX}" y="${chart.y + 11}" text-anchor="middle" fill="var(--accent)" font-size="${compact ? 7.2 : 8.2}" font-weight="600">NOW</text>
+      <text data-now-time x="${nowX}" y="${chart.y + chart.height - 7}" text-anchor="middle" fill="var(--accent)" font-size="${compact ? 6.8 : 7.8}" font-weight="600">${now?.time || ""}</text>
+    </g>`;
+    return `<svg class="amc-alt-svg" data-now-chart data-chart-start="${timeline.startMs}" data-chart-end="${timeline.endMs}" data-chart-x="${chart.x}" data-chart-width="${chart.width}" viewBox="0 0 ${viewWidth} ${viewHeight}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Moon altitude from 16:00 to 08:00, scaled from 0 to 60 degrees">
       <g style="color: var(--text)">
         ${bands}${hourTicks}${altitudeTicks}${bandLabels}
         <line x1="${chart.x}" x2="${chart.x + chart.width}" y1="${chart.y + chart.height}" y2="${chart.y + chart.height}" stroke="rgba(22,25,29,.42)" stroke-width="1.2"/>
         <line x1="${chart.x}" x2="${chart.x}" y1="${chart.y}" y2="${chart.y + chart.height}" stroke="rgba(22,25,29,.36)" stroke-width="1.2"/>
         <text x="${chart.x + chart.width / 2}" y="${chart.y + chart.height + (compact ? 31 : 34)}" text-anchor="middle" fill="currentColor" font-size="${compact ? 11.2 : 12.6}" font-weight="400">TIME</text>
-        ${twilightMarkers}${paths}${markers}
+        ${twilightMarkers}${paths}${markers}${nowMarker}
       </g>
     </svg>`;
   }
@@ -815,12 +843,12 @@
     if (!force && state.weatherUpdatedAt && now - state.weatherUpdatedAt.getTime() < weatherRefreshMs) return;
     const requestId = ++state.weatherRequestId;
     state.weatherState = "loading";
-    renderDetail();
+    refreshLivePanels();
     try {
       const params = new URLSearchParams({
         latitude: state.lat.toFixed(5),
         longitude: state.lon.toFixed(5),
-        hourly: "cloud_cover,temperature_2m,relative_humidity_2m,precipitation_probability,wind_speed_10m,weather_code",
+        hourly: "cloud_cover,temperature_2m,relative_humidity_2m,dew_point_2m,precipitation_probability,wind_speed_10m,wind_gusts_10m,visibility,cape,weather_code",
         forecast_days: "8",
         timezone: "auto"
       });
@@ -828,17 +856,27 @@
       if (!response.ok) throw new Error("Weather request failed");
       const payload = await response.json();
       if (requestId !== state.weatherRequestId) return;
-      state.timeZone = cleanTimeZone(payload.timezone) || state.timeZone;
+      const nextTimeZone = cleanTimeZone(payload.timezone) || state.timeZone;
+      const timeZoneChanged = nextTimeZone !== state.timeZone;
+      state.timeZone = nextTimeZone;
       state.weather = summariseWeather(payload.hourly || {});
       state.weatherState = "ready";
       state.weatherUpdatedAt = new Date();
       saveLocation();
-      renderAll();
+      if (timeZoneChanged) {
+        recalculateLocationData();
+        renderCalendar();
+        renderDetail();
+        renderRecommendations();
+      } else {
+        refreshLivePanels();
+      }
       scheduleWeatherRefresh();
     } catch {
       if (requestId !== state.weatherRequestId) return;
       state.weatherState = "error";
-      renderAll();
+      refreshLivePanels();
+      scheduleWeatherRefresh(weatherRetryMs);
     }
   }
 
@@ -850,8 +888,12 @@
       cloud: numberAt(hourly.cloud_cover, index),
       temperature: numberAt(hourly.temperature_2m, index),
       humidity: numberAt(hourly.relative_humidity_2m, index),
+      dewPoint: numberAt(hourly.dew_point_2m, index),
       precipitation: numberAt(hourly.precipitation_probability, index),
       wind: numberAt(hourly.wind_speed_10m, index),
+      gusts: numberAt(hourly.wind_gusts_10m, index),
+      visibility: numberAt(hourly.visibility, index),
+      cape: numberAt(hourly.cape, index),
       code: numberAt(hourly.weather_code, index)
     }));
     const byKey = new Map(rows.map(row => [row.time, row]));
@@ -869,7 +911,7 @@
       const wind = avg(slots.map(slot => slot.wind));
       const transparency = avg(slots.map(slot => slot.transparency));
       const seeing = avg(slots.map(slot => slot.seeing));
-      const kind = weatherKind(avg(slots.map(slot => slot.code)), cloud);
+      const kind = weatherKind(representativeWeatherCode(slots.map(slot => slot.code)), cloud);
       return {
         dateKey,
         label: shortWeatherDate(dateKey, index),
@@ -890,12 +932,20 @@
     const cloud = avg(samples.map(sample => sample.cloud));
     const temperature = avg(samples.map(sample => sample.temperature));
     const humidity = avg(samples.map(sample => sample.humidity));
+    const dewPoint = avg(samples.map(sample => sample.dewPoint));
     const precipitation = avg(samples.map(sample => sample.precipitation));
     const wind = avg(samples.map(sample => sample.wind));
-    const code = avg(samples.map(sample => sample.code));
-    const transparency = clamp(100 - cloud * .58 - humidity * .22 - precipitation * .2, 0, 100);
-    const seeing = clamp(100 - wind * 2.4 - Math.abs(temperature - avg(samples.map(sample => sample.temperature))) * 3 - cloud * .12, 0, 100);
-    return { label, cloud, temperature, humidity, precipitation, wind, code, transparency, seeing, kind: weatherKind(code, cloud) };
+    const gusts = avg(samples.map(sample => sample.gusts));
+    const visibility = avg(samples.map(sample => sample.visibility));
+    const cape = avg(samples.map(sample => sample.cape));
+    const code = representativeWeatherCode(samples.map(sample => sample.code));
+    const temperatures = samples.map(sample => sample.temperature).filter(Number.isFinite);
+    const temperatureRange = temperatures.length ? Math.max(...temperatures) - Math.min(...temperatures) : 0;
+    const dewPointSpread = Number.isFinite(temperature) && Number.isFinite(dewPoint) ? Math.max(0, temperature - dewPoint) : 0;
+    const visibilityPenalty = Math.max(0, 12000 - visibility) / 12000 * 18;
+    const transparency = clamp(100 - cloud * .62 - humidity * .11 - precipitation * .15 - visibilityPenalty + Math.min(8, dewPointSpread), 0, 100);
+    const seeing = clamp(100 - wind * 1.65 - gusts * .55 - temperatureRange * 4.5 - Math.min(18, cape / 70) - cloud * .05, 0, 100);
+    return { label, cloud, temperature, humidity, dewPoint, precipitation, wind, gusts, visibility, cape, code, transparency, seeing, kind: weatherKind(code, cloud) };
   }
 
   function calculateDailySky(day) {
@@ -958,6 +1008,8 @@
     const rise = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, +1, start, .75);
     const set = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, -1, start, .75);
     return {
+      startMs: start.getTime(),
+      endMs: end.getTime(),
       bands: compressBands(darknessStates),
       moonSegments: moonVisibleSegments(moonSamples),
       markers: [chartMarker(rise, start, end, "Rise"), chartMarker(set, start, end, "Set")].filter(Boolean),
@@ -1001,21 +1053,37 @@
     const preservePosition = root.getBoundingClientRect().width <= 1050;
     const currentButton = els.grid.querySelector(`.amc-day[data-day="${day}"]`);
     const previousTop = preservePosition && currentButton ? currentButton.getBoundingClientRect().top : null;
+    const previouslyExpanded = validDay(state.expandedDay)
+      ? els.grid.querySelector(`.amc-day[data-day="${state.expandedDay}"]`)
+      : null;
     state.selectedDay = day;
     state.expandedDay = wasExpanded ? null : day;
-    renderAll();
-    const nextButton = els.grid.querySelector(`.amc-day[data-day="${day}"]`);
-    nextButton?.focus({ preventScroll: true });
-    if (nextButton && previousTop !== null) {
-      const keepPosition = () => {
-        const current = els.grid.querySelector(`.amc-day[data-day="${day}"]`);
-        if (!current) return;
-        const drift = current.getBoundingClientRect().top - previousTop;
-        if (Math.abs(drift) > .5) window.scrollBy({ top: drift, left: 0, behavior: "auto" });
-      };
-      keepPosition();
-      requestAnimationFrame(keepPosition);
+    if (previouslyExpanded && previouslyExpanded !== currentButton) updateDayExpansion(previouslyExpanded, false);
+    if (currentButton) updateDayExpansion(currentButton, !wasExpanded);
+    renderDetail();
+    renderRecommendations();
+    currentButton?.focus({ preventScroll: true });
+    if (currentButton && previousTop !== null) {
+      requestAnimationFrame(() => {
+        const drift = currentButton.getBoundingClientRect().top - previousTop;
+        if (Math.abs(drift) > .5) window.scrollBy(0, drift);
+      });
     }
+  }
+
+  function updateDayExpansion(button, expanded) {
+    const day = Number(button?.dataset.day);
+    if (!button || !validDay(day)) return;
+    button.setAttribute("aria-expanded", String(expanded));
+    const panel = button.querySelector(".amc-expanded");
+    if (!panel) return;
+    if (!expanded) {
+      panel.innerHTML = "";
+      return;
+    }
+    const date = new Date(Date.UTC(state.month.year, state.month.monthIndex, day, 12));
+    const events = dayEvents(day);
+    panel.innerHTML = expandedDay(day, weekdays[date.getUTCDay()], moonForDay(day), events, primaryEvent(events));
   }
 
   function goToAdjacentMonth(direction) {
@@ -1209,12 +1277,41 @@
 
   function refreshWeatherWhenVisible() {
     if (document.hidden || !state.hasLocation) return;
+    syncNowMarkers();
     updateWeather();
   }
 
-  function scheduleWeatherRefresh() {
+  function scheduleWeatherRefresh(delay = weatherRefreshMs) {
     if (state.weatherTimer) window.clearTimeout(state.weatherTimer);
-    state.weatherTimer = window.setTimeout(() => updateWeather(true), weatherRefreshMs);
+    state.weatherTimer = window.setTimeout(() => updateWeather(true), delay);
+  }
+
+  function scheduleNowRefresh() {
+    if (state.nowTimer) window.clearTimeout(state.nowTimer);
+    const delay = 60050 - (Date.now() % 60000);
+    state.nowTimer = window.setTimeout(() => {
+      if (!document.hidden) syncNowMarkers();
+      scheduleNowRefresh();
+    }, delay);
+  }
+
+  function syncNowMarkers() {
+    root.querySelectorAll("[data-now-chart]").forEach(svg => {
+      const marker = svg.querySelector("[data-now-marker]");
+      if (!marker) return;
+      const now = chartNowMarker(Number(svg.dataset.chartStart), Number(svg.dataset.chartEnd));
+      marker.style.display = now ? "" : "none";
+      if (!now) return;
+      const x = Number(svg.dataset.chartX) + (now.hour / chartDurationHours) * Number(svg.dataset.chartWidth);
+      marker.querySelector("[data-now-line]")?.setAttribute("x1", x);
+      marker.querySelector("[data-now-line]")?.setAttribute("x2", x);
+      marker.querySelector("[data-now-label]")?.setAttribute("x", x);
+      marker.querySelector("[data-now-time]")?.setAttribute("x", x);
+      const time = marker.querySelector("[data-now-time]");
+      const title = marker.querySelector("[data-now-title]");
+      if (time) time.textContent = now.time;
+      if (title) title.textContent = `Current local time ${now.time}`;
+    });
   }
 
   function cycleTheme() {
@@ -1517,6 +1614,15 @@
     return { hour: chartHour(date, start, end), label, time: formatLocal(date) };
   }
 
+  function chartNowMarker(startMs, endMs) {
+    const now = Date.now();
+    if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || now < startMs || now > endMs) return null;
+    return {
+      hour: chartDurationHours * (now - startMs) / Math.max(1, endMs - startMs),
+      time: formatTime(new Date(now))
+    };
+  }
+
   function chartTwilightMarker(event, start, end, label, type) {
     const date = event?.date;
     if (!date || date < start || date > end) return null;
@@ -1559,7 +1665,7 @@
   }
 
   function locationNeeded() {
-    return { minutes: null, label: useLocationText, window: useLocationText, nautical: null };
+    return { minutes: null, label: "Set location", window: useLocationText, nautical: null };
   }
 
   function noDark(nautical = null) {
@@ -1781,15 +1887,32 @@
 
   function weatherKind(code, cloud) {
     if (code >= 95) return "storm";
-    if (code >= 85) return "snow";
-    if (code >= 80) return "showers";
-    if (code >= 61) return "rain";
+    if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) return "snow";
+    if (code >= 80 && code <= 82) return "showers";
+    if ((code >= 51 && code <= 67)) return "rain";
     if (code >= 45 && code <= 48) return "fog";
     if (cloud <= 10) return "stars";
     if (cloud <= 30) return "cloudThreeStars";
     if (cloud <= 50) return "cloudTwoStars";
     if (cloud <= 80) return "cloudOneStar";
     return "cloudy";
+  }
+
+  function representativeWeatherCode(codes) {
+    const safe = codes.filter(Number.isFinite);
+    if (!safe.length) return 0;
+    return safe.reduce((selected, code) => weatherCodeSeverity(code) > weatherCodeSeverity(selected) ? code : selected, safe[0]);
+  }
+
+  function weatherCodeSeverity(code) {
+    if (code >= 95) return 8;
+    if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) return 7;
+    if (code >= 80 && code <= 82) return 6;
+    if (code >= 61 && code <= 67) return 5;
+    if (code >= 51 && code <= 57) return 4;
+    if (code >= 45 && code <= 48) return 3;
+    if (code >= 1 && code <= 3) return 2;
+    return 1;
   }
 
   function weatherIconKinds(segments, fallback) {

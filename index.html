@@ -3,22 +3,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>After Dark Calendar 2026 | Night Sky & Astrophotography Planner</title>
-  <meta name="description" content="After Dark Calendar by Astromaniac Magazine is a 2026 night-sky and astrophotography planner with Moon phases, celestial events and local observing forecasts.">
+  <title>After Dark Calendar 2026 | Astrophotography Planner</title>
+  <meta name="description" content="Plan astrophotography with After Dark Calendar: 2026 Moon phases, eclipses, meteor showers, astronomical darkness and local 7-night forecasts.">
   <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
   <link rel="canonical" href="https://www.astromaniacmagazine.com/after-dark-calendar">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Astromaniac Magazine">
   <meta property="og:url" content="https://www.astromaniacmagazine.com/after-dark-calendar">
   <meta property="og:title" content="After Dark Calendar 2026 | Astromaniac Magazine">
-  <meta property="og:description" content="Plan your next night under the stars with Moon phases, celestial events, astronomical darkness, local sky timings and a live 7-night observing forecast.">
+  <meta property="og:description" content="Plan astrophotography with 2026 Moon phases, eclipses, meteor showers, astronomical darkness and local 7-night forecasts.">
   <meta property="og:image" content="https://astromaniacmagazine.github.io/after-dark-calendar/assets/after-dark-calendar-social.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="After Dark Calendar August 2026 night-sky and astrophotography planner">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="After Dark Calendar 2026 | Astromaniac Magazine">
-  <meta name="twitter:description" content="A location-aware night-sky calendar and astrophotography planner with Moon phases, events, darkness windows and observing weather.">
+  <meta name="twitter:description" content="Plan astrophotography with 2026 Moon phases, eclipses, meteor showers, darkness windows and local 7-night forecasts.">
   <meta name="twitter:image" content="https://astromaniacmagazine.github.io/after-dark-calendar/assets/after-dark-calendar-social.png">
   <meta name="theme-color" content="#f7f4ed">
   <script type="application/ld+json">
@@ -29,7 +29,28 @@
         "@type": "Organization",
         "@id": "https://www.astromaniacmagazine.com/#organization",
         "name": "Astromaniac Magazine",
-        "url": "https://www.astromaniacmagazine.com/"
+        "url": "https://www.astromaniacmagazine.com/",
+        "logo": "https://astromaniacmagazine.github.io/after-dark-calendar/assets/astromaniac-logo.webp"
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://www.astromaniacmagazine.com/after-dark-calendar#webpage",
+        "url": "https://www.astromaniacmagazine.com/after-dark-calendar",
+        "name": "After Dark Calendar 2026 | Astrophotography Planner",
+        "description": "Plan astrophotography with After Dark Calendar: 2026 Moon phases, eclipses, meteor showers, astronomical darkness and local 7-night forecasts.",
+        "inLanguage": "en-GB",
+        "dateModified": "2026-07-27",
+        "isPartOf": { "@id": "https://www.astromaniacmagazine.com/#website" },
+        "publisher": { "@id": "https://www.astromaniacmagazine.com/#organization" },
+        "mainEntity": { "@id": "https://www.astromaniacmagazine.com/after-dark-calendar#calendar" }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://www.astromaniacmagazine.com/#website",
+        "url": "https://www.astromaniacmagazine.com/",
+        "name": "Astromaniac Magazine",
+        "publisher": { "@id": "https://www.astromaniacmagazine.com/#organization" },
+        "inLanguage": "en-GB"
       },
       {
         "@type": "WebApplication",
@@ -41,10 +62,11 @@
         "applicationSubCategory": "Astrophotography planner and night-sky calendar",
         "operatingSystem": "Any",
         "browserRequirements": "Requires JavaScript and a modern web browser",
+        "softwareVersion": "Beta0.6",
         "isAccessibleForFree": true,
         "inLanguage": "en-GB",
         "publisher": { "@id": "https://www.astromaniacmagazine.com/#organization" },
-        "description": "A location-aware 2026 night-sky calendar and astrophotography planner with Moon phases, celestial events, astronomical darkness, Moon and Sun timings, and a live 7-night observing forecast.",
+        "description": "A location-aware 2026 night-sky calendar and astrophotography planner with Moon phases, eclipses, meteor showers, astronomical darkness, Moon and Sun timings, and a live 7-night observing forecast.",
         "featureList": [
           "Monthly celestial event calendar",
           "Moon phase and altitude planning",
@@ -61,11 +83,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/after-dark-calendar.css">
+  <link rel="stylesheet" href="assets/after-dark-calendar.css?v=Beta0.6">
 </head>
 <body>
   <main class="amc-preview-shell">
-    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" aria-labelledby="amc-title">
+    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="Beta0.6" aria-labelledby="amc-title">
       <div class="amc-print-brand" aria-hidden="true">
         <img class="amc-print-logo" src="assets/astromaniac-logo.webp" alt="">
         <div>
@@ -78,7 +100,7 @@
       <header class="amc-top">
         <div class="amc-brand-lockup">
           <img class="amc-brand-logo" src="assets/astromaniac-logo.webp" alt="" width="56" height="56" loading="eager" decoding="async">
-          <h1 class="amc-title" id="amc-title"><span class="amc-title-line"><span>After Dark Calendar</span><small class="amc-version-badge" aria-label="Current version Beta0.5b">Beta0.5b</small></span><span class="amc-byline">by Astromaniac Magazine</span></h1>
+          <h1 class="amc-title" id="amc-title"><span class="amc-title-line"><span>After Dark Calendar</span><small class="amc-version-badge" aria-label="Current version Beta0.6">Beta0.6</small></span><span class="amc-byline">by Astromaniac Magazine</span></h1>
         </div>
 
         <div class="amc-month-strip">
@@ -138,31 +160,33 @@
 
       <div class="amc-reference-row">
         <details class="amc-sources">
-          <summary>Sources and References</summary>
+          <summary>Sources, Versions and About</summary>
           <ul class="amc-source-list" id="amc-source-list"></ul>
           <div class="amc-version-panel">
-            <h3>Current version: Beta0.5b</h3>
+            <h3>Current version: Beta0.6</h3>
             <ul class="amc-version-list">
+              <li><b>Beta0.6:</b> improves loading and forecast calculations, adds a live NOW chart marker, refreshes July and August events, and strengthens SEO and release validation.</li>
               <li><b>Beta0.5b:</b> improves iPad and mobile layouts and expansion stability, strengthens calendar readability, extends Moon Altitude &amp; Darkness charts to 16:00-08:00, and refreshes August 2026 event data.</li>
               <li><b>Beta 0.5:</b> adds Observatory Red mode, dynamic month-navigation spacing, a roomier four-cell expanded day, lighter typography, softer box geometry, clearer chart labelling, reliable mobile expansion positioning, corrected August phase and eclipse dates, and October 2026.</li>
               <li><b>Beta 0.4d:</b> reordered the Expanded Data Boxes into four paired rows, enlarged and clarified their icons, restored full Moon names in day cells, strengthened event chips, improved location-aware target variety, broadened related articles, refined chart labels, preserved the selected mobile day on collapse, and smoothed month transitions.</li>
               <li><b>Beta 0.4c:</b> restored readable two-column expanded-day data blocks, improved mobile header controls, enlarged mobile Moon Altitude & Darkness chart proportions, restored full compact forecast metrics, aligned month navigation, and added a smooth month-switch transition.</li>
             </ul>
+            <section class="amc-about" aria-labelledby="amc-about-title">
+              <h2 id="amc-about-title">2026 night-sky calendar and astrophotography planner</h2>
+              <p>Explore Moon phases, meteor showers, eclipses, planetary events and deep-sky targets month by month. Add your city for local Moon and Sun timings, astronomical darkness, target altitude guidance and a live 7-night observing forecast. <b>Disclaimer:</b> After Dark Calendar uses third-party astronomical, weather and mission source data. Astromaniac Magazine checks and presents that data carefully, but live forecasts, launch timings and upstream source errors can affect what appears in the calendar.</p>
+            </section>
           </div>
         </details>
         <button class="amc-button secondary" type="button" id="amc-download-pdf">Download PDF</button>
       </div>
-      <section class="amc-about" aria-labelledby="amc-about-title">
-        <h2 id="amc-about-title">2026 night-sky calendar and astrophotography planner</h2>
-        <p>Explore Moon phases, meteor showers, eclipses, planetary events and deep-sky targets month by month. Add your city for local Moon and Sun timings, astronomical darkness, target altitude guidance and a live 7-night observing forecast. <b>Disclaimer:</b> After Dark Calendar uses third-party astronomical, weather and mission source data. Astromaniac Magazine checks and presents that data carefully, but live forecasts, launch timings and upstream source errors can affect what appears in the calendar.</p>
-      </section>
       <span class="amc-weather-tooltip" id="amc-weather-tooltip" role="status" aria-live="polite"></span>
     </section>
   </main>
 
-  <script src="assets/astronomy.browser.js"></script>
-  <script src="data/common.js"></script>
-  <script src="data/month-manifest.js"></script>
-  <script src="assets/after-dark-calendar.js"></script>
+  <script src="assets/astronomy.browser.js?v=Beta0.6"></script>
+  <script src="data/common.js?v=Beta0.6"></script>
+  <script src="data/month-manifest.js?v=Beta0.6"></script>
+  <script src="data/2026-07.js?v=Beta0.6"></script>
+  <script src="assets/after-dark-calendar.js?v=Beta0.6"></script>
 </body>
 </html>
