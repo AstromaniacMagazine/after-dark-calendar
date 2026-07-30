@@ -56,6 +56,11 @@
       label: "NASA 2026 Sky Events Calendar",
       url: "https://eclipse.gsfc.nasa.gov/SKYCAL/SKYCAL.html?cal=2026",
       note: "UTC cross-check for August planetary events, lunar pairings, meteor peaks and primary Moon phases."
+    },
+    nasaRoman: {
+      label: "NASA Roman Space Telescope launch update",
+      url: "https://science.nasa.gov/blogs/roman/2026/07/27/nasa-fuels-roman-space-telescope-for-late-august-launch/",
+      note: "NASA's current no-earlier-than launch target for the Nancy Grace Roman Space Telescope."
     }
   };
 
@@ -67,10 +72,10 @@
   }
 
   const exactMoon = {
-    6: "Last Quarter",
-    12: "New Moon",
-    20: "First Quarter",
-    28: "Full Moon"
+    6: "Last Quarter 02:21 UTC",
+    12: "New Moon 17:37 UTC",
+    20: "First Quarter 02:46 UTC",
+    28: "Sturgeon Moon (Full Moon) 04:18 UTC"
   };
 
   const monthIntel = [
@@ -96,7 +101,7 @@
     20: ["First Quarter Moon", "Lunar terminator", "Messier 2"],
     21: ["Moon-Antares pairing", "Antares", "Lunar terminator"],
     27: ["Mercury solar conjunction", "Saturn", "Andromeda Galaxy (M31)"],
-    28: ["Partial lunar eclipse", "Full Moon", "Asteroid 9 Metis"],
+    28: ["Partial lunar eclipse", "Sturgeon Moon (Full Moon)", "Asteroid 9 Metis"],
     30: ["Moon-Saturn pairing", "Saturn", "Waning gibbous Moon"],
     31: ["Moon-Saturn conjunction", "Saturn", "Waning gibbous Moon"]
   };
@@ -157,10 +162,11 @@
     ],
     28: [
       event("eclipse", "Partial lunar eclipse", "The eclipse peaks at 04:14 UTC and is visible from the Americas, Europe, Africa and the eastern Pacific, subject to local Moon altitude and weather.", "Partial lunar eclipse.", ["nasaLunarEclipse", "nasaSkyCal"]),
-      event("moon", "Full Moon", "Full Moon occurs at 04:18 UTC, four minutes after the eclipse maximum.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "usnoPhases", "nasaSkyCal"]),
+      event("moon", "Sturgeon Moon (Full Moon)", "Full Moon occurs at 04:18 UTC, four minutes after the eclipse maximum. August's popular traditional name is the Sturgeon Moon.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "usnoPhases", "nasaSkyCal", "fullMoonNames"]),
       event("opposition", "Asteroid 9 Metis at opposition", "Asteroid 9 Metis reaches opposition at 14:22 UTC in Aquarius, peaking near magnitude 9.2 and remaining above the horizon for much of the local night.", "Binoculars or a moderate-aperture telescope are required; the Full Moon will reduce contrast.", ["inSky"])
     ],
     30: [
+      event("launch", "Nancy Grace Roman Space Telescope launch", "NASA and SpaceX are targeting liftoff no earlier than 11:26 UTC aboard a Falcon Heavy from Launch Complex 39A in Florida.", "Launch dates and times can change; check NASA's latest mission update.", ["nasaRoman"]),
       event("sky", "Moon and Saturn", "The Moon passes close to Saturn again near the end of the month.", "Moon-planet pairing.", ["inSky"], media.saturn)
     ],
     31: [

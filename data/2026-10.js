@@ -50,7 +50,7 @@
     3: "Last Quarter",
     10: "New Moon",
     18: "First Quarter",
-    26: "Full Moon"
+    26: "Hunter's Moon (Full Moon)"
   };
 
   const monthIntel = [
@@ -72,7 +72,7 @@
     18: ["First Quarter Moon", "Dumbbell Nebula (M27)", "Messier 15"],
     21: ["Orionids", "Moon", "Jupiter"],
     24: ["Moon-Saturn pairing", "Saturn", "Moon"],
-    26: ["Full Moon", "Saturn", "Jupiter"],
+    26: ["Hunter's Moon (Full Moon)", "Saturn", "Jupiter"],
     27: ["Pleiades (M45)", "Moon", "Jupiter"]
   };
 
@@ -118,7 +118,7 @@
       event("meteor", "Leonis Minorids", "A minor shower reaches maximum under strong moonlight.", "Minor meteor shower.", ["imo2026"], media.meteor)
     ],
     26: [
-      event("moon", "Full Moon", "Full Moon occurs at 04:12 UTC and strongly limits faint deep-sky imaging.", "Moon phase marker.", ["usnoPhases", "nasaSkyCal", "nasaSvs", "astronomyEngine"]),
+      event("moon", "Hunter's Moon (Full Moon)", "Full Moon occurs at 04:12 UTC and strongly limits faint deep-sky imaging. October's popular traditional name is the Hunter's Moon.", "Moon phase marker.", ["usnoPhases", "nasaSkyCal", "nasaSvs", "astronomyEngine", "fullMoonNames"]),
       event("telescope", "Perseus Double Cluster well placed", "NGC 869 and NGC 884 are high in northern skies, although moonlight favours shorter exposures or narrow fields.", "Open-cluster target.", ["inSky"], media.pleiades)
     ],
     27: [

@@ -124,6 +124,11 @@
           url: "https://aa.usno.navy.mil/calculated/moon/phases?year=2026",
           note: "Primary Moon-phase dates and times checked against the USNO table in Universal Time."
         },
+        fullMoonNames: {
+          label: "The Old Farmer's Almanac Full Moon names",
+          url: "https://www.almanac.com/full-moon-names",
+          note: "Popular traditional Full Moon names are included for familiarity; names have varied cultural origins and are not formal astronomical terms."
+        },
         spaceflightNow: {
           label: "Spaceflight Now launch schedule",
           url: "https://spaceflightnow.com/launch-schedule/",
@@ -270,7 +275,7 @@
         7: "Last Quarter 19:29 UTC",
         14: "New Moon 09:43 UTC",
         21: "First Quarter 11:05 UTC",
-        29: "Full Moon 14:36 UTC"
+        29: "Buck Moon (Full Moon) 14:36 UTC"
       };
 
       const monthIntel = [
@@ -296,7 +301,7 @@
         24: ["Antares occultation", "Waxing gibbous Moon", "Saturn"],
         26: ["Saturn", "Waxing gibbous Moon", "Pluto"],
         27: ["Pluto", "Saturn", "Waxing gibbous Moon"],
-        29: ["Full Moon", "Moonrise", "Saturn"],
+        29: ["Buck Moon (Full Moon)", "Moonrise", "Saturn"],
         30: ["Waning gibbous Moon", "Saturn", "Ring Nebula (M57)"],
         31: ["Delta Aquariids", "Alpha Capricornids", "Saturn"]
       };
@@ -357,7 +362,7 @@
           event("opposition", "Pluto at opposition", "Pluto is opposite the Sun in Earth's sky.", "Advanced telescope target.", ["inSky"])
         ],
         29: [
-          event("moon", "Full Moon", "Exact phase 14:36 UTC. Illumination is effectively 100 percent.", "Moon phase marker.", ["astronomyEngine", "nasaSvs", "rmg"])
+          event("moon", "Buck Moon (Full Moon)", "Exact phase 14:36 UTC. July's popular traditional Full Moon name is the Buck Moon.", "Moon phase marker.", ["astronomyEngine", "nasaSvs", "rmg", "fullMoonNames"])
         ],
         31: [
           event("meteor", "Southern Delta Aquariids peak", "The maximum falls on 31 July, with the main observing window overnight 30-31 July. Radiant altitude depends on latitude and bright Moon will interfere.", "Meteor shower peak.", ["imo2026", "inSky"], media.meteor),

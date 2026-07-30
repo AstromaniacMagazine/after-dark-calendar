@@ -37,11 +37,11 @@
   }
 
   const exactMoon = {
-    1: "Full Moon",
+    1: "Flower Moon (Full Moon)",
     9: "Last Quarter",
     16: "New Moon",
     23: "First Quarter",
-    31: "Blue Moon"
+    31: "Blue Moon (Full Moon)"
   };
 
   const monthIntel = [
@@ -52,7 +52,7 @@
   ];
 
   const targetData = {
-    1: ["Full Moon", "Saturn", "Messier 5"],
+    1: ["Flower Moon (Full Moon)", "Saturn", "Messier 5"],
     6: ["Eta Aquariids", "Waning gibbous Moon", "Milky Way fields"],
     12: ["Messier 5", "Globular cluster", "Late-night dark sky"],
     13: ["Moon-Saturn pairing", "Saturn", "Waning crescent Moon"],
@@ -62,12 +62,12 @@
     22: ["Venus", "Eagle Nebula (M16)", "Whirlpool Galaxy (M51)"],
     23: ["First Quarter Moon", "Regulus occultation", "Lunar terminator"],
     28: ["Messier 4", "Antares region", "Waxing gibbous Moon"],
-    31: ["Blue Moon", "Antares occultation", "Moonrise"]
+    31: ["Blue Moon (Full Moon)", "Antares occultation", "Moonrise"]
   };
 
   const eventData = {
     1: [
-      event("moon", "Full Moon", "The Moon is effectively fully illuminated, so deep-sky contrast will be poor.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "inSky"])
+      event("moon", "Flower Moon (Full Moon)", "The Moon is effectively fully illuminated, so deep-sky contrast will be poor. May's popular traditional name is the Flower Moon.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "inSky", "fullMoonNames"])
     ],
     6: [
       event("meteor", "Eta Aquariid meteor shower", "Peak morning. The shower favours pre-dawn viewing, with radiant height depending strongly on latitude.", "Meteor shower peak.", ["inSky", "rmg2026"], media.meteor)
@@ -102,7 +102,7 @@
       event("telescope", "Messier 4 well placed", "The globular cluster M4 near Antares is a strong late-spring target from favourable latitudes.", "Deep-sky target.", ["inSky"], media.cluster)
     ],
     31: [
-      event("moon", "Blue Moon", "The second Full Moon of May keeps lunar brightness high through the night.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "inSky"]),
+      event("moon", "Blue Moon (Full Moon)", "The second Full Moon of May keeps lunar brightness high through the night.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "inSky", "fullMoonNames"]),
       event("occultation", "Antares occultation", "A lunar occultation of Antares is visible from selected regions.", "Path-dependent occultation.", ["inSky"])
     ]
   };

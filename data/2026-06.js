@@ -69,6 +69,11 @@
       url: "https://www.seasky.org/astronomy/astronomy-calendar-current.html",
       note: "Cross-check for June 2026 New Moon and Full Moon dates and general phase context."
     },
+    fullMoonNames: {
+      label: "The Old Farmer's Almanac Full Moon names",
+      url: "https://www.almanac.com/full-moon-names",
+      note: "Popular traditional Full Moon names are included for familiarity; names have varied cultural origins and are not formal astronomical terms."
+    },
     astromaniacArticles: {
       label: "Astromaniac Magazine articles",
       url: "https://www.astromaniacmagazine.com/articles",
@@ -199,10 +204,10 @@
   };
 
   const exactMoon = {
-    8: "Last Quarter 10:01 UTC",
-    15: "New Moon 02:55 UTC",
-    21: "First Quarter 21:56 UTC",
-    29: "Full Moon 23:57 UTC"
+    8: "Last Quarter 10:00 UTC",
+    15: "New Moon 02:54 UTC",
+    21: "First Quarter 21:55 UTC",
+    29: "Strawberry Moon (Full Moon) 23:56 UTC"
   };
 
   const monthIntel = [
@@ -219,12 +224,12 @@
     15: ["Milky Way core", "Lagoon Nebula (M8)", "Trifid Nebula (M20)"],
     17: ["Moon-Venus pairing", "Ring Nebula (M57)", "Hercules Cluster (M13)"],
     21: ["First Quarter Moon", "Lunar terminator", "Venus"],
-    29: ["Full Moon", "Saturn", "Ring Nebula (M57)"]
+    29: ["Strawberry Moon (Full Moon)", "Saturn", "Ring Nebula (M57)"]
   };
 
   const eventData = {
     8: [
-      event("moon", "Last Quarter Moon", "Exact phase 10:01 UTC. The Moon rises late, improving early-night dark-sky windows.", "Moon phase marker.", ["astronomyEngine", "nasaSvs"])
+      event("moon", "Last Quarter Moon", "Exact phase 10:00 UTC. The Moon rises late, improving early-night dark-sky windows.", "Moon phase marker.", ["astronomyEngine", "nasaSvs"])
     ],
     9: [
       event("sky", "Venus and Jupiter conjunction", "Bright evening pairing after sunset. Separation and altitude depend on location.", "Planet pairing.", ["nasaSky", "inSky"], media.planets)
@@ -233,7 +238,7 @@
       event("sky", "Mercury joins Venus and Jupiter", "Mercury enters the evening line-up with Venus and Jupiter low in twilight.", "Clear western horizon needed.", ["nasaSky", "inSky"], media.planets)
     ],
     15: [
-      event("moon", "New Moon", "Exact phase 02:55 UTC. Lunar illumination is near zero.", "Moon phase marker.", ["astronomyEngine", "nasaSvs", "seaSky"]),
+      event("moon", "New Moon", "Exact phase 02:54 UTC. Lunar illumination is near zero.", "Moon phase marker.", ["astronomyEngine", "nasaSvs", "seaSky"]),
       event("sky", "Mercury at evening elongation", "Mercury is favourably placed in evening twilight for many observers.", "Visibility depends on latitude and horizon.", ["inSky", "nasaSky"], media.planets)
     ],
     17: [
@@ -241,10 +246,10 @@
     ],
     21: [
       event("sky", "June solstice", "The Sun reaches its northernmost declination at the June solstice.", "Season marker.", ["nasaSky"], media.sun),
-      event("moon", "First Quarter Moon", "Exact phase 21:56 UTC. Lunar terminator detail is strong.", "Moon phase marker.", ["astronomyEngine", "nasaSvs"])
+      event("moon", "First Quarter Moon", "Exact phase 21:55 UTC. Lunar terminator detail is strong.", "Moon phase marker.", ["astronomyEngine", "nasaSvs"])
     ],
     29: [
-      event("moon", "Full Moon", "Exact phase 23:57 UTC. The Moon is effectively fully illuminated.", "Moon phase marker.", ["astronomyEngine", "nasaSvs", "seaSky"])
+      event("moon", "Strawberry Moon (Full Moon)", "Exact phase 23:56 UTC. June's popular traditional Full Moon name is the Strawberry Moon.", "Moon phase marker.", ["astronomyEngine", "nasaSvs", "seaSky", "fullMoonNames"])
     ]
   };
 

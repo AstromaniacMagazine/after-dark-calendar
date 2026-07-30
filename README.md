@@ -35,6 +35,8 @@ For each version:
 - Do not copy `.git` or local archive folders into a release.
 - ZIP archives and historical working folders are ignored to keep production commits clean.
 - Month data must cite its sources and pass the validation script before release.
+- Full Moon entries must include a popular traditional name in `Name (Full Moon)` form, cite the naming source, and retain the exact astronomical phase time when available.
+- The public “Current version” panel must contain only the latest three release entries.
 - Always review the exact staged diff before committing or merging.
 
 ## Version numbering

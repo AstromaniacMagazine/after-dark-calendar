@@ -83,6 +83,11 @@
       url: "https://open-meteo.com/en/docs/geocoding-api",
       note: "Manual place-name search uses Open-Meteo geocoding for coordinates and timezone, then the calendar recalculates local astronomical timing and weather."
     },
+    fullMoonNames: {
+      label: "The Old Farmer's Almanac Full Moon names",
+      url: "https://www.almanac.com/full-moon-names",
+      note: "Popular traditional Full Moon names are included for familiarity; names have varied cultural origins and are not formal astronomical terms."
+    },
     bigDataCloud: {
       label: "BigDataCloud Reverse Geocoding",
       url: "https://www.bigdatacloud.com/free-api/free-reverse-geocode-to-city-api",
