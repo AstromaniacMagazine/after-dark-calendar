@@ -40,7 +40,7 @@
     4: "Last Quarter",
     11: "New Moon",
     18: "First Quarter",
-    26: "Full Moon"
+    26: "Harvest Moon (Full Moon)"
   };
 
   const monthIntel = [
@@ -61,7 +61,7 @@
     18: ["First Quarter Moon", "Lunar terminator", "Craters"],
     22: ["Venus", "Andromeda Galaxy (M31)", "Dumbbell Nebula (M27)"],
     25: ["NGC 55", "Dumbbell Nebula (M27)", "Pleiades (M45)"],
-    26: ["Neptune", "Full Moon", "Moonrise"],
+    26: ["Neptune", "Harvest Moon (Full Moon)", "Moonrise"],
     27: ["Moon-Saturn pairing", "Saturn", "Mercury"],
     30: ["Pleiades (M45)", "Waning gibbous Moon", "Dumbbell Nebula (M27)"]
   };
@@ -105,7 +105,7 @@
     ],
     26: [
       event("opposition", "Neptune at opposition", "Neptune is opposite the Sun in Earth's sky, but the Full Moon makes contrast difficult.", "Advanced telescope target.", ["inSky"], media.planets),
-      event("moon", "Full Moon", "The Moon is effectively fully illuminated.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "inSky"])
+      event("moon", "Harvest Moon (Full Moon)", "The Moon is effectively fully illuminated. In 2026, September's Full Moon is the popular traditional Harvest Moon.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "inSky", "fullMoonNames"])
     ],
     27: [
       event("sky", "Moon and Saturn", "The Moon passes close to Saturn.", "Moon-planet pairing.", ["inSky"], media.saturn),

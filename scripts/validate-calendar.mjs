@@ -107,6 +107,17 @@ for (const entry of manifest || []) {
       }
     }
   }
+
+  for (const [dayText, label] of Object.entries(data.exactMoon || {})) {
+    if (!/\bFull Moon\b/i.test(label)) continue;
+    if (/^Full Moon(?:\s|$)/i.test(label) || !/^[^(]+\s\(Full Moon\)/i.test(label)) {
+      fail(`${entry.id} day ${dayText} Full Moon label must include a popular traditional name in "Name (Full Moon)" form.`);
+    }
+    const moonEvents = data.eventData?.[dayText] || [];
+    if (!moonEvents.some(event => event.type === "moon" && /\(Full Moon\)/i.test(event.title || ""))) {
+      fail(`${entry.id} day ${dayText} must include the traditional Full Moon name in its Moon event title.`);
+    }
+  }
 }
 
 function eventTitles(monthId, day) {
@@ -119,7 +130,7 @@ if (july) {
     7: "Last Quarter 19:29 UTC",
     14: "New Moon 09:43 UTC",
     21: "First Quarter 11:05 UTC",
-    29: "Full Moon 14:36 UTC"
+    29: "Buck Moon (Full Moon) 14:36 UTC"
   };
   for (const [day, label] of Object.entries(expectedPhases)) {
     if (july.exactMoon?.[day] !== label) fail(`2026-07 day ${day} Moon phase should be "${label}".`);
@@ -132,8 +143,18 @@ if (july) {
 
 const august = context.window.AMC_MONTH_DATA?.["2026-08"];
 if (august) {
+  const expectedPhases = {
+    6: "Last Quarter 02:21 UTC",
+    12: "New Moon 17:37 UTC",
+    20: "First Quarter 02:46 UTC",
+    28: "Sturgeon Moon (Full Moon) 04:18 UTC"
+  };
+  for (const [day, label] of Object.entries(expectedPhases)) {
+    if (august.exactMoon?.[day] !== label) fail(`2026-08 day ${day} Moon phase should be "${label}".`);
+  }
   if (!eventTitles("2026-08", 17).includes("Kappa Cygnid meteor shower")) fail("The Kappa Cygnid maximum must be listed on 2026-08-17.");
   if (eventTitles("2026-08", 18).includes("Kappa Cygnid meteor shower")) fail("The Kappa Cygnid maximum is incorrectly listed on 2026-08-18.");
+  if (!eventTitles("2026-08", 30).includes("Nancy Grace Roman Space Telescope launch")) fail("The current NASA Roman launch target must be listed on 2026-08-30.");
 }
 
 const html = read("index.html");
@@ -170,6 +191,8 @@ if (defaultMonth && !new RegExp(`<script src="${defaultMonth.path.replace(/[.*+?
 if (!html.includes('<link rel="canonical" href="https://www.astromaniacmagazine.com/after-dark-calendar">')) fail("index.html canonical URL is missing or incorrect.");
 if (!html.includes("assets/after-dark-calendar-social.png")) fail("index.html does not reference the social-sharing image.");
 if (!fs.existsSync(path.join(rootDir, "assets", "after-dark-calendar-social.png"))) fail("The social-sharing image is missing.");
+const versionEntries = html.match(/<ul class="amc-version-list">([\s\S]*?)<\/ul>/)?.[1].match(/<li>/g)?.length || 0;
+if (versionEntries !== 3) fail(`The current-version panel must contain exactly three release entries; found ${versionEntries}.`);
 
 if (failures.length) {
   console.error(`Calendar validation failed (${failures.length} issue${failures.length === 1 ? "" : "s"}):`);

@@ -236,7 +236,7 @@ body {
   align-items: center;
   display: grid;
   gap: 10px;
-  grid-template-columns: 36px max-content 36px;
+  grid-template-columns: 36px clamp(142px, 17vw, 236px) 36px;
   justify-content: center;
   width: max-content;
 }
@@ -246,8 +246,8 @@ body {
   font-size: clamp(1.25rem, 2vw, 1.9rem);
   font-weight: 600;
   line-height: 1;
+  min-width: 0;
   text-align: center;
-  padding-inline: clamp(18px, 2.5vw, 38px);
   white-space: nowrap;
 }
 
@@ -641,7 +641,7 @@ body {
 .amc-grid {
   display: grid;
   gap: var(--grid-gap);
-  grid-auto-rows: 150px;
+  grid-auto-rows: minmax(118px, auto);
   grid-template-columns: repeat(7, minmax(0, 1fr));
   min-width: 0;
   overflow-anchor: none;
@@ -649,7 +649,7 @@ body {
 }
 
 .amc-empty {
-  min-height: 138px;
+  min-height: 118px;
 }
 
 .amc-day {
@@ -663,8 +663,8 @@ body {
   display: grid;
   font: inherit;
   align-content: start;
-  gap: 4px;
-  grid-template-rows: auto auto auto minmax(20px, 1fr);
+  gap: 3px;
+  grid-template-rows: auto auto auto auto;
   min-width: 0;
   overflow: hidden;
   padding: 7px 7px 8px;
@@ -691,6 +691,7 @@ body {
 .amc-day[aria-expanded="true"] {
   border-color: var(--accent);
   border-width: 3px;
+  min-height: 142px;
   overflow: visible;
   z-index: 50;
 }
@@ -792,8 +793,8 @@ body {
 }
 
 .amc-tags {
-  align-items: end;
-  align-self: end;
+  align-items: start;
+  align-self: start;
   display: flex;
   flex-wrap: wrap;
   gap: 3px;
@@ -1900,11 +1901,11 @@ body {
   }
 
   .amc-month-nav {
-    grid-template-columns: 34px max-content 34px;
+    grid-template-columns: 34px clamp(142px, 25vw, 210px) 34px;
   }
 
   .amc-month-label {
-    padding-inline: clamp(7px, 2.5vw, 15px);
+    font-size: clamp(1.12rem, 4vw, 1.9rem);
   }
 
   .amc-actions {
@@ -1964,7 +1965,7 @@ body {
   }
 
   .amc-grid {
-    grid-auto-rows: minmax(140px, auto);
+    grid-auto-rows: minmax(132px, auto);
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
@@ -2153,9 +2154,26 @@ body {
 }
 
 @media (max-width: 430px) {
+  .amc-month-strip {
+    gap: 6px;
+  }
+
+  .amc-month-nav {
+    gap: 8px;
+    grid-template-columns: 32px 140px 32px;
+  }
+
+  .amc-month-label {
+    font-size: 1.08rem;
+  }
+
+  .amc-today-button {
+    padding-inline: 8px;
+  }
+
   .amc-grid {
     gap: 7px;
-    grid-auto-rows: minmax(140px, auto);
+    grid-auto-rows: minmax(132px, auto);
   }
 
   .amc-day {
