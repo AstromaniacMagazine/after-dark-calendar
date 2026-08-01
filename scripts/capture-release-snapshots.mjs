@@ -1,7 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { createRequire } from "node:module";
-import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
@@ -17,7 +16,6 @@ const outputDir = path.resolve(rootDir, argument("output", ".release-snapshots")
 const version = argument("version", "Beta0.7");
 const chromePath = argument("chrome", "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
 const modulesPath = argument("modules", process.env.AMC_NODE_MODULES || "");
-const pythonPath = argument("python", process.env.AMC_PYTHON || "python");
 
 if (!modulesPath) {
   throw new Error("Pass --modules with the bundled node_modules directory.");
@@ -95,19 +93,4 @@ try {
   await browser.close();
 }
 
-let threeDimensionalSnapshots = null;
-if (!process.argv.includes("--skip-3d")) {
-  const threeDimensionalScript = path.join(scriptDir, "create-3d-snapshots.py");
-  const processResult = spawnSync(pythonPath, [
-    threeDimensionalScript,
-    "--input-dir", outputDir,
-    "--output-dir", outputDir,
-    "--version", version
-  ], { encoding: "utf8" });
-  if (processResult.status !== 0) {
-    throw new Error(`3D snapshot generation failed:\n${processResult.stderr || processResult.stdout}`);
-  }
-  threeDimensionalSnapshots = JSON.parse(processResult.stdout);
-}
-
-console.log(JSON.stringify({ outputDir, results, threeDimensionalSnapshots }, null, 2));
+console.log(JSON.stringify({ outputDir, results }, null, 2));
