@@ -21,11 +21,14 @@ For each version:
 1. Create a release branch from the latest `origin/main`.
 2. Edit the production files directly in this repository root.
 3. Run `node scripts/validate-calendar.mjs` and complete responsive browser checks.
-4. Save three release snapshots in `G:\My Drive\After Dark Calendar\Snapshots`:
+4. Save three full-page release snapshots and three cinematic 3D snapshots in `G:\My Drive\After Dark Calendar\Snapshots`:
    - `ADC_LIGHT_<VERSION>.png`
    - `ADC_DARK_<VERSION>.png`
    - `ADC_RED_<VERSION>.png`
-   Use `scripts/capture-release-snapshots.mjs` to produce full-page, 2x-resolution PNG files and verify their PNG signatures and dimensions.
+   - `ADC_3D_LIGHT_<VERSION>.png`
+   - `ADC_3D_DARK_<VERSION>.png`
+   - `ADC_3D_RED_<VERSION>.png`
+   Use `scripts/capture-release-snapshots.mjs` to produce the full-page, 2x-resolution PNG files, automatically build the 3D perspective/depth-of-field compositions from those exact UI pixels, and verify their PNG signatures and dimensions. Pass the bundled Python executable with `--python` when it is not available on `PATH`.
 5. Review the diff, commit only the intended release files and push the branch.
 6. Open a pull request to `main`, merge it, and verify the GitHub Pages build.
 7. Confirm the embedded calendar at `https://www.astromaniacmagazine.com/after-dark-calendar` is serving the new version.
