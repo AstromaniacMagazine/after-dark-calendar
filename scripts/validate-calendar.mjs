@@ -155,6 +155,8 @@ if (august) {
   if (!eventTitles("2026-08", 17).includes("Kappa Cygnid meteor shower")) fail("The Kappa Cygnid maximum must be listed on 2026-08-17.");
   if (eventTitles("2026-08", 18).includes("Kappa Cygnid meteor shower")) fail("The Kappa Cygnid maximum is incorrectly listed on 2026-08-18.");
   if (!eventTitles("2026-08", 30).includes("Nancy Grace Roman Space Telescope launch")) fail("The current NASA Roman launch target must be listed on 2026-08-30.");
+  const romanLaunch = (august.eventData?.[30] || []).find(event => event.title === "Nancy Grace Roman Space Telescope launch");
+  if (!/11:20 UTC/.test(romanLaunch?.copy || "")) fail("The NASA Roman launch entry must use the current 11:20 UTC target time.");
 }
 
 const html = read("index.html");

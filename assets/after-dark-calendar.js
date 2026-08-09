@@ -29,7 +29,7 @@
   const assetVersion = root.dataset.version || "";
   const locationKey = "amc-sky-calendar-location";
   const themeKey = "amc-sky-calendar-theme";
-  const themeOrder = ["light", "dark", "red"];
+  const themeOrder = ["light", "dark", "red", "teal"];
   const chartStartHour = 16;
   const chartEndHour = 8;
   const chartDurationHours = 16;
@@ -275,7 +275,7 @@
   }
 
   function renderHighlights() {
-    els.intel.innerHTML = state.highlights.map(item => `
+    els.intel.innerHTML = [...state.highlights].sort((left, right) => highlightDay(left) - highlightDay(right)).map(item => `
       <div class="amc-intel-card">
         <img src="${escapeHtml(item.image || state.media.milkyWay?.src || "")}" alt="${escapeHtml(item.alt || "")}" loading="lazy" decoding="async">
         <span class="amc-intel-copy">
@@ -289,8 +289,14 @@
   function renderSources() {
     const sourceList = { ...state.sources, wikimediaThumbs: wikimediaSource };
     els.sources.innerHTML = Object.values(sourceList).filter(Boolean).map(source => `
-      <li><a href="${escapeHtml(source.url)}" target="_blank" rel="noopener">${escapeHtml(source.label)}</a><br>${escapeHtml(source.note || "")}</li>
+      <li><a href="${escapeHtml(source.url)}" target="_blank" rel="noopener">${escapeHtml(source.label)}</a></li>
     `).join("");
+  }
+
+  function highlightDay(item) {
+    if (Number.isFinite(Number(item?.day))) return Number(item.day);
+    const match = String(item?.text || item?.title || "").match(/\b(\d{1,2})(?:\s*[-–]\s*\d{1,2})?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct)/i);
+    return match ? Number(match[1]) : Number.MAX_SAFE_INTEGER;
   }
 
   function renderCalendar() {
@@ -307,6 +313,9 @@
       const primary = primaryEvent(events);
       const expanded = day === state.expandedDay;
       const css = eventMeta(primary).css;
+      const observing = weatherForCalendarDay(day);
+      const observingSummary = observing ? `, observing conditions ${observing.observingLabel}` : "";
+      const hasMajorEvent = eventImportance(primary) >= 90;
       const colIndex = (state.month.firstDayOffset + day - 1) % 7;
       const rowIndex = Math.floor((state.month.firstDayOffset + day - 1) / 7);
       const totalRows = Math.ceil((state.month.firstDayOffset + state.month.days) / 7);
@@ -316,12 +325,14 @@
       const isToday = day === todayDay;
       const isNewMoon = isNewMoonDay(day);
       html.push(`
-        <button type="button" class="amc-day ${css}${rowEnd ? " is-row-end" : ""}${rowTail ? " is-row-tail" : ""}${rowBottom ? " is-row-bottom" : ""}${isToday ? " is-today" : ""}${isNewMoon ? " is-new-moon" : ""}" data-day="${day}" aria-expanded="${expanded}" aria-label="${isToday ? "Today, " : ""}${weekdayShort} ${day} ${monthTitle()}, ${moon.name}, ${moon.phase}% lit, astro night ${durationClock(nightInfo)}">
+        <button type="button" class="amc-day ${css}${rowEnd ? " is-row-end" : ""}${rowTail ? " is-row-tail" : ""}${rowBottom ? " is-row-bottom" : ""}${isToday ? " is-today" : ""}${isNewMoon ? " is-new-moon" : ""}${observing ? " has-observing" : ""}${hasMajorEvent ? " is-major-event" : ""}" data-day="${day}" aria-expanded="${expanded}" aria-label="${isToday ? "Today, " : ""}${weekdayShort} ${day} ${monthTitle()}, ${moon.name}, ${moon.phase}% lit, astro night ${durationClock(nightInfo)}${observingSummary}">
+          ${dayObservingBar(observing)}
           <span class="amc-date">
             <strong>${day}</strong>
             <span class="amc-date-badges">
               <span class="amc-mobile-weekday">${weekdayShort}</span>
               ${isToday ? `<span class="amc-today-pill">Today</span>` : ""}
+              ${hasMajorEvent ? `<span class="amc-major-event-pill">Major</span>` : ""}
             </span>
           </span>
           <span class="amc-moon-line">
@@ -358,6 +369,7 @@
           <span class="amc-minimise" aria-hidden="true">-</span>
         </span>
       </span>
+      ${expandedObservingPanel(weatherForCalendarDay(day))}
       <span class="amc-mini-grid">
         ${zodiacCard(day)}
         ${eventDataCard(primary)}
@@ -374,6 +386,28 @@
         ${cellWeatherPanel()}
       </span>
     `;
+  }
+
+  function weatherForCalendarDay(day) {
+    const dateKey = `${state.month.year}-${String(state.month.monthIndex + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    return state.weather.find(item => item.dateKey === dateKey) || null;
+  }
+
+  function dayObservingBar(weather) {
+    if (!weather?.segments?.length) return "";
+    const summary = weather.segments.map(segment => `${segment.label} ${observingRating(segment.observingScore).label}`).join(", ");
+    return `<span class="amc-day-observing" aria-hidden="true" title="Observing conditions: ${escapeHtml(summary)}">${weather.segments.map(segment => `<i style="background:${segmentColour(segment, "observing")}"></i>`).join("")}</span>`;
+  }
+
+  function expandedObservingPanel(weather) {
+    if (!weather?.segments?.length) return "";
+    return `<span class="amc-expanded-observing" aria-label="Quarter-by-quarter observing conditions">
+      <span class="amc-expanded-observing-title">Observing conditions <b>${escapeHtml(weather.observingLabel)}</b></span>
+      <span class="amc-expanded-observing-slots">${weather.segments.map(segment => {
+        const rating = observingRating(segment.observingScore);
+        return `<span><i style="background:${observingColour(rating.key)}"></i><small>${segment.label}</small><b>${rating.label}</b></span>`;
+      }).join("")}</span>
+    </span>`;
   }
 
   function miniItem(icon, label, value) {
@@ -449,20 +483,25 @@
     const seeded = (state.targets[day] || []).filter(isSpecificTarget);
     const seasonal = seasonalTargetPool(moon);
     const rankedSeasonal = [...seasonal].sort((left, right) => targetRank(right, day) - targetRank(left, day));
-    const candidates = uniqueTargetNames([...seeded, ...rankedSeasonal]);
+    const fallbacks = fallbackTargetPool(moon);
+    const candidates = uniqueTargetNames([...seeded, ...rankedSeasonal, ...fallbacks]);
     const selected = [];
     const groups = new Set();
 
-    candidates.forEach(name => {
-      if (selected.length >= 3) return;
+    const addTarget = (name, requireDistinctGroup = true, requireGoodAltitude = true) => {
+      if (selected.length >= 3 || selected.includes(name)) return;
       const meta = targetMeta(name);
       const group = targetGroup(name, meta);
-      if (groups.has(group)) return;
+      if (requireDistinctGroup && groups.has(group)) return;
       const observing = targetObserving(meta, day);
-      if (state.hasLocation && observing.maxAltitude !== null && observing.maxAltitude < 20) return;
+      if (requireGoodAltitude && state.hasLocation && observing.maxAltitude !== null && observing.maxAltitude < 20) return;
       selected.push(name);
       groups.add(group);
-    });
+    };
+
+    candidates.forEach(name => addTarget(name));
+    candidates.forEach(name => addTarget(name, false));
+    fallbacks.forEach(name => addTarget(name, false, false));
 
     return selected.slice(0, 3).map(name => targetDetails(name, day, moon));
   }
@@ -480,6 +519,11 @@
     if (moon.phase <= 35) return deepSky;
     if (moon.phase >= 70) return ["Moon", "Saturn", "Jupiter", "Ring Nebula (M57)", ...deepSky];
     return ["Moon", ...deepSky, "Saturn"];
+  }
+
+  function fallbackTargetPool(moon) {
+    const moonTarget = moon.phase >= 70 ? "Moon" : "Milky Way fields";
+    return [moonTarget, "Andromeda Galaxy (M31)", "North America Nebula (NGC 7000)", "Pleiades (M45)", "Saturn", "Jupiter", "Dumbbell Nebula (M27)"];
   }
 
   function isSpecificTarget(name) {
@@ -617,13 +661,13 @@
   }
 
   function moonAltitudeSvg(timeline, compact) {
-    const maxAltitude = 60;
-    const chart = { x: compact ? 34 : 39, y: compact ? 18 : 22, width: compact ? 282 : 306, height: compact ? 118 : 164 };
+    const maxAltitude = 75;
+    const chart = { x: compact ? 26 : 30, y: compact ? 12 : 16, width: compact ? 300 : 326, height: compact ? 130 : 178 };
     const viewWidth = compact ? 332 : 360;
-    const viewHeight = compact ? 190 : 244;
+    const viewHeight = compact ? 184 : 238;
     const tickStep = 2;
     const hours = Array.from({ length: (chartDurationHours / tickStep) + 1 }, (_, i) => (chartStartHour + (i * tickStep)) % 24);
-    const yTicks = compact ? [0, 30, 60] : [0, 20, 40, 60];
+    const yTicks = compact ? [0, 38, 75] : [0, 25, 50, 75];
     const bands = timeline.bands.map(band => {
       const x = chart.x + (band.startHour / chartDurationHours) * chart.width;
       const width = ((band.endHour - band.startHour) / chartDurationHours) * chart.width;
@@ -657,11 +701,6 @@
       const point = chartPoint({ hour: marker.hour, altitude: 0 }, chart, maxAltitude);
       return `<g><circle cx="${point.x}" cy="${point.y}" r="${compact ? 3.2 : 4}" fill="#d08a13"/><text x="${point.x}" y="${point.y - 19}" text-anchor="middle" fill="#8b5f12" font-size="${compact ? 8 : 8.8}" font-weight="600">${marker.label}</text><text x="${point.x}" y="${point.y - 7}" text-anchor="middle" fill="currentColor" font-size="${compact ? 7.4 : 8.2}" font-weight="600">${marker.time}</text></g>`;
     }).join("");
-    const twilightMarkers = timeline.twilightMarkers.map(marker => {
-      const x = chart.x + (marker.hour / chartDurationHours) * chart.width;
-      const y = marker.type === "end" ? chart.y + 12 : chart.y + chart.height - 24;
-      return `<g><line x1="${x}" x2="${x}" y1="${chart.y}" y2="${chart.y + chart.height}" stroke="rgba(5,8,18,.46)" stroke-dasharray="3 3"/><text x="${x}" y="${y}" text-anchor="middle" fill="currentColor" font-size="${compact ? 7.2 : 8.2}" font-weight="600">${marker.label}</text></g>`;
-    }).join("");
     const now = chartNowMarker(timeline.startMs, timeline.endMs);
     const nowX = chart.x + ((now?.hour || 0) / chartDurationHours) * chart.width;
     const nowStyle = now ? "" : " style=\"display:none\"";
@@ -671,13 +710,13 @@
       <text data-now-label x="${nowX}" y="${chart.y + 11}" text-anchor="middle" fill="var(--accent)" font-size="${compact ? 7.2 : 8.2}" font-weight="600">NOW</text>
       <text data-now-time x="${nowX}" y="${chart.y + chart.height - 7}" text-anchor="middle" fill="var(--accent)" font-size="${compact ? 6.8 : 7.8}" font-weight="600">${now?.time || ""}</text>
     </g>`;
-    return `<svg class="amc-alt-svg" data-now-chart data-chart-start="${timeline.startMs}" data-chart-end="${timeline.endMs}" data-chart-x="${chart.x}" data-chart-width="${chart.width}" viewBox="0 0 ${viewWidth} ${viewHeight}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Moon altitude from 16:00 to 08:00, scaled from 0 to 60 degrees">
+    return `<svg class="amc-alt-svg" data-now-chart data-chart-start="${timeline.startMs}" data-chart-end="${timeline.endMs}" data-chart-x="${chart.x}" data-chart-width="${chart.width}" viewBox="0 0 ${viewWidth} ${viewHeight}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Moon altitude from 16:00 to 08:00, scaled from 0 to 75 degrees">
       <g style="color: var(--text)">
         ${bands}${hourTicks}${altitudeTicks}${bandLabels}
         <line x1="${chart.x}" x2="${chart.x + chart.width}" y1="${chart.y + chart.height}" y2="${chart.y + chart.height}" stroke="rgba(22,25,29,.42)" stroke-width="1.2"/>
         <line x1="${chart.x}" x2="${chart.x}" y1="${chart.y}" y2="${chart.y + chart.height}" stroke="rgba(22,25,29,.36)" stroke-width="1.2"/>
         <text x="${chart.x + chart.width / 2}" y="${chart.y + chart.height + (compact ? 31 : 34)}" text-anchor="middle" fill="currentColor" font-size="${compact ? 11.2 : 12.6}" font-weight="400">TIME</text>
-        ${twilightMarkers}${paths}${markers}${nowMarker}
+        ${paths}${markers}${nowMarker}
       </g>
     </svg>`;
   }
@@ -705,6 +744,7 @@
         <span class="amc-weather-icons">${day.icons.map(weatherIcon).join("")}</span>
       </span>
       <span class="amc-weather-metrics">
+        ${weatherMetric("Sky", day.observingLabel, day.segments.map(segment => weatherSegment(segment, "observing")), "amc-observing-segments")}
         ${weatherMetric("Cloud", `${Math.round(day.cloud)}%`, day.segments.map(segment => weatherSegment(segment, "cloud")))}
         ${weatherMetric("Temp", `${Math.round(day.temperature)}°C`, day.segments.map(segment => weatherSegment(segment, "temperature")))}
         ${weatherMetric("Trans.", day.transparencyLabel, day.segments.map(segment => weatherSegment(segment, "transparency")))}
@@ -714,8 +754,8 @@
     </span>`;
   }
 
-  function weatherMetric(label, value, segments) {
-    return `<span class="amc-weather-row"><b>${label} ${escapeHtml(value)}</b><span class="amc-weather-segments">${segments.join("")}</span></span>`;
+  function weatherMetric(label, value, segments, extraClass = "") {
+    return `<span class="amc-weather-row"><b>${label} ${escapeHtml(value)}</b><span class="amc-weather-segments ${extraClass}">${segments.join("")}</span></span>`;
   }
 
   function weatherSegment(segment, metric) {
@@ -863,14 +903,10 @@
       state.weatherState = "ready";
       state.weatherUpdatedAt = new Date();
       saveLocation();
-      if (timeZoneChanged) {
-        recalculateLocationData();
-        renderCalendar();
-        renderDetail();
-        renderRecommendations();
-      } else {
-        refreshLivePanels();
-      }
+      if (timeZoneChanged) recalculateLocationData();
+      renderCalendar();
+      renderDetail();
+      renderRecommendations();
       scheduleWeatherRefresh();
     } catch {
       if (requestId !== state.weatherRequestId) return;
@@ -911,6 +947,8 @@
       const wind = avg(slots.map(slot => slot.wind));
       const transparency = avg(slots.map(slot => slot.transparency));
       const seeing = avg(slots.map(slot => slot.seeing));
+      const observingScore = avg(slots.map(slot => slot.observingScore));
+      const observing = observingRating(observingScore);
       const kind = weatherKind(representativeWeatherCode(slots.map(slot => slot.code)), cloud);
       return {
         dateKey,
@@ -919,6 +957,9 @@
         cloud,
         temperature,
         wind,
+        observingScore,
+        observingKey: observing.key,
+        observingLabel: observing.label,
         transparencyLabel: transparencyLabel(transparency),
         seeingLabel: seeingLabel(seeing),
         icons: weatherIconKinds(slots, kind),
@@ -945,7 +986,8 @@
     const visibilityPenalty = Math.max(0, 12000 - visibility) / 12000 * 18;
     const transparency = clamp(100 - cloud * .62 - humidity * .11 - precipitation * .15 - visibilityPenalty + Math.min(8, dewPointSpread), 0, 100);
     const seeing = clamp(100 - wind * 1.65 - gusts * .55 - temperatureRange * 4.5 - Math.min(18, cape / 70) - cloud * .05, 0, 100);
-    return { label, cloud, temperature, humidity, dewPoint, precipitation, wind, gusts, visibility, cape, code, transparency, seeing, kind: weatherKind(code, cloud) };
+    const observingScore = clamp(transparency * .68 + seeing * .22 + (100 - precipitation) * .1 - Math.max(0, weatherCodeSeverity(code) - 2) * 3, 0, 100);
+    return { label, cloud, temperature, humidity, dewPoint, precipitation, wind, gusts, visibility, cape, code, transparency, seeing, observingScore, kind: weatherKind(code, cloud) };
   }
 
   function calculateDailySky(day) {
@@ -1012,8 +1054,7 @@
       endMs: end.getTime(),
       bands: compressBands(darknessStates),
       moonSegments: moonVisibleSegments(moonSamples),
-      markers: [chartMarker(rise, start, end, "Rise"), chartMarker(set, start, end, "Set")].filter(Boolean),
-      twilightMarkers: astronomicalMarkers(day, observer, start, end)
+      markers: [chartMarker(rise, start, end, "Rise"), chartMarker(set, start, end, "Set")].filter(Boolean)
     };
   }
 
@@ -1028,16 +1069,6 @@
     return { minutes, window: `${formatTime(dusk.date)}-${formatTime(dawn.date)}`, range: `${formatLocal(dusk.date)} to ${formatLocal(dawn.date)}` };
   }
 
-  function astronomicalMarkers(day, observer, start, end) {
-    const Astronomy = window.Astronomy;
-    const noon = zonedDate(state.month.year, state.month.monthIndex, day, 12, 0, 0);
-    const astroStart = Astronomy.SearchAltitude(Astronomy.Body.Sun, observer, -1, noon, 1, -12);
-    const darkStart = Astronomy.SearchAltitude(Astronomy.Body.Sun, observer, -1, noon, 1, -18);
-    const astroEnd = astroStart ? Astronomy.SearchAltitude(Astronomy.Body.Sun, observer, +1, astroStart.date, 1.5, -12) : null;
-    const endPoint = darkStart?.date ? darkStart : astroEnd;
-    return [chartTwilightMarker(astroStart, start, end, "Astro begins", "start"), chartTwilightMarker(endPoint, start, end, "Astro ends", "end")].filter(Boolean);
-  }
-
   function bodyAltitude(body, sample, observer) {
     return horizon(body, sample, observer).altitude;
   }
@@ -1050,7 +1081,9 @@
 
   function selectDay(day) {
     const wasExpanded = state.expandedDay === day;
-    const preservePosition = root.getBoundingClientRect().width <= 1050;
+    // Expansion changes card geometry at every breakpoint. Preserve the clicked
+    // card's viewport position so opening or closing a day never pulls the page.
+    const preservePosition = true;
     const currentButton = els.grid.querySelector(`.amc-day[data-day="${day}"]`);
     const previousTop = preservePosition && currentButton ? currentButton.getBoundingClientRect().top : null;
     const previouslyExpanded = validDay(state.expandedDay)
@@ -1062,13 +1095,23 @@
     if (currentButton) updateDayExpansion(currentButton, !wasExpanded);
     renderDetail();
     renderRecommendations();
-    currentButton?.focus({ preventScroll: true });
-    if (currentButton && previousTop !== null) {
-      requestAnimationFrame(() => {
-        const drift = currentButton.getBoundingClientRect().top - previousTop;
-        if (Math.abs(drift) > .5) window.scrollBy(0, drift);
-      });
-    }
+    if (currentButton && previousTop !== null) preserveDayViewport(currentButton, previousTop);
+  }
+
+  function preserveDayViewport(button, previousTop) {
+    const startedAt = performance.now();
+    const restore = () => {
+      const drift = button.getBoundingClientRect().top - previousTop;
+      if (Math.abs(drift) > .5) {
+        const scroller = document.scrollingElement;
+        if (scroller) scroller.scrollTop += drift;
+        else window.scrollBy(0, drift);
+      }
+      // Mobile browsers can apply focus/scroll anchoring after the first paint.
+      // Keep the clicked card pinned briefly while those adjustments settle.
+      if (performance.now() - startedAt < 240) requestAnimationFrame(restore);
+    };
+    restore();
   }
 
   function updateDayExpansion(button, expanded) {
@@ -1322,8 +1365,8 @@
   function setTheme(theme) {
     const safeTheme = themeOrder.includes(theme) ? theme : "light";
     const nextTheme = themeOrder[(themeOrder.indexOf(safeTheme) + 1) % themeOrder.length];
-    const labels = { light: "Light", dark: "Night", red: "Observatory Red" };
-    const icons = { light: "themeMoon", dark: "themeRed", red: "themeSun" };
+    const labels = { light: "Light", dark: "Night", red: "Observatory Red", teal: "Royal Teal" };
+    const icons = { light: "themeMoon", dark: "themeRed", red: "themeSun", teal: "themeTeal" };
     root.dataset.theme = safeTheme;
     els.themeToggle.innerHTML = iconSvg(icons[safeTheme]);
     els.themeToggle.setAttribute("aria-label", `Current theme: ${labels[safeTheme]}. Switch to ${labels[nextTheme]}`);
@@ -1387,11 +1430,16 @@
     if (state.exactMoon[day] && !events.some(item => item.type === "moon")) {
       events.unshift({ type: "moon", title: state.exactMoon[day], copy: "Exact lunar phase.", fact: "Lunar phase marker.", sourceIds: ["astronomyEngine", "nasaSvs"], media: null });
     }
-    return events;
+    return events.sort((left, right) => eventImportance(right) - eventImportance(left));
   }
 
   function primaryEvent(events) {
     return events[0] || { type: "none", title: "", copy: "", fact: "", sourceIds: [], media: null };
+  }
+
+  function eventImportance(event) {
+    const priorities = { eclipse: 100, occultation: 86, meteor: 82, opposition: 76, launch: 72, sky: 58, telescope: 48, moon: 24, note: 12, none: 0 };
+    return priorities[event?.type] || 0;
   }
 
   function eventMeta(item) {
@@ -1829,7 +1877,19 @@
     return "Poor";
   }
 
+  function observingRating(score) {
+    if (score >= 72) return { key: "excellent", label: "Excellent" };
+    if (score >= 56) return { key: "fair", label: "Fair" };
+    if (score >= 36) return { key: "amber", label: "Amber" };
+    return { key: "poor", label: "Poor" };
+  }
+
+  function observingColour(key) {
+    return `var(--observing-${key})`;
+  }
+
   function segmentColour(segment, metric) {
+    if (metric === "observing") return observingColour(observingRating(segment.observingScore).key);
     if (metric === "cloud") return cloudColour(segment.cloud);
     if (metric === "temperature") return temperatureColour(segment.temperature);
     if (metric === "transparency") return transparencyColour(segment.transparency);
@@ -1839,6 +1899,7 @@
   }
 
   function segmentTooltip(segment, metric) {
+    if (metric === "observing") return `${segment.label}: ${observingRating(segment.observingScore).label} observing conditions`;
     if (metric === "cloud") return `${segment.label}: Cloud ${Math.round(segment.cloud)}%`;
     if (metric === "temperature") return `${segment.label}: Temperature ${Math.round(segment.temperature)}°C`;
     if (metric === "transparency") return `${segment.label}: Transparency ${transparencyLabel(segment.transparency)}`;
@@ -2021,6 +2082,7 @@
       themeMoon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg>`,
       themeRed: `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 19h8M9 22h6"/><path d="M8.5 16.5A7 7 0 1 1 15.5 16.5L14 19h-4Z"/><circle cx="12" cy="10" r="2.3" fill="currentColor" stroke="none"/></svg>`,
       themeSun: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>`,
+      themeTeal: `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15.5c2.2-4.1 4.5-6.1 7-6.1 2.6 0 4.9 2 7 6.1"/><path d="M5 18.5c2.2-2.2 4.5-3.3 7-3.3 2.6 0 4.9 1.1 7 3.3"/><circle cx="12" cy="5.3" r="1.6"/></svg>`,
       event: `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M7 3v4M17 3v4M3.5 9h17"/><path d="m12 12 .8 1.7 1.9.2-1.4 1.3.4 1.8-1.7-.9-1.7.9.4-1.8-1.4-1.3 1.9-.2Z"/></svg>`,
       altitude: `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19h18"/><path d="M5 17a8 8 0 0 1 14-5"/><circle cx="17.5" cy="9.5" r="2"/><path d="M8 16V7m0 0L5.5 9.5M8 7l2.5 2.5"/></svg>`,
       azimuth: `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m14.8 8.2-1.6 5-5 1.6 1.6-5Z"/><path d="M12 3.5V6M12 18v2.5M3.5 12H6M18 12h2.5"/></svg>`,
