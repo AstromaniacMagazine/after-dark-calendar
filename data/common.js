@@ -123,6 +123,12 @@
       image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/695c22f72e97d326b10fb19b/1767645945673/unsplash-image-ve_uN9V8xqU.jpg?format=750w",
       kind: "Article"
     },
+    solarEclipse2026: {
+      title: "The 2026 Solar Eclipse: A Complete Guide to Seeing, Understanding and Photographing It",
+      url: "https://www.astromaniacmagazine.com/articles/the-2026-solar-eclipse-a-complete-guide-to-seeing-understanding-and-photographing-it",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/6a760d78ee0be16754810be8/1786121592847/unsplash-image-rjEoFD8l1vo.jpg?format=750w",
+      kind: "Article"
+    },
     launch: {
       title: "What's Gone Wrong Between Nasa And Elon Musk's SpaceX?",
       url: "https://www.astromaniacmagazine.com/articles/whats-gone-wrong-between-nasa-and-elon-musks-spacex",

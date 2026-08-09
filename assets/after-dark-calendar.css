@@ -91,10 +91,6 @@ body {
   --ok: #f2c14e;
   --bad: #ff6b6b;
   --warning: #ffad5c;
-  --observing-poor: #ff6268;
-  --observing-amber: #efaa3a;
-  --observing-fair: #b6d453;
-  --observing-excellent: #3a80b7;
   background:
     radial-gradient(circle at 8% 14%, rgba(255,255,255,.12) 0 1px, transparent 1.5px),
     radial-gradient(circle at 74% 12%, rgba(255,255,255,.1) 0 1px, transparent 1.5px),
@@ -125,10 +121,6 @@ body {
   --ok: #ff8a5c;
   --bad: #ff4c4c;
   --warning: #ff8c62;
-  --observing-poor: #ff5f62;
-  --observing-amber: #ffae4e;
-  --observing-fair: #c6d95b;
-  --observing-excellent: #4d9ad2;
   background: linear-gradient(145deg, #080202, #160606 55%, #060101);
 }
 
@@ -156,10 +148,6 @@ body {
   --ok: #f0c55f;
   --bad: #ff7374;
   --warning: #ffb26f;
-  --observing-poor: #f3666b;
-  --observing-amber: #e5a746;
-  --observing-fair: #b8d453;
-  --observing-excellent: #367bb1;
   background:
     radial-gradient(circle at 12% 12%, rgba(93, 213, 199, .16) 0 1px, transparent 1.5px),
     radial-gradient(circle at 83% 18%, rgba(213, 255, 241, .1) 0 1px, transparent 1.5px),
@@ -271,25 +259,32 @@ body {
   align-items: center;
   display: grid;
   gap: clamp(16px, 2.6vw, 30px);
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   margin-top: 47px;
   justify-self: center;
   max-width: 100%;
-  width: max-content;
+  width: 100%;
 }
 
 .amc-month-nav {
   align-items: center;
   display: grid;
-  gap: 10px;
-  grid-template-columns: 36px clamp(142px, 17vw, 236px) 36px;
+  gap: 8px;
+  grid-column: 2;
+  grid-template-columns: 30px clamp(114px, 13.6vw, 189px) 30px;
   justify-content: center;
   width: max-content;
 }
 
+.amc-month-strip > .amc-today-button {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: end;
+}
+
 .amc-month-label {
   color: var(--text);
-  font-size: clamp(1.25rem, 2vw, 1.9rem);
+  font-size: clamp(1rem, 1.6vw, 1.52rem);
   font-weight: 600;
   line-height: 1;
   min-width: 0;
@@ -339,8 +334,9 @@ body {
 
 .amc-month-button {
   color: #0a2342;
+  height: 32px;
   padding: 0;
-  width: 36px;
+  width: 30px;
 }
 
 .amc-sky-calendar[data-theme="dark"] .amc-month-button {
@@ -349,6 +345,12 @@ body {
 
 .amc-sky-calendar[data-theme="red"] .amc-month-button {
   color: #ff8178;
+}
+
+.amc-sky-calendar[data-theme="teal"] .amc-month-button {
+  background: var(--panel-soft);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .amc-month-button svg,
@@ -360,6 +362,11 @@ body {
   stroke-linejoin: round;
   stroke-width: 2;
   width: 20px;
+}
+
+.amc-month-button svg {
+  height: 16px;
+  width: 16px;
 }
 
 .amc-actions {
@@ -723,7 +730,7 @@ body {
   display: grid;
   gap: 1px;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  height: 5px;
+  height: 6.25px;
   left: 0;
   overflow: hidden;
   position: absolute;
@@ -737,7 +744,7 @@ body {
 }
 
 .amc-day.has-observing {
-  padding-top: 9px;
+  padding-top: 10.25px;
 }
 
 .amc-day:hover {
@@ -1576,6 +1583,16 @@ body {
   opacity: 1;
 }
 
+.amc-weather-tooltip b,
+.amc-weather-tooltip span {
+  display: block;
+}
+
+.amc-weather-tooltip b {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
 .amc-recommendations {
   align-self: end;
   border-top: 1px solid var(--line);
@@ -2019,7 +2036,7 @@ body {
     gap: 8px;
     grid-column: 1 / -1;
     grid-row: 5;
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   }
 }
 
@@ -2048,15 +2065,20 @@ body {
     gap: 8px;
     grid-column: 1 / -1;
     grid-row: 5;
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   }
 
   .amc-month-nav {
-    grid-template-columns: 34px clamp(142px, 25vw, 210px) 34px;
+    grid-template-columns: 27px clamp(114px, 20vw, 168px) 27px;
   }
 
   .amc-month-label {
-    font-size: clamp(1.12rem, 4vw, 1.9rem);
+    font-size: clamp(.9rem, 3.2vw, 1.52rem);
+  }
+
+  .amc-month-button {
+    height: 32px;
+    width: 27px;
   }
 
   .amc-actions {
@@ -2310,12 +2332,17 @@ body {
   }
 
   .amc-month-nav {
-    gap: 8px;
-    grid-template-columns: 32px 140px 32px;
+    gap: 6px;
+    grid-template-columns: 26px 112px 26px;
   }
 
   .amc-month-label {
-    font-size: 1.08rem;
+    font-size: .864rem;
+  }
+
+  .amc-month-button {
+    height: 30px;
+    width: 26px;
   }
 
   .amc-today-button {

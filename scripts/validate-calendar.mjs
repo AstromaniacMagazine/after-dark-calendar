@@ -156,7 +156,11 @@ if (august) {
   if (eventTitles("2026-08", 18).includes("Kappa Cygnid meteor shower")) fail("The Kappa Cygnid maximum is incorrectly listed on 2026-08-18.");
   if (!eventTitles("2026-08", 30).includes("Nancy Grace Roman Space Telescope launch")) fail("The current NASA Roman launch target must be listed on 2026-08-30.");
   const romanLaunch = (august.eventData?.[30] || []).find(event => event.title === "Nancy Grace Roman Space Telescope launch");
-  if (!/11:20 UTC/.test(romanLaunch?.copy || "")) fail("The NASA Roman launch entry must use the current 11:20 UTC target time.");
+  if (!/11:26 UTC/.test(romanLaunch?.copy || "")) fail("The NASA Roman launch entry must use the current 11:26 UTC target time.");
+  const eclipseGuide = august.articleData?.solarEclipse2026;
+  if (eclipseGuide?.url !== "https://www.astromaniacmagazine.com/articles/the-2026-solar-eclipse-a-complete-guide-to-seeing-understanding-and-photographing-it") {
+    fail("The August calendar must include the 2026 solar-eclipse guide article.");
+  }
 }
 
 const html = read("index.html");
@@ -183,6 +187,7 @@ else {
   if (!html.includes(`"softwareVersion": "${declaredVersion}"`)) fail(`Structured data does not match ${declaredVersion}.`);
   if (versionMentions.some(version => !version.startsWith(declaredVersion))) fail(`A current-version value does not match ${declaredVersion}.`);
 }
+if (!html.includes(`data-asset-version="${declaredVersion}-20260809"`)) fail("The dynamic month cache-busting version is missing or inconsistent.");
 const metaDescription = html.match(/<meta name="description" content="([^"]+)">/)?.[1] || "";
 if (metaDescription.length < 120 || metaDescription.length > 160) fail(`Meta description should be 120-160 characters; found ${metaDescription.length}.`);
 if (/3-night/i.test(metaDescription)) fail("Meta description still claims a 3-night forecast.");
