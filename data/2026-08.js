@@ -59,8 +59,8 @@
     },
     nasaRoman: {
       label: "NASA Roman Space Telescope launch update",
-      url: "https://science.nasa.gov/blogs/roman/2026/07/27/nasa-fuels-roman-space-telescope-for-late-august-launch/",
-      note: "NASA's current no-earlier-than launch target for the Nancy Grace Roman Space Telescope."
+      url: "https://science.nasa.gov/mission/roman-space-telescope/",
+      note: "NASA's current launch target and countdown for the Nancy Grace Roman Space Telescope."
     }
   };
 
@@ -166,7 +166,7 @@
       event("opposition", "Asteroid 9 Metis at opposition", "Asteroid 9 Metis reaches opposition at 14:22 UTC in Aquarius, peaking near magnitude 9.2 and remaining above the horizon for much of the local night.", "Binoculars or a moderate-aperture telescope are required; the Full Moon will reduce contrast.", ["inSky"])
     ],
     30: [
-      event("launch", "Nancy Grace Roman Space Telescope launch", "NASA and SpaceX are targeting liftoff no earlier than 11:26 UTC aboard a Falcon Heavy from Launch Complex 39A in Florida.", "Launch dates and times can change; check NASA's latest mission update.", ["nasaRoman"]),
+      event("launch", "Nancy Grace Roman Space Telescope launch", "NASA and SpaceX are targeting liftoff no earlier than 11:20 UTC aboard a Falcon Heavy from Launch Complex 39A in Florida.", "Launch dates and times can change; check NASA's latest mission update.", ["nasaRoman"]),
       event("sky", "Moon and Saturn", "The Moon passes close to Saturn again near the end of the month.", "Moon-planet pairing.", ["inSky"], media.saturn)
     ],
     31: [

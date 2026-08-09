@@ -13,7 +13,7 @@ function argument(name, fallback = "") {
 
 const url = argument("url", "http://127.0.0.1:4173/");
 const outputDir = path.resolve(rootDir, argument("output", ".release-snapshots"));
-const version = argument("version", "Beta0.7");
+const version = argument("version", "Beta0.8");
 const chromePath = argument("chrome", "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
 const modulesPath = argument("modules", process.env.AMC_NODE_MODULES || "");
 
