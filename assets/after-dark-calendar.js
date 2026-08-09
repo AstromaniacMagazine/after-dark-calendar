@@ -26,7 +26,7 @@
 
   const shared = window.AMC_SHARED || {};
   const manifest = Array.isArray(window.AMC_MONTH_MANIFEST) ? window.AMC_MONTH_MANIFEST : [];
-  const assetVersion = root.dataset.version || "";
+  const assetVersion = root.dataset.assetVersion || root.dataset.version || "";
   const locationKey = "amc-sky-calendar-location";
   const themeKey = "amc-sky-calendar-theme";
   const themeOrder = ["light", "dark", "red", "teal"];
@@ -593,7 +593,8 @@
   function recommendedArticles(events, moon) {
     const typeSet = new Set(events.map(item => item.type));
     let contextual;
-    if (typeSet.has("launch")) contextual = [state.articles.launch, state.articles.artemis, state.articles.spaceDebris];
+    if (state.monthId === "2026-08" && [10, 11, 12].includes(state.selectedDay)) contextual = [state.articles.solarEclipse2026, state.articles.deepSky, state.articles.numbers];
+    else if (typeSet.has("launch")) contextual = [state.articles.launch, state.articles.artemis, state.articles.spaceDebris];
     else if (typeSet.has("meteor")) contextual = [state.articles.deepSky, state.articles.numbers, state.articles.lightPollution];
     else if (typeSet.has("moon") || moon.phase >= 70) contextual = [state.articles.moon, state.articles.lunarLife, state.articles.artemis];
     else if (typeSet.has("telescope")) contextual = [state.articles.telescope, state.articles.rubin, state.articles.jamesWebb];
@@ -755,11 +756,11 @@
   }
 
   function weatherMetric(label, value, segments, extraClass = "") {
-    return `<span class="amc-weather-row"><b>${label} ${escapeHtml(value)}</b><span class="amc-weather-segments ${extraClass}">${segments.join("")}</span></span>`;
+    return `<span class="amc-weather-row"><b>${label}: ${escapeHtml(value)}</b><span class="amc-weather-segments ${extraClass}">${segments.join("")}</span></span>`;
   }
 
   function weatherSegment(segment, metric) {
-    return `<i tabindex="0" style="background:${segmentColour(segment, metric)}" data-tooltip="${escapeHtml(segmentTooltip(segment, metric))}"></i>`;
+    return `<i tabindex="0" style="background:${segmentColour(segment, metric)}" data-tooltip-time="${escapeHtml(segment.label)}" data-tooltip="${escapeHtml(segmentTooltip(segment, metric))}"></i>`;
   }
 
   function weatherUpdatedLine() {
@@ -1404,7 +1405,11 @@
   function showWeatherTooltip(segment) {
     const text = segment.dataset.tooltip;
     if (!text) return;
-    els.tooltip.textContent = text;
+    const time = document.createElement("b");
+    const detail = document.createElement("span");
+    time.textContent = segment.dataset.tooltipTime || "Time window";
+    detail.textContent = text;
+    els.tooltip.replaceChildren(time, detail);
     els.tooltip.classList.add("is-visible");
     positionWeatherTooltip(segment);
   }
@@ -1624,7 +1629,7 @@
   }
 
   function darknessBandLabel(stateName, width = 999, compact = false) {
-    if (stateName === "dark") return "Astronomical night";
+    if (stateName === "dark") return "";
     if (stateName === "astro") return "Astronomical twilight";
     if (stateName === "nautical") return width < (compact ? 38 : 46) ? "Nautical" : "Nautical night";
     return "";
@@ -1899,13 +1904,13 @@
   }
 
   function segmentTooltip(segment, metric) {
-    if (metric === "observing") return `${segment.label}: ${observingRating(segment.observingScore).label} observing conditions`;
-    if (metric === "cloud") return `${segment.label}: Cloud ${Math.round(segment.cloud)}%`;
-    if (metric === "temperature") return `${segment.label}: Temperature ${Math.round(segment.temperature)}°C`;
-    if (metric === "transparency") return `${segment.label}: Transparency ${transparencyLabel(segment.transparency)}`;
-    if (metric === "seeing") return `${segment.label}: ${seeingLabel(segment.seeing)} seeing`;
-    if (metric === "wind") return `${segment.label}: Wind ${Math.round(segment.wind)} km/h`;
-    return `${segment.label}: unavailable`;
+    if (metric === "observing") return `Conditions: ${observingRating(segment.observingScore).label}`;
+    if (metric === "cloud") return `Cloud: ${Math.round(segment.cloud)}%`;
+    if (metric === "temperature") return `Temperature: ${Math.round(segment.temperature)}°C`;
+    if (metric === "transparency") return `Transparency: ${transparencyLabel(segment.transparency)}`;
+    if (metric === "seeing") return `Seeing: ${seeingLabel(segment.seeing)}`;
+    if (metric === "wind") return `Wind: ${Math.round(segment.wind)} km/h`;
+    return "Unavailable";
   }
 
   function cloudColour(value) {
