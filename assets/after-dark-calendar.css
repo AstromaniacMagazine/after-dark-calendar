@@ -1865,8 +1865,37 @@ body {
   display: none;
 }
 
+.amc-mobile-day-nav {
+  display: none;
+}
+
 .amc-swipe-hint {
   display: none;
+}
+
+.amc-chart-location-prompt {
+  align-items: center;
+  background: color-mix(in srgb, var(--panel-soft) 84%, transparent);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-inner);
+  display: grid;
+  gap: 5px;
+  justify-items: center;
+  min-height: 132px;
+  padding: 18px;
+  text-align: center;
+}
+
+.amc-chart-location-prompt b {
+  color: var(--text);
+  font-size: .86rem;
+}
+
+.amc-chart-location-prompt span {
+  color: var(--muted);
+  font-size: .74rem;
+  line-height: 1.4;
+  max-width: 420px;
 }
 
 @media (max-width: 1320px) {
@@ -2393,7 +2422,7 @@ body {
 
 @media (max-width: 600px) {
   .amc-sky-calendar {
-    overflow-x: hidden;
+    overflow-x: clip;
     padding: 10px 12px 12px;
   }
 
@@ -2548,8 +2577,72 @@ body {
     scroll-snap-align: start;
   }
 
+  .amc-mobile-day-nav {
+    align-items: center;
+    backdrop-filter: blur(14px);
+    background: color-mix(in srgb, var(--panel) 93%, transparent);
+    border: 1px solid var(--line-strong);
+    border-radius: 13px;
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--shadow) 22%, transparent);
+    display: grid;
+    gap: 7px;
+    grid-template-columns: 38px minmax(0, 1fr) 38px;
+    margin: 2px 0 5px;
+    min-height: 50px;
+    padding: 4px 5px;
+    position: sticky;
+    top: max(0px, env(safe-area-inset-top));
+    z-index: 30;
+  }
+
+  .amc-mobile-day-nav button {
+    align-items: center;
+    background: var(--panel-soft);
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+    color: var(--accent);
+    cursor: pointer;
+    display: flex;
+    font: inherit;
+    font-size: 1.55rem;
+    height: 38px;
+    justify-content: center;
+    line-height: 1;
+    padding: 0 0 3px;
+  }
+
+  .amc-mobile-day-nav button:disabled {
+    cursor: default;
+    opacity: .3;
+  }
+
+  .amc-mobile-day-nav-copy {
+    display: grid;
+    gap: 1px;
+    min-width: 0;
+    text-align: center;
+  }
+
+  .amc-mobile-day-nav-copy strong {
+    color: var(--text);
+    font-size: clamp(.86rem, 3.8vw, 1rem);
+    line-height: 1.15;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .amc-mobile-day-nav-copy small {
+    color: var(--accent);
+    font-size: .6rem;
+    font-weight: 700;
+    letter-spacing: .025em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
   .amc-grid {
-    align-items: flex-start;
+    align-items: stretch;
     display: flex;
     gap: 8px;
     grid-auto-rows: auto;
@@ -2566,29 +2659,34 @@ body {
 
   .amc-day {
     cursor: grab;
-    flex: 0 0 82vw;
+    flex: 0 0 86vw;
+    height: var(--amc-mobile-day-height, auto);
     margin: 0;
-    max-width: calc(100vw - 60px);
+    max-width: calc(100vw - 48px);
     min-height: 136px;
-    opacity: .42;
+    opacity: .62;
+    overflow: hidden;
     scroll-snap-align: center;
     scroll-snap-stop: always;
-    transform: perspective(900px) rotateY(2deg) scale(.93);
-    transform-origin: center;
-    transition: opacity .24s ease, transform .24s ease, border-color .18s ease, box-shadow .18s ease;
+    transition: opacity .16s ease, border-color .16s ease, box-shadow .16s ease;
   }
 
   .amc-day.is-mobile-active {
     cursor: default;
     opacity: 1;
-    transform: perspective(900px) rotateY(0) scale(1);
     z-index: 3;
+  }
+
+  .amc-day.is-mobile-measuring {
+    align-self: flex-start;
+    height: auto;
+    min-height: 136px;
   }
 
   .amc-day[aria-expanded="true"] {
     border-width: 2px;
-    flex-basis: 82vw;
-    max-width: calc(100vw - 60px);
+    flex-basis: 86vw;
+    max-width: calc(100vw - 48px);
     padding: 5px;
   }
 
@@ -2599,12 +2697,17 @@ body {
     padding: 5px;
   }
 
+  .amc-day > .amc-day-observing,
   .amc-day[aria-expanded="true"] > .amc-day-observing {
-    display: grid;
+    display: none !important;
   }
 
   .amc-day[aria-expanded="true"].has-observing {
-    padding-top: 11px;
+    padding-top: 5px;
+  }
+
+  .amc-expanded-observing-slots i {
+    height: 7px;
   }
 
   .amc-minimise {
@@ -2625,7 +2728,8 @@ body {
   }
 
   .amc-expanded-identity strong {
-    font-size: .88rem;
+    font-size: 1rem;
+    line-height: 1.2;
   }
 
   .amc-expanded-stat,

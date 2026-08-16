@@ -21,7 +21,12 @@
     today: root.querySelector("#amc-today-button"),
     sources: root.querySelector("#amc-source-list"),
     downloadPdf: root.querySelector("#amc-download-pdf"),
-    tooltip: root.querySelector("#amc-weather-tooltip")
+    tooltip: root.querySelector("#amc-weather-tooltip"),
+    mobileDayNav: root.querySelector("#amc-mobile-day-nav"),
+    mobileDayLabel: root.querySelector("#amc-mobile-day-label"),
+    mobileDayProgress: root.querySelector("#amc-mobile-day-progress"),
+    mobileDayPrev: root.querySelector("#amc-mobile-day-prev"),
+    mobileDayNext: root.querySelector("#amc-mobile-day-next")
   };
 
   const shared = window.AMC_SHARED || {};
@@ -41,6 +46,11 @@
   const monthShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const monthLong = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   const quarterLabels = ["16:00-20:00", "20:00-00:00", "00:00-04:00", "04:00-08:00"];
+  const mobileDetailRadius = 2;
+  const embedParentOrigins = new Set([
+    "https://www.astromaniacmagazine.com",
+    "https://astromaniacmagazine.com"
+  ]);
 
   const categoryMeta = {
     moon: { label: "Moon", css: "moon" },
@@ -91,8 +101,10 @@
     locationSearchTimer: null,
     locationSearchId: 0,
     monthTransitionTimer: null,
-    mobileScrollTimer: null,
+    mobileScrollFrame: null,
     resizeTimer: null,
+    embedResizeTimer: null,
+    embedResizeObserver: null,
     mobileLayout: window.matchMedia("(max-width: 600px)").matches,
     targetObservationCache: new Map(),
     monthPromises: Object.create(null)
@@ -146,6 +158,7 @@
     const savedTheme = safeStorageGet(themeKey);
     setTheme(themeOrder.includes(savedTheme) ? savedTheme : "light");
     bindEvents();
+    setupEmbedBridge();
     await showMonth(defaultMonthId());
     applySavedLocation();
     scheduleNowRefresh();
@@ -162,6 +175,8 @@
     els.nextMonth?.addEventListener("click", () => goToAdjacentMonth(1));
     els.today?.addEventListener("click", goToToday);
     els.downloadPdf?.addEventListener("click", downloadPdf);
+    els.mobileDayPrev?.addEventListener("click", () => moveMobileDay(-1));
+    els.mobileDayNext?.addEventListener("click", () => moveMobileDay(1));
     root.addEventListener("pointerover", handleWeatherTipIn);
     root.addEventListener("pointerout", handleWeatherTipOut);
     root.addEventListener("focusin", handleWeatherTipIn);
@@ -169,6 +184,7 @@
     root.addEventListener("click", handleWeatherTipClick);
     document.addEventListener("visibilitychange", refreshWeatherWhenVisible);
     window.addEventListener("resize", handleResponsiveLayout, { passive: true });
+    window.addEventListener("message", handleEmbedMessage);
   }
 
   async function showMonth(monthId, options = {}) {
@@ -233,9 +249,14 @@
     renderCalendar();
     renderDetail();
     renderRecommendations();
+    scheduleEmbedResize();
   }
 
   function refreshExpandedDay() {
+    if (isMobileCarousel()) {
+      prepareMobileDayWindow(state.selectedDay, true);
+      return;
+    }
     if (!validDay(state.expandedDay)) return;
     const day = Number(state.expandedDay);
     const expanded = els.grid.querySelector(`.amc-day[data-day="${day}"] .amc-expanded`);
@@ -323,7 +344,9 @@
       const nightInfo = state.hasLocation ? state.night[day] || noDark() : locationNeeded();
       const events = dayEvents(day);
       const primary = primaryEvent(events);
-      const expanded = day === (mobileCarousel ? state.selectedDay : state.expandedDay);
+      const active = mobileCarousel && day === state.selectedDay;
+      const mobileReady = mobileCarousel && Math.abs(day - state.selectedDay) <= mobileDetailRadius;
+      const expanded = mobileCarousel ? mobileReady : day === state.expandedDay;
       const css = eventMeta(primary).css;
       const observing = weatherForCalendarDay(day);
       const observingSummary = observing ? `, observing conditions ${observing.observingLabel}` : "";
@@ -342,10 +365,10 @@
         : `src="${moonSrc}"`;
       const element = mobileCarousel ? "article" : "button";
       const type = mobileCarousel ? "" : ` type="button"`;
-      const current = mobileCarousel && expanded ? ` aria-current="date"` : "";
-      const mobileAttributes = mobileCarousel ? ` role="group" tabindex="${expanded ? "0" : "-1"}"` : "";
+      const current = active ? ` aria-current="date"` : "";
+      const mobileAttributes = mobileCarousel ? ` role="group" tabindex="${active ? "0" : "-1"}"` : "";
       html.push(`
-        <${element}${type}${mobileAttributes} class="amc-day ${css}${rowEnd ? " is-row-end" : ""}${rowTail ? " is-row-tail" : ""}${rowBottom ? " is-row-bottom" : ""}${isToday ? " is-today" : ""}${isNewMoon ? " is-new-moon" : ""}${observing ? " has-observing" : ""}${hasMajorEvent ? " is-major-event" : ""}${mobileCarousel && expanded ? " is-mobile-active" : ""}" data-day="${day}" aria-expanded="${expanded}"${current} aria-label="${isToday ? "Today, " : ""}${weekdayShort} ${day} ${monthTitle()}, ${moon.name}, ${moon.phase}% lit, astro night ${durationClock(nightInfo)}${observingSummary}">
+        <${element}${type}${mobileAttributes} class="amc-day ${css}${rowEnd ? " is-row-end" : ""}${rowTail ? " is-row-tail" : ""}${rowBottom ? " is-row-bottom" : ""}${isToday ? " is-today" : ""}${isNewMoon ? " is-new-moon" : ""}${observing ? " has-observing" : ""}${hasMajorEvent ? " is-major-event" : ""}${mobileReady ? " is-mobile-ready" : ""}${active ? " is-mobile-active" : ""}" data-day="${day}" aria-expanded="${expanded}"${current} aria-label="${isToday ? "Today, " : ""}${weekdayShort} ${day} ${monthTitle()}, ${moon.name}, ${moon.phase}% lit, astro night ${durationClock(nightInfo)}${observingSummary}">
           ${dayObservingBar(observing)}
           <span class="amc-date">
             <strong>${day}</strong>
@@ -371,8 +394,9 @@
         if (event.target.closest(".amc-weather-segments i")) return;
         if (mobileCarousel) {
           if (event.target.closest("a, button, input")) return;
-          centreMobileDay(Number(card.dataset.day), true);
-          if (!card.classList.contains("is-mobile-active")) activateMobileDay(Number(card.dataset.day));
+          const day = Number(card.dataset.day);
+          if (!card.classList.contains("is-mobile-active")) activateMobileDay(day);
+          centreMobileDay(day, true);
           return;
         }
         selectDay(Number(card.dataset.day));
@@ -384,7 +408,12 @@
     else els.grid.removeAttribute("aria-roledescription");
     if (mobileCarousel) {
       hydrateMobileMoonImages(state.selectedDay);
-      window.requestAnimationFrame(() => centreMobileDay(state.selectedDay, false));
+      updateMobileDayNavigation();
+      window.requestAnimationFrame(() => {
+        centreMobileDay(state.selectedDay, false);
+        syncMobileDayHeight(els.grid.querySelector(`.amc-day[data-day="${state.selectedDay}"]`));
+        scheduleEmbedResize();
+      });
     }
   }
 
@@ -405,8 +434,9 @@
   }
 
   function handleMobileDayScroll() {
-    if (state.mobileScrollTimer) window.clearTimeout(state.mobileScrollTimer);
-    state.mobileScrollTimer = window.setTimeout(() => {
+    if (state.mobileScrollFrame) window.cancelAnimationFrame(state.mobileScrollFrame);
+    state.mobileScrollFrame = window.requestAnimationFrame(() => {
+      state.mobileScrollFrame = null;
       const gridRect = els.grid.getBoundingClientRect();
       const centre = gridRect.left + (gridRect.width / 2);
       const cards = [...els.grid.querySelectorAll(".amc-day")];
@@ -417,7 +447,7 @@
       }, null)?.card;
       const day = Number(closest?.dataset.day);
       if (validDay(day) && day !== state.selectedDay) activateMobileDay(day);
-    }, 90);
+    });
   }
 
   function handleMobileDayKeydown(event) {
@@ -436,28 +466,89 @@
     const next = els.grid.querySelector(`.amc-day[data-day="${day}"]`);
     if (!next) return;
 
+    const verticalScroll = document.scrollingElement?.scrollTop || 0;
     if (previous && previous !== next) {
       previous.classList.remove("is-mobile-active");
       previous.removeAttribute("aria-current");
-      previous.setAttribute("aria-expanded", "false");
       previous.setAttribute("tabindex", "-1");
-      const previousExpanded = previous.querySelector(".amc-expanded");
-      if (previousExpanded) previousExpanded.innerHTML = "";
     }
 
     state.selectedDay = day;
     state.expandedDay = day;
     hydrateMobileMoonImages(day);
-    const date = new Date(Date.UTC(state.month.year, state.month.monthIndex, day, 12));
-    const events = dayEvents(day);
+    if (!next.classList.contains("is-mobile-ready")) populateMobileDay(next, day);
     next.classList.add("is-mobile-active");
     next.setAttribute("aria-current", "date");
     next.setAttribute("aria-expanded", "true");
     next.setAttribute("tabindex", "0");
-    const expanded = next.querySelector(".amc-expanded");
+    syncMobileDayHeight(next);
+    updateMobileDayNavigation();
+    restoreVerticalScroll(verticalScroll);
+    window.requestAnimationFrame(() => {
+      prepareMobileDayWindow(day);
+      restoreVerticalScroll(verticalScroll);
+    });
+  }
+
+  function populateMobileDay(card, day) {
+    if (!card || !validDay(day)) return;
+    const date = new Date(Date.UTC(state.month.year, state.month.monthIndex, day, 12));
+    const events = dayEvents(day);
+    const expanded = card.querySelector(".amc-expanded");
     if (expanded) expanded.innerHTML = expandedDay(day, weekdays[date.getUTCDay()], moonForDay(day), events, primaryEvent(events), true);
-    renderDetail();
-    renderRecommendations();
+    card.classList.add("is-mobile-ready");
+    card.setAttribute("aria-expanded", "true");
+  }
+
+  function prepareMobileDayWindow(day, force = false) {
+    if (!isMobileCarousel()) return;
+    for (let candidate = Math.max(1, day - mobileDetailRadius); candidate <= Math.min(state.month.days, day + mobileDetailRadius); candidate += 1) {
+      const card = els.grid.querySelector(`.amc-day[data-day="${candidate}"]`);
+      if (card && (force || !card.classList.contains("is-mobile-ready"))) populateMobileDay(card, candidate);
+    }
+    hydrateMobileMoonImages(day);
+    if (force) syncMobileDayHeight(els.grid.querySelector(`.amc-day[data-day="${day}"]`));
+    scheduleEmbedResize();
+  }
+
+  function syncMobileDayHeight(card) {
+    if (!card || !isMobileCarousel()) return;
+    card.classList.add("is-mobile-measuring");
+    const height = Math.ceil(card.getBoundingClientRect().height);
+    card.classList.remove("is-mobile-measuring");
+    if (height > 0) root.style.setProperty("--amc-mobile-day-height", `${height}px`);
+  }
+
+  function restoreVerticalScroll(scrollTop) {
+    if (document.scrollingElement && Math.abs(document.scrollingElement.scrollTop - scrollTop) > 1) {
+      document.scrollingElement.scrollTop = scrollTop;
+    }
+  }
+
+  function moveMobileDay(direction) {
+    if (!isMobileCarousel()) return;
+    const day = clamp(state.selectedDay + direction, 1, state.month.days);
+    if (day === state.selectedDay) return;
+    activateMobileDay(day);
+    centreMobileDay(day, true);
+  }
+
+  function updateMobileDayNavigation() {
+    if (!state.month || !validDay(state.selectedDay)) return;
+    const date = new Date(Date.UTC(state.month.year, state.month.monthIndex, state.selectedDay, 12));
+    const weekday = new Intl.DateTimeFormat("en-GB", { weekday: "long", timeZone: "UTC" }).format(date);
+    const label = `${isTodayDay(state.selectedDay) ? "Today - " : ""}${weekday}, ${state.selectedDay} ${monthName()} ${state.month.year}`;
+    if (els.mobileDayLabel) els.mobileDayLabel.textContent = label;
+    if (els.mobileDayProgress) els.mobileDayProgress.textContent = `Day ${state.selectedDay} of ${state.month.days} - swipe left or right`;
+    if (els.mobileDayPrev) els.mobileDayPrev.disabled = state.selectedDay <= 1;
+    if (els.mobileDayNext) els.mobileDayNext.disabled = state.selectedDay >= state.month.days;
+    postEmbedMessage({
+      type: "amc:day-state",
+      label,
+      progress: `Day ${state.selectedDay} of ${state.month.days} - swipe left or right`,
+      canPrevious: state.selectedDay > 1,
+      canNext: state.selectedDay < state.month.days
+    });
   }
 
   function hydrateMobileMoonImages(day) {
@@ -474,6 +565,41 @@
     if (!card) return;
     const left = card.offsetLeft - ((els.grid.clientWidth - card.offsetWidth) / 2);
     els.grid.scrollTo({ left, behavior: smooth ? "smooth" : "auto" });
+  }
+
+  function setupEmbedBridge() {
+    if (window.parent === window) return;
+    if ("ResizeObserver" in window) {
+      state.embedResizeObserver = new ResizeObserver(scheduleEmbedResize);
+      state.embedResizeObserver.observe(root);
+    }
+    window.addEventListener("load", scheduleEmbedResize, { once: true });
+  }
+
+  function scheduleEmbedResize() {
+    if (window.parent === window) return;
+    if (state.embedResizeTimer) window.clearTimeout(state.embedResizeTimer);
+    state.embedResizeTimer = window.setTimeout(() => {
+      state.embedResizeTimer = null;
+      const height = Math.ceil(Math.max(
+        document.documentElement.scrollHeight,
+        document.body?.scrollHeight || 0,
+        root.getBoundingClientRect().bottom + window.scrollY
+      ));
+      postEmbedMessage({ type: "amc:resize", height, version: assetVersion });
+    }, 32);
+  }
+
+  function postEmbedMessage(payload) {
+    if (window.parent === window) return;
+    embedParentOrigins.forEach(origin => window.parent.postMessage(payload, origin));
+  }
+
+  function handleEmbedMessage(event) {
+    if (event.source !== window.parent || !embedParentOrigins.has(event.origin)) return;
+    if (event.data?.type !== "amc:navigate-day") return;
+    const direction = Number(event.data.direction);
+    if (direction === -1 || direction === 1) moveMobileDay(direction);
   }
 
   function expandedDay(day, weekday, moon, events, primary, includeRecommendations = false) {
@@ -757,7 +883,7 @@
 
   function moonChart(skyInfo, nightInfo, compact) {
     if (!state.hasLocation) {
-      return `<section class="amc-chart"><h3>Moon Altitude & Darkness</h3><span class="amc-weather-note">Use Current Location or enter a city to calculate the night chart.</span></section>`;
+      return `<section class="amc-chart"><h3>Moon Altitude & Darkness</h3><span class="amc-chart-location-prompt"><b>Set your location to unlock this chart</b><span>Use Current Location or enter a city above to calculate Moon altitude and darkness for your night.</span></span></section>`;
     }
     if (!skyInfo?.timeline) {
       return `<section class="amc-chart"><h3>Moon Altitude & Darkness</h3><span class="amc-weather-note">Chart unavailable for this location.</span></section>`;

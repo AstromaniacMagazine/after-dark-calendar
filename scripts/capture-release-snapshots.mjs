@@ -13,7 +13,7 @@ function argument(name, fallback = "") {
 
 const url = argument("url", "http://127.0.0.1:4173/");
 const outputDir = path.resolve(rootDir, argument("output", ".release-snapshots"));
-const version = argument("version", "Beta0.9");
+const version = argument("version", "Beta0.9a");
 const selectedDay = Number(argument("day", "12"));
 const chromePath = argument("chrome", "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
 const modulesPath = argument("modules", process.env.AMC_NODE_MODULES || "");
@@ -96,7 +96,6 @@ try {
   await page.waitForFunction(() => document.querySelectorAll(".amc-weather-card").length === 7, null, { timeout: 15000 }).catch(() => {});
   if (Number.isInteger(selectedDay) && selectedDay > 0) {
     const day = page.locator(`.amc-day[data-day="${selectedDay}"]`);
-    await day.click();
     await day.click();
     await page.waitForTimeout(220);
   }

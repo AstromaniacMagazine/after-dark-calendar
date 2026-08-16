@@ -8,6 +8,7 @@ This repository contains the production website files for **After Dark Calendar 
 - `assets/` - CSS, JavaScript, images
 - `data/` - month and shared data files
 - `scripts/validate-calendar.mjs` - release-time source and data integrity checks
+- `SQUARESPACE_EMBED.md` - production iframe embed with automatic height and mobile sticky-day bridge
 - `*.zip`, `archive/`, `July 26/` - local archives (not required at runtime and excluded from Git)
 
 ## Release workflow
@@ -30,6 +31,7 @@ For each version:
 5. Review the diff, commit only the intended release files and push the branch.
 6. Open a pull request to `main`, merge it, and verify the GitHub Pages build.
 7. Confirm the embedded calendar at `https://www.astromaniacmagazine.com/after-dark-calendar` is serving the new version.
+8. If the iframe bridge changes, update the Squarespace Code Block from `SQUARESPACE_EMBED.md` and verify that the page has only one vertical scrollbar.
 
 ## Notes
 
