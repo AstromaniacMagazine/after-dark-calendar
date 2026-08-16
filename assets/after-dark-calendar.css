@@ -753,9 +753,10 @@ body {
 }
 
 .amc-day.is-today {
+  background: color-mix(in srgb, var(--accent) 8%, var(--panel) 92%);
   border-color: var(--accent);
-  border-width: 2px;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent), 0 12px 28px rgba(22, 25, 29, .14);
+  border-width: 3px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 24%, transparent), 0 14px 32px color-mix(in srgb, var(--accent) 24%, transparent);
 }
 
 .amc-day.is-new-moon {
@@ -829,10 +830,11 @@ body {
   background: var(--accent);
   border-radius: 999px;
   color: #fff;
-  font-size: .52rem;
-  font-weight: 600;
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--accent) 32%, transparent);
+  font-size: .56rem;
+  font-weight: 700;
   line-height: 1;
-  padding: 4px 5px;
+  padding: 5px 7px;
   text-transform: uppercase;
 }
 
@@ -1194,6 +1196,22 @@ body {
 
 .amc-cell-mobile-extra {
   display: none;
+}
+
+@media (min-width: 1051px) {
+  .amc-day[aria-expanded="true"] .amc-expanded {
+    grid-template-rows: auto auto minmax(0, 1fr);
+    padding: 8px 8px 6px;
+  }
+
+  .amc-day[aria-expanded="true"] .amc-expanded:not(:has(.amc-expanded-observing)) {
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .amc-day[aria-expanded="true"] .amc-mini-grid {
+    align-self: stretch;
+    margin-bottom: 0;
+  }
 }
 
 .amc-detail {
@@ -1599,7 +1617,7 @@ body {
   display: grid;
   gap: 12px;
   grid-area: recommendations;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  grid-template-columns: minmax(0, 4fr) minmax(220px, 1.45fr);
   margin-top: auto;
   padding-top: 12px;
 }
@@ -1623,7 +1641,7 @@ body {
 .amc-target-list {
   display: grid;
   gap: 8px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   margin: 0;
   padding: 0;
 }
@@ -1781,7 +1799,7 @@ body {
   align-items: start;
   display: grid;
   gap: 10px;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   margin-top: 12px;
 }
 
@@ -2232,7 +2250,7 @@ body {
   }
 
   .amc-target-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .amc-related-grid {
@@ -2436,22 +2454,25 @@ body {
   }
 
   .amc-brand-logo {
-    height: 46px;
-    width: 46px;
+    height: 42px;
+    width: 42px;
   }
 
   .amc-title-line {
     align-items: center;
     gap: 5px;
+    white-space: nowrap;
   }
 
   .amc-title-line > span {
-    font-size: clamp(1rem, 5vw, 1.26rem);
+    font-size: clamp(.88rem, 4.25vw, 1.08rem);
+    white-space: nowrap;
   }
 
   .amc-version-badge {
-    font-size: .54rem;
-    padding: 4px 6px;
+    flex: 0 0 auto;
+    font-size: .49rem;
+    padding: 3px 5px;
   }
 
   .amc-actions {
@@ -2482,9 +2503,24 @@ body {
     font-size: .64rem;
   }
 
-  .amc-location-status,
   .amc-location-prompt {
     display: none;
+  }
+
+  .amc-location-status {
+    display: none;
+  }
+
+  .amc-sky-calendar.has-location .amc-location-status {
+    display: inline-flex;
+    font-size: .62rem;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    height: 27px;
+    justify-self: stretch;
+    max-width: none;
+    padding: 5px 8px;
+    width: 100%;
   }
 
   .amc-manual-location {
@@ -2529,10 +2565,6 @@ body {
   }
 
   .amc-intel-strip {
-    gap: 7px;
-  }
-
-  .amc-intel {
     display: flex;
     gap: 8px;
     margin-inline: -12px;
@@ -2544,6 +2576,17 @@ body {
     scroll-snap-type: x mandatory;
   }
 
+  .amc-intel-heading {
+    flex: 0 0 148px;
+    min-height: 70px;
+    scroll-snap-align: start;
+  }
+
+  .amc-intel {
+    display: contents;
+  }
+
+  .amc-intel-strip::-webkit-scrollbar,
   .amc-intel::-webkit-scrollbar,
   .amc-legend::-webkit-scrollbar,
   .amc-grid::-webkit-scrollbar {
@@ -2551,7 +2594,7 @@ body {
   }
 
   .amc-intel-card {
-    flex: 0 0 min(78vw, 310px);
+    flex: 0 0 min(72vw, 280px);
     grid-template-columns: 56px minmax(0, 1fr);
     min-height: 70px;
     scroll-snap-align: start;
@@ -2593,6 +2636,20 @@ body {
     position: sticky;
     top: max(0px, env(safe-area-inset-top));
     z-index: 30;
+  }
+
+  .amc-mobile-day-nav-copy {
+    transition: opacity .14s ease, transform .14s ease;
+  }
+
+  .amc-mobile-day-nav.is-updating .amc-mobile-day-nav-copy {
+    opacity: .58;
+    transform: translateY(1px);
+  }
+
+  .amc-mobile-day-nav.is-today {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 19%, transparent), 0 8px 24px color-mix(in srgb, var(--accent) 22%, transparent);
   }
 
   .amc-mobile-day-nav button {
@@ -2644,25 +2701,25 @@ body {
   .amc-grid {
     align-items: stretch;
     display: flex;
-    gap: 8px;
+    gap: 10px;
     grid-auto-rows: auto;
     margin-inline: -12px;
     overflow-x: auto;
     overflow-y: hidden;
     overscroll-behavior-inline: contain;
-    padding: 5px 7vw 14px;
+    padding: 5px 24px 14px;
     scrollbar-width: none;
-    scroll-padding-inline: 7vw;
+    scroll-padding-inline: 24px;
     scroll-snap-type: x mandatory;
     touch-action: pan-x pan-y;
   }
 
   .amc-day {
     cursor: grab;
-    flex: 0 0 86vw;
+    flex: 0 0 100%;
     height: var(--amc-mobile-day-height, auto);
     margin: 0;
-    max-width: calc(100vw - 48px);
+    max-width: none;
     min-height: 136px;
     opacity: .62;
     overflow: hidden;
@@ -2683,10 +2740,48 @@ body {
     min-height: 136px;
   }
 
+  .amc-month-edge {
+    align-content: center;
+    background: color-mix(in srgb, var(--accent) 9%, var(--panel) 91%);
+    border: 2px dashed color-mix(in srgb, var(--accent) 58%, var(--line));
+    border-radius: var(--radius-panel);
+    box-sizing: border-box;
+    color: var(--text);
+    display: grid;
+    flex: 0 0 100%;
+    gap: 5px;
+    height: var(--amc-mobile-day-height, 260px);
+    justify-items: center;
+    min-height: 260px;
+    padding: 24px;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    text-align: center;
+  }
+
+  .amc-month-edge > span {
+    color: var(--accent);
+    font-size: 2.4rem;
+    line-height: .8;
+  }
+
+  .amc-month-edge small,
+  .amc-month-edge em {
+    color: var(--muted);
+    font-size: .64rem;
+    font-style: normal;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .amc-month-edge strong {
+    font-size: 1.15rem;
+  }
+
   .amc-day[aria-expanded="true"] {
     border-width: 2px;
-    flex-basis: 86vw;
-    max-width: calc(100vw - 48px);
+    flex-basis: 100%;
+    max-width: none;
     padding: 5px;
   }
 
@@ -2728,8 +2823,7 @@ body {
   }
 
   .amc-expanded-identity strong {
-    font-size: 1rem;
-    line-height: 1.2;
+    display: none;
   }
 
   .amc-expanded-stat,
@@ -2761,9 +2855,30 @@ body {
     gap: 9px;
   }
 
-  .amc-mobile-recommendations .amc-target-list,
   .amc-mobile-recommendations .amc-related-grid {
     grid-template-columns: 1fr;
+  }
+
+  .amc-mobile-recommendations .amc-target-list {
+    display: flex;
+    gap: 8px;
+    margin-inline: -5px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    padding: 0 5px 5px;
+    scrollbar-width: none;
+    scroll-padding-inline: 5px;
+    scroll-snap-type: x mandatory;
+  }
+
+  .amc-mobile-recommendations .amc-target-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .amc-mobile-recommendations .amc-target-card {
+    flex: 0 0 calc(88% - 8px);
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
   }
 
   .amc-layout > .amc-recommendations {

@@ -20,7 +20,6 @@
     nextMonth: root.querySelector("[data-month-next]"),
     today: root.querySelector("#amc-today-button"),
     sources: root.querySelector("#amc-source-list"),
-    downloadPdf: root.querySelector("#amc-download-pdf"),
     tooltip: root.querySelector("#amc-weather-tooltip"),
     mobileDayNav: root.querySelector("#amc-mobile-day-nav"),
     mobileDayLabel: root.querySelector("#amc-mobile-day-label"),
@@ -102,6 +101,11 @@
     locationSearchId: 0,
     monthTransitionTimer: null,
     mobileScrollFrame: null,
+    mobileSnapTimer: null,
+    mobileNavigationTimer: null,
+    mobileNavigationTarget: null,
+    mobileMonthTransition: false,
+    mobileHeaderFrame: null,
     resizeTimer: null,
     embedResizeTimer: null,
     embedResizeObserver: null,
@@ -174,7 +178,6 @@
     els.previousMonth?.addEventListener("click", () => goToAdjacentMonth(-1));
     els.nextMonth?.addEventListener("click", () => goToAdjacentMonth(1));
     els.today?.addEventListener("click", goToToday);
-    els.downloadPdf?.addEventListener("click", downloadPdf);
     els.mobileDayPrev?.addEventListener("click", () => moveMobileDay(-1));
     els.mobileDayNext?.addEventListener("click", () => moveMobileDay(1));
     root.addEventListener("pointerover", handleWeatherTipIn);
@@ -196,7 +199,7 @@
     state.sky = {};
     if (state.hasLocation) recalculateLocationData();
     renderAll();
-    animateMonthChange(options.direction || 0);
+    if (!options.mobileContinuity) animateMonthChange(options.direction || 0);
   }
 
   function setMonthData(data, fallbackId) {
@@ -336,6 +339,9 @@
       for (let i = 0; i < state.month.firstDayOffset; i += 1) html.push(`<div class="amc-empty" aria-hidden="true"></div>`);
     }
     if (mobileCarousel) state.expandedDay = state.selectedDay;
+    const previousMobileMonth = mobileCarousel ? adjacentMonth(-1) : null;
+    const nextMobileMonth = mobileCarousel ? adjacentMonth(1) : null;
+    if (previousMobileMonth) html.push(mobileMonthEdge(previousMobileMonth, -1));
     for (let day = 1; day <= state.month.days; day += 1) {
       const date = new Date(Date.UTC(state.month.year, state.month.monthIndex, day, 12));
       const weekday = weekdays[date.getUTCDay()];
@@ -388,6 +394,7 @@
         </${element}>
       `);
     }
+    if (nextMobileMonth) html.push(mobileMonthEdge(nextMobileMonth, 1));
     els.grid.innerHTML = html.join("");
     els.grid.querySelectorAll(".amc-day").forEach(card => {
       card.addEventListener("click", event => {
@@ -395,8 +402,7 @@
         if (mobileCarousel) {
           if (event.target.closest("a, button, input")) return;
           const day = Number(card.dataset.day);
-          if (!card.classList.contains("is-mobile-active")) activateMobileDay(day);
-          centreMobileDay(day, true);
+          beginMobileNavigation(day, true);
           return;
         }
         selectDay(Number(card.dataset.day));
@@ -409,6 +415,7 @@
     if (mobileCarousel) {
       hydrateMobileMoonImages(state.selectedDay);
       updateMobileDayNavigation();
+      preloadAdjacentMonths();
       window.requestAnimationFrame(() => {
         centreMobileDay(state.selectedDay, false);
         syncMobileDayHeight(els.grid.querySelector(`.amc-day[data-day="${state.selectedDay}"]`));
@@ -419,6 +426,23 @@
 
   function isMobileCarousel() {
     return window.matchMedia("(max-width: 600px)").matches;
+  }
+
+  function mobileMonthEdge(entry, direction) {
+    const action = direction < 0 ? "Previous month" : "Next month";
+    const arrow = direction < 0 ? "‹" : "›";
+    return `<article class="amc-month-edge" data-month-direction="${direction}" data-month-id="${escapeHtml(entry.id)}" role="group" aria-label="${action}: ${escapeHtml(entry.label)}">
+      <span aria-hidden="true">${arrow}</span>
+      <small>${action}</small>
+      <strong>${escapeHtml(entry.label)}</strong>
+      <em>Keep swiping</em>
+    </article>`;
+  }
+
+  function preloadAdjacentMonths() {
+    const preload = () => [-1, 1].map(adjacentMonth).filter(Boolean).forEach(entry => loadMonthData(entry.id).catch(() => {}));
+    if ("requestIdleCallback" in window) window.requestIdleCallback(preload, { timeout: 900 });
+    else window.setTimeout(preload, 120);
   }
 
   function handleResponsiveLayout() {
@@ -437,27 +461,62 @@
     if (state.mobileScrollFrame) window.cancelAnimationFrame(state.mobileScrollFrame);
     state.mobileScrollFrame = window.requestAnimationFrame(() => {
       state.mobileScrollFrame = null;
-      const gridRect = els.grid.getBoundingClientRect();
-      const centre = gridRect.left + (gridRect.width / 2);
-      const cards = [...els.grid.querySelectorAll(".amc-day")];
-      const closest = cards.reduce((selected, card) => {
-        const rect = card.getBoundingClientRect();
-        const distance = Math.abs((rect.left + rect.width / 2) - centre);
-        return !selected || distance < selected.distance ? { card, distance } : selected;
-      }, null)?.card;
-      const day = Number(closest?.dataset.day);
-      if (validDay(day) && day !== state.selectedDay) activateMobileDay(day);
+      if (!state.mobileNavigationTarget && !state.mobileMonthTransition) {
+        const closest = closestMobileSlide();
+        if (closest?.slide.classList.contains("amc-month-edge") && closest.distance < closest.slide.offsetWidth * .24) {
+          transitionMobileMonth(Number(closest.slide.dataset.monthDirection));
+        } else {
+          const day = Number(closest?.slide.dataset.day);
+          if (validDay(day) && day !== state.selectedDay && closest.distance < closest.slide.offsetWidth * .18) activateMobileDay(day);
+        }
+      }
+      scheduleMobileScrollSettle();
     });
+  }
+
+  function closestMobileSlide() {
+    const gridRect = els.grid.getBoundingClientRect();
+    const centre = gridRect.left + (gridRect.width / 2);
+    return [...els.grid.querySelectorAll(".amc-day, .amc-month-edge")].reduce((selected, slide) => {
+      const rect = slide.getBoundingClientRect();
+      const distance = Math.abs((rect.left + rect.width / 2) - centre);
+      return !selected || distance < selected.distance ? { slide, distance } : selected;
+    }, null);
+  }
+
+  function scheduleMobileScrollSettle() {
+    if (state.mobileSnapTimer) window.clearTimeout(state.mobileSnapTimer);
+    state.mobileSnapTimer = window.setTimeout(settleMobileDayScroll, 86);
+  }
+
+  function settleMobileDayScroll() {
+    state.mobileSnapTimer = null;
+    if (!isMobileCarousel() || state.mobileMonthTransition) return;
+    const closest = closestMobileSlide();
+    if (!closest) return;
+    if (closest.slide.classList.contains("amc-month-edge")) {
+      transitionMobileMonth(Number(closest.slide.dataset.monthDirection));
+      return;
+    }
+    const day = Number(closest.slide.dataset.day);
+    if (!validDay(day)) return;
+    if (day !== state.selectedDay) activateMobileDay(day);
+    const desired = mobileSlideLeft(closest.slide);
+    if (Math.abs(els.grid.scrollLeft - desired) > 1) beginMobileNavigation(day, true, false);
+    else clearMobileNavigation(day);
   }
 
   function handleMobileDayKeydown(event) {
     if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
     event.preventDefault();
     const direction = event.key === 'ArrowRight' ? 1 : -1;
-    const day = clamp(Number(event.currentTarget.dataset.day) + direction, 1, state.month.days);
-    activateMobileDay(day);
-    centreMobileDay(day, true);
-    els.grid.querySelector(`.amc-day[data-day="${day}"]`)?.focus({ preventScroll: true });
+    const candidate = Number(event.currentTarget.dataset.day) + direction;
+    if (candidate < 1 || candidate > state.month.days) {
+      transitionMobileMonth(direction);
+      return;
+    }
+    beginMobileNavigation(candidate, true);
+    els.grid.querySelector(`.amc-day[data-day="${candidate}"]`)?.focus({ preventScroll: true });
   }
 
   function activateMobileDay(day) {
@@ -483,6 +542,7 @@
     next.setAttribute("tabindex", "0");
     syncMobileDayHeight(next);
     updateMobileDayNavigation();
+    updateTodayButton();
     restoreVerticalScroll(verticalScroll);
     window.requestAnimationFrame(() => {
       prepareMobileDayWindow(day);
@@ -527,10 +587,12 @@
 
   function moveMobileDay(direction) {
     if (!isMobileCarousel()) return;
-    const day = clamp(state.selectedDay + direction, 1, state.month.days);
-    if (day === state.selectedDay) return;
-    activateMobileDay(day);
-    centreMobileDay(day, true);
+    const day = state.selectedDay + direction;
+    if (day < 1 || day > state.month.days) {
+      transitionMobileMonth(direction);
+      return;
+    }
+    beginMobileNavigation(day, true);
   }
 
   function updateMobileDayNavigation() {
@@ -538,16 +600,26 @@
     const date = new Date(Date.UTC(state.month.year, state.month.monthIndex, state.selectedDay, 12));
     const weekday = new Intl.DateTimeFormat("en-GB", { weekday: "long", timeZone: "UTC" }).format(date);
     const label = `${isTodayDay(state.selectedDay) ? "Today - " : ""}${weekday}, ${state.selectedDay} ${monthName()} ${state.month.year}`;
-    if (els.mobileDayLabel) els.mobileDayLabel.textContent = label;
-    if (els.mobileDayProgress) els.mobileDayProgress.textContent = `Day ${state.selectedDay} of ${state.month.days} - swipe left or right`;
-    if (els.mobileDayPrev) els.mobileDayPrev.disabled = state.selectedDay <= 1;
-    if (els.mobileDayNext) els.mobileDayNext.disabled = state.selectedDay >= state.month.days;
+    const progress = `Day ${state.selectedDay} of ${state.month.days} - swipe left or right`;
+    if (els.mobileDayNav) {
+      els.mobileDayNav.classList.toggle("is-today", isTodayDay(state.selectedDay));
+      els.mobileDayNav.classList.add("is-updating");
+      if (state.mobileHeaderFrame) window.cancelAnimationFrame(state.mobileHeaderFrame);
+      state.mobileHeaderFrame = window.requestAnimationFrame(() => {
+        if (els.mobileDayLabel) els.mobileDayLabel.textContent = label;
+        if (els.mobileDayProgress) els.mobileDayProgress.textContent = progress;
+        els.mobileDayNav.classList.remove("is-updating");
+        state.mobileHeaderFrame = null;
+      });
+    }
+    if (els.mobileDayPrev) els.mobileDayPrev.disabled = state.selectedDay <= 1 && !adjacentMonth(-1);
+    if (els.mobileDayNext) els.mobileDayNext.disabled = state.selectedDay >= state.month.days && !adjacentMonth(1);
     postEmbedMessage({
       type: "amc:day-state",
       label,
-      progress: `Day ${state.selectedDay} of ${state.month.days} - swipe left or right`,
-      canPrevious: state.selectedDay > 1,
-      canNext: state.selectedDay < state.month.days
+      progress,
+      canPrevious: state.selectedDay > 1 || Boolean(adjacentMonth(-1)),
+      canNext: state.selectedDay < state.month.days || Boolean(adjacentMonth(1))
     });
   }
 
@@ -563,8 +635,54 @@
   function centreMobileDay(day, smooth = true) {
     const card = els.grid.querySelector(`.amc-day[data-day="${day}"]`);
     if (!card) return;
-    const left = card.offsetLeft - ((els.grid.clientWidth - card.offsetWidth) / 2);
+    const left = mobileSlideLeft(card);
     els.grid.scrollTo({ left, behavior: smooth ? "smooth" : "auto" });
+  }
+
+  function mobileSlideLeft(slide) {
+    return slide.offsetLeft - ((els.grid.clientWidth - slide.offsetWidth) / 2);
+  }
+
+  function beginMobileNavigation(day, smooth = true, activate = true) {
+    if (!validDay(day) || state.mobileMonthTransition) return;
+    state.mobileNavigationTarget = day;
+    if (state.mobileNavigationTimer) window.clearTimeout(state.mobileNavigationTimer);
+    if (activate) activateMobileDay(day);
+    centreMobileDay(day, smooth);
+    state.mobileNavigationTimer = window.setTimeout(() => clearMobileNavigation(day), smooth ? 460 : 40);
+  }
+
+  function clearMobileNavigation(day) {
+    if (state.mobileNavigationTarget !== day) return;
+    state.mobileNavigationTarget = null;
+    if (state.mobileNavigationTimer) window.clearTimeout(state.mobileNavigationTimer);
+    state.mobileNavigationTimer = null;
+  }
+
+  async function transitionMobileMonth(direction) {
+    if (!isMobileCarousel() || state.mobileMonthTransition || ![-1, 1].includes(direction)) return;
+    const entry = adjacentMonth(direction);
+    if (!entry) return;
+    state.mobileMonthTransition = true;
+    state.mobileNavigationTarget = null;
+    const verticalScroll = document.scrollingElement?.scrollTop || 0;
+    root.classList.add("is-mobile-month-switching");
+    try {
+      const data = await loadMonthData(entry.id);
+      const month = data.MONTH || data.month || {};
+      const selectedDay = direction > 0 ? 1 : Number(month.days || daysInMonth(month.year, month.monthIndex));
+      await showMonth(entry.id, { selectedDay, direction, mobileContinuity: true });
+      restoreVerticalScroll(verticalScroll);
+      window.requestAnimationFrame(() => {
+        centreMobileDay(selectedDay, false);
+        restoreVerticalScroll(verticalScroll);
+        root.classList.remove("is-mobile-month-switching");
+        state.mobileMonthTransition = false;
+      });
+    } catch {
+      root.classList.remove("is-mobile-month-switching");
+      state.mobileMonthTransition = false;
+    }
   }
 
   function setupEmbedBridge() {
@@ -740,22 +858,29 @@
     const selected = [];
     const groups = new Set();
 
-    const addTarget = (name, requireDistinctGroup = true, requireGoodAltitude = true) => {
-      if (selected.length >= 3 || selected.includes(name)) return;
+    const addTarget = (name, requireDistinctGroup = true, requireGoodAltitude = true, limit = 3) => {
+      if (selected.length >= limit || selected.includes(name)) return false;
       const meta = targetMeta(name);
       const group = targetGroup(name, meta);
-      if (requireDistinctGroup && groups.has(group)) return;
+      if (requireDistinctGroup && groups.has(group)) return false;
       const observing = targetObserving(meta, day);
-      if (requireGoodAltitude && state.hasLocation && observing.maxAltitude !== null && observing.maxAltitude < 20) return;
+      if (requireGoodAltitude && state.hasLocation && observing.maxAltitude !== null && observing.maxAltitude < 20) return false;
       selected.push(name);
       groups.add(group);
+      return true;
     };
 
     candidates.forEach(name => addTarget(name));
     candidates.forEach(name => addTarget(name, false));
     fallbacks.forEach(name => addTarget(name, false, false));
 
-    return selected.slice(0, 3).map(name => targetDetails(name, day, moon));
+    const deepSkyCandidates = uniqueTargetNames([...rankedSeasonal, ...seeded, ...fallbacks])
+      .filter(name => isDeepSkyTarget(name));
+    let deepSkyAdded = deepSkyCandidates.some(name => addTarget(name, false, true, 4));
+    if (!deepSkyAdded) deepSkyAdded = deepSkyCandidates.some(name => addTarget(name, false, false, 4));
+    if (!deepSkyAdded) candidates.some(name => addTarget(name, false, false, 4));
+
+    return selected.slice(0, 4).map(name => targetDetails(name, day, moon));
   }
 
   function seasonalTargetPool(moon) {
@@ -807,6 +932,10 @@
     if (/milky way/.test(text)) return "wide-field";
     if (/solar|eclipse|sun/.test(text)) return "solar";
     return `special:${String(meta?.name || name).toLowerCase()}`;
+  }
+
+  function isDeepSkyTarget(name) {
+    return ["nebula", "galaxy", "cluster"].includes(targetGroup(name, targetMeta(name)));
   }
 
   function targetRank(name, day) {
@@ -1394,9 +1523,12 @@
     const todayId = monthIdFromParts(today.getFullYear(), today.getMonth());
     if (!manifest.some(item => item.id === todayId)) return;
     if (state.monthId === todayId) {
-      state.selectedDay = today.getDate();
-      state.expandedDay = null;
-      renderAll();
+      if (isMobileCarousel()) beginMobileNavigation(today.getDate(), true);
+      else {
+        state.selectedDay = today.getDate();
+        state.expandedDay = null;
+        renderAll();
+      }
       return;
     }
     showMonth(todayId, { selectedDay: today.getDate(), direction: todayId < state.monthId ? -1 : 1 });
@@ -1629,17 +1761,6 @@
     safeStorageSet(themeKey, safeTheme);
   }
 
-  function downloadPdf() {
-    const previousTitle = document.title;
-    document.title = `After Dark Calendar by Astromaniac_${monthName()} ${state.month.year}`;
-    root.classList.add("is-pdf-export");
-    window.setTimeout(() => {
-      window.print();
-      root.classList.remove("is-pdf-export");
-      document.title = previousTitle;
-    }, 120);
-  }
-
   function handleWeatherTipIn(event) {
     const segment = event.target.closest?.(".amc-weather-segments i");
     if (segment) showWeatherTooltip(segment);
@@ -1813,6 +1934,12 @@
   function targetThumbnail(target, day) {
     const text = String(target).toLowerCase();
     if (/saturn/.test(text)) return wikimediaImage("Saturn during Equinox.jpg", "Saturn thumbnail");
+    if (/jupiter/.test(text)) return imageAsset("https://images-assets.nasa.gov/image/PIA22946/PIA22946~medium.jpg", "Jupiter thumbnail");
+    if (/mars/.test(text)) return imageAsset("https://images-assets.nasa.gov/image/PIA00407/PIA00407~medium.jpg", "Mars thumbnail");
+    if (/mercury/.test(text)) return imageAsset("https://images-assets.nasa.gov/image/PIA15160/PIA15160~medium.jpg", "Mercury thumbnail");
+    if (/uranus/.test(text)) return imageAsset("https://images-assets.nasa.gov/image/PIA18182/PIA18182~medium.jpg", "Uranus thumbnail");
+    if (/neptune/.test(text)) return imageAsset("https://images-assets.nasa.gov/image/PIA01492/PIA01492~medium.jpg", "Neptune thumbnail");
+    if (/pluto/.test(text)) return imageAsset("https://images-assets.nasa.gov/image/PIA19952/PIA19952~medium.jpg", "Pluto thumbnail");
     if (/pleiades|m45/.test(text)) return wikimediaImage("Pleiades large.jpg", "Pleiades thumbnail");
     if (/lagoon|m8/.test(text)) return wikimediaImage("Lagoon Nebula.jpg", "Lagoon Nebula thumbnail");
     if (/trifid|m20/.test(text)) return wikimediaImage("Trifid.nebula.arp.750pix.jpg", "Trifid Nebula thumbnail");
@@ -1834,10 +1961,15 @@
     if (/messier 5|m5\b/.test(text)) return imageAsset("https://assets.science.nasa.gov/content/dam/science/missions/hubble/stars/globular-clusters/Hubble_M5_WFC3_UV_flat_FINAL_NewImage.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "Messier 5 thumbnail");
     if (/messier 2|m2\b/.test(text)) return imageAsset("https://assets.science.nasa.gov/content/dam/science/missions/hubble/stars/globular-clusters/Hubble_M2_potw1913a.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "Messier 2 thumbnail");
     if (/messier 15|m15\b/.test(text)) return imageAsset("https://science.nasa.gov/wp-content/uploads/2023/04/heic1321a-jpg.webp", "Messier 15 thumbnail");
-    if (/meteor|perseid|aquariid|capricornid/.test(text)) return wikimediaImage("Perseid meteor shower.jpg", "Meteor shower thumbnail");
+    if (/orion nebula|m42\b/.test(text)) return wikimediaImage("Orion Nebula (M42) part HST 4800px.jpg", "Orion Nebula thumbnail");
+    if (/horsehead|barnard 33/.test(text)) return wikimediaImage("Horsehead-Hubble.jpg", "Horsehead Nebula thumbnail");
+    if (/rosette|ngc 2237/.test(text)) return wikimediaImage("Rosette nebula s.jpg", "Rosette Nebula thumbnail");
+    if (/california|ngc 1499/.test(text)) return wikimediaImage("California nebula NGC1499.jpg", "California Nebula thumbnail");
+    if (/double cluster|ngc 869|ngc 884/.test(text)) return wikimediaImage("Double cluster.jpg", "Double Cluster thumbnail");
+    if (/meteor|perseid|aquariid|capricornid|cygnid|aurigid|taurid|leonid|geminid|ursid/.test(text)) return wikimediaImage("Perseid meteor shower.jpg", "Meteor shower thumbnail");
     if (/moon|lunar|crater/.test(text)) return wikimediaImage("Full Moon Luc Viatour.jpg", "Moon thumbnail");
     if (/venus/.test(text)) return wikimediaImage("Venus-real color.jpg", "Venus thumbnail");
-    if (/planet|jupiter|mars|mercury/.test(text)) return wikimediaImage("Solar System true color.jpg", "Planet thumbnail");
+    if (/planet/.test(text)) return wikimediaImage("Solar System true color.jpg", "Planet thumbnail");
     if (/milky way/.test(text)) return wikimediaImage("ESO - Milky Way.jpg", "Milky Way thumbnail");
     if (/comet/.test(text)) return wikimediaImage("Comet Hartley 2.jpg", "Comet thumbnail");
     if (/eclipse|solar|corona/.test(text)) return wikimediaImage("Total Solar Eclipse 8-21-17.jpg", "Solar eclipse thumbnail");
