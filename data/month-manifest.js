@@ -31,5 +31,15 @@ window.AMC_MONTH_MANIFEST = [
     id: "2026-10",
     label: "October 2026",
     path: "data/2026-10.js"
+  },
+  {
+    id: "2026-11",
+    label: "November 2026",
+    path: "data/2026-11.js"
+  },
+  {
+    id: "2026-12",
+    label: "December 2026",
+    path: "data/2026-12.js"
   }
 ];

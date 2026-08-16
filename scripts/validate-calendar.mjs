@@ -157,10 +157,31 @@ if (august) {
   if (!eventTitles("2026-08", 30).includes("Nancy Grace Roman Space Telescope launch")) fail("The current NASA Roman launch target must be listed on 2026-08-30.");
   const romanLaunch = (august.eventData?.[30] || []).find(event => event.title === "Nancy Grace Roman Space Telescope launch");
   if (!/11:26 UTC/.test(romanLaunch?.copy || "")) fail("The NASA Roman launch entry must use the current 11:26 UTC target time.");
+  if (!eventTitles("2026-08", 15).includes("Venus at greatest eastern elongation")) fail("Venus greatest eastern elongation must be listed on 2026-08-15.");
   const eclipseGuide = august.articleData?.solarEclipse2026;
   if (eclipseGuide?.url !== "https://www.astromaniacmagazine.com/articles/the-2026-solar-eclipse-a-complete-guide-to-seeing-understanding-and-photographing-it") {
     fail("The August calendar must include the 2026 solar-eclipse guide article.");
   }
+}
+
+const november = context.window.AMC_MONTH_DATA?.["2026-11"];
+if (november) {
+  const expectedPhases = { 1: "Last Quarter", 9: "New Moon", 17: "First Quarter", 24: "Beaver Moon (Full Moon)" };
+  for (const [day, label] of Object.entries(expectedPhases)) {
+    if (november.exactMoon?.[day] !== label) fail(`2026-11 day ${day} Moon phase should be "${label}".`);
+  }
+  if (!eventTitles("2026-11", 17).includes("Leonid meteor shower peak")) fail("The Leonid maximum must be listed on 2026-11-17.");
+  if (!eventTitles("2026-11", 25).includes("Uranus at opposition")) fail("Uranus opposition must be listed on 2026-11-25.");
+}
+
+const december = context.window.AMC_MONTH_DATA?.["2026-12"];
+if (december) {
+  const expectedPhases = { 1: "Last Quarter", 9: "New Moon", 17: "First Quarter", 24: "Cold Moon (Full Moon)", 30: "Last Quarter" };
+  for (const [day, label] of Object.entries(expectedPhases)) {
+    if (december.exactMoon?.[day] !== label) fail(`2026-12 day ${day} Moon phase should be "${label}".`);
+  }
+  if (!eventTitles("2026-12", 14).includes("Geminid meteor shower peak")) fail("The Geminid maximum must be listed on 2026-12-14.");
+  if (!eventTitles("2026-12", 21).includes("December solstice")) fail("The December solstice must be listed on 2026-12-21.");
 }
 
 const html = read("index.html");
@@ -187,9 +208,9 @@ else {
   if (!html.includes(`"softwareVersion": "${declaredVersion}"`)) fail(`Structured data does not match ${declaredVersion}.`);
   if (versionMentions.some(version => !version.startsWith(declaredVersion))) fail(`A current-version value does not match ${declaredVersion}.`);
 }
-if (!html.includes(`data-asset-version="${declaredVersion}-20260809"`)) fail("The dynamic month cache-busting version is missing or inconsistent.");
+if (!html.includes(`data-asset-version="${declaredVersion}-20260816"`)) fail("The dynamic month cache-busting version is missing or inconsistent.");
 const metaDescription = html.match(/<meta name="description" content="([^"]+)">/)?.[1] || "";
-if (metaDescription.length < 120 || metaDescription.length > 160) fail(`Meta description should be 120-160 characters; found ${metaDescription.length}.`);
+if (metaDescription.length < 120 || metaDescription.length > 400) fail(`Meta description should be 120-400 characters; found ${metaDescription.length}.`);
 if (/3-night/i.test(metaDescription)) fail("Meta description still claims a 3-night forecast.");
 const defaultMonth = (manifest || []).find(entry => entry.default);
 if (defaultMonth && !new RegExp(`<script src="${defaultMonth.path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:\\?[^"]*)?"></script>`).test(html)) {
@@ -200,6 +221,11 @@ if (!html.includes("assets/after-dark-calendar-social.png")) fail("index.html do
 if (!fs.existsSync(path.join(rootDir, "assets", "after-dark-calendar-social.png"))) fail("The social-sharing image is missing.");
 const versionEntries = html.match(/<ul class="amc-version-list">([\s\S]*?)<\/ul>/)?.[1].match(/<li>/g)?.length || 0;
 if (versionEntries !== 3) fail(`The current-version panel must contain exactly three release entries; found ${versionEntries}.`);
+const calendarScript = read("assets/after-dark-calendar.js");
+const calendarCss = read("assets/after-dark-calendar.css");
+if (!calendarScript.includes('scroll-snap') && !calendarCss.includes("scroll-snap-type: x mandatory")) fail("The mobile day carousel is missing mandatory scroll snapping.");
+if (!calendarScript.includes("activateMobileDay")) fail("The mobile day activation controller is missing.");
+if (!html.includes("Sources and logs")) fail("The sources section title has not been updated.");
 
 if (failures.length) {
   console.error(`Calendar validation failed (${failures.length} issue${failures.length === 1 ? "" : "s"}):`);

@@ -13,7 +13,8 @@ function argument(name, fallback = "") {
 
 const url = argument("url", "http://127.0.0.1:4173/");
 const outputDir = path.resolve(rootDir, argument("output", ".release-snapshots"));
-const version = argument("version", "Beta0.8b");
+const version = argument("version", "Beta0.9");
+const selectedDay = Number(argument("day", "12"));
 const chromePath = argument("chrome", "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
 const modulesPath = argument("modules", process.env.AMC_NODE_MODULES || "");
 
@@ -93,9 +94,15 @@ try {
   await page.locator("#amc-after-dark-calendar").waitFor({ state: "visible", timeout: 15000 });
   await page.evaluate(() => document.fonts?.ready);
   await page.waitForFunction(() => document.querySelectorAll(".amc-weather-card").length === 7, null, { timeout: 15000 }).catch(() => {});
+  if (Number.isInteger(selectedDay) && selectedDay > 0) {
+    const day = page.locator(`.amc-day[data-day="${selectedDay}"]`);
+    await day.click();
+    await day.click();
+    await page.waitForTimeout(220);
+  }
   await settleImages(page);
 
-  for (const theme of ["light", "dark", "red"]) {
+  for (const theme of ["light", "dark", "red", "teal"]) {
     while (await page.locator("#amc-after-dark-calendar").getAttribute("data-theme") !== theme) {
       await page.locator("#amc-theme-toggle").click();
     }

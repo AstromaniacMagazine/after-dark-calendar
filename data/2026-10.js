@@ -57,7 +57,7 @@
     { title: "Saturn opposition", text: "4 Oct. Saturn is opposite the Sun and visible through most of the night.", image: media.saturn.src, alt: "Saturn" },
     { title: "New Moon", text: "10 Oct. The darkest lunar window of the month.", image: moonImage(10, 216), alt: "New Moon" },
     { title: "Draconids", text: "9 Oct. A moon-free maximum favours northern observers.", image: media.meteor.src, alt: "Meteor shower" },
-    { title: "Orionids", text: "21 Oct. Halley's Comet debris peaks under a bright waxing Moon.", image: media.meteor.src, alt: "Meteor shower" }
+    { title: "Orionids", text: "21 Oct. Halley's Comet debris peaks with no significant Moon interference.", image: media.meteor.src, alt: "Meteor shower" }
   ];
 
   const targetData = {
@@ -111,7 +111,7 @@
       event("meteor", "Epsilon Geminids", "This minor meteor shower reaches maximum with increasing moonlight interference.", "Minor meteor shower.", ["imo2026"], media.meteor)
     ],
     21: [
-      event("meteor", "Orionid meteor shower peak", "The Orionids peak around 20-21 October. A bright waxing Moon reduces faint-meteor visibility in 2026.", "Meteor shower from Halley's Comet debris.", ["imo2026", "inSky"], media.meteor)
+      event("meteor", "Orionid meteor shower peak", "The Orionids peak around 20-21 October with no significant Moon interference expected in 2026.", "Meteor shower from Halley's Comet debris.", ["imo2026", "inSky"], media.meteor)
     ],
     24: [
       event("sky", "Moon and Saturn", "The waxing Moon passes close to Saturn; their apparent separation and timing vary by location.", "Moon-planet pairing.", ["inSky"], media.saturn),

@@ -81,7 +81,7 @@
   const monthIntel = [
     { title: "Solar eclipse", text: "12 Aug. Total on the central path; partial across much of Europe and beyond.", image: media.eclipse.src, alt: "Solar eclipse planning" },
     { title: "Perseids", text: "12-13 Aug. Maximum near New Moon, with the strongest rates expected overnight.", image: media.meteor.src, alt: "Meteor shower" },
-    { title: "Venus elongation", text: "14 Aug. Venus reaches greatest evening elongation.", image: media.venus.src, alt: "Venus" },
+    { title: "Venus elongation", text: "15 Aug. Venus reaches greatest evening elongation.", image: media.venus.src, alt: "Venus" },
     { title: "Comet 10P", text: "2-3 Aug. Perihelion and peak brightness are listed close together.", image: media.comet.src, alt: "Comet" }
   ];
 
@@ -138,10 +138,10 @@
       event("meteor", "Perseid meteor shower peak", "The broad maximum runs from 21:00 UTC on 12 August to 09:00 UTC on 13 August, with the strongest rates expected around 02:00-04:00 UTC on the 13th. The Moon is only about 1% illuminated.", "Best from a dark site after the radiant rises; allow at least 20 minutes for dark adaptation.", ["imo2026", "inSky", "rmg2026"], media.meteor)
     ],
     14: [
-      event("telescope", "Messier 15 well placed", "The globular cluster M15 is well placed for telescope and long-focal-length imaging.", "Deep-sky target.", ["inSky"], media.cluster),
-      event("sky", "Venus at greatest eastern elongation", "Venus reaches its greatest evening separation from the Sun at 21:59 UTC, about 46 degrees east of the Sun.", "Evening planet highlight; visibility and altitude depend on latitude and the western horizon.", ["nasaSkyCal", "inSky"], media.venus)
+      event("telescope", "Messier 15 well placed", "The globular cluster M15 is well placed for telescope and long-focal-length imaging.", "Deep-sky target.", ["inSky"], media.cluster)
     ],
     15: [
+      event("sky", "Venus at greatest eastern elongation", "Venus reaches its greatest evening separation from the Sun at 05:59 UTC, about 46 degrees east of the Sun.", "Evening planet highlight; visibility and altitude depend on latitude and the western horizon.", ["nasaSkyCal", "inSky"], media.venus),
       event("sky", "Jupiter-Mercury conjunction", "Jupiter passes 33 arcminutes south of Mercury at 09:13 UTC, but the pair lies only 12 degrees from the Sun and is difficult or impossible to observe from many locations.", "Do not point binoculars, a telescope or a camera with an optical finder near the Sun.", ["inSky"], media.planets),
       event("telescope", "Messier 2 well placed", "The globular cluster M2 is well placed for evening telescope observing and long-focal-length imaging.", "Deep-sky target in Aquarius.", ["inSky"], media.cluster)
     ],

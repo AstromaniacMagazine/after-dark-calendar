@@ -91,6 +91,9 @@
     locationSearchTimer: null,
     locationSearchId: 0,
     monthTransitionTimer: null,
+    mobileScrollTimer: null,
+    resizeTimer: null,
+    mobileLayout: window.matchMedia("(max-width: 600px)").matches,
     targetObservationCache: new Map(),
     monthPromises: Object.create(null)
   };
@@ -112,6 +115,10 @@
     { match: /ngc\s*55/i, name: "NGC 55", type: "Galaxy", ra: 0.25, dec: -39.2, size: "32 x 6 arcmin" },
     { match: /hercules cluster|m13\b/i, name: "Hercules Cluster (M13)", type: "Globular cluster", ra: 16.69, dec: 36.46, size: "20 arcmin" },
     { match: /omega centauri|ngc\s*5139/i, name: "Omega Centauri (NGC 5139)", type: "Globular cluster", ra: 13.45, dec: -47.48, size: "36 arcmin" },
+    { match: /orion nebula|m42\b/i, name: "Orion Nebula (M42)", type: "Emission nebula", ra: 5.59, dec: -5.45, size: "85 x 60 arcmin" },
+    { match: /horsehead|barnard\s*33/i, name: "Horsehead Nebula (Barnard 33)", type: "Dark nebula", ra: 5.68, dec: -2.46, size: "8 x 6 arcmin" },
+    { match: /rosette|ngc\s*2237/i, name: "Rosette Nebula (NGC 2237)", type: "Emission nebula", ra: 6.52, dec: 5.03, size: "80 x 60 arcmin" },
+    { match: /california|ngc\s*1499/i, name: "California Nebula (NGC 1499)", type: "Emission nebula", ra: 4.05, dec: 36.37, size: "145 x 40 arcmin" },
     { match: /pleiades|m45/i, name: "Pleiades (M45)", type: "Open cluster", ra: 3.79, dec: 24.12, size: "110 arcmin" },
     { match: /messier 4|m4\b/i, name: "Messier 4", type: "Globular cluster", ra: 16.39, dec: -26.53, size: "26 arcmin" },
     { match: /messier 5|m5\b/i, name: "Messier 5", type: "Globular cluster", ra: 15.31, dec: 2.08, size: "23 arcmin" },
@@ -128,7 +135,7 @@
     { match: /neptune/i, name: "Neptune", type: "Planet", body: "Neptune", size: "2.2-2.4 arcsec" },
     { match: /pluto/i, name: "Pluto", type: "Dwarf planet", body: "Pluto", size: "about 0.1 arcsec" },
     { match: /moon|lunar|crater|terminator|moonrise/i, name: "Moon", type: "Lunar", body: "Moon", size: "about 31 arcmin" },
-    { match: /meteor|perseid|aquariid|capricornid|cygnid/i, name: "Meteor radiant", type: "Meteor shower", size: "wide radiant" },
+    { match: /meteor|perseid|aquariid|capricornid|cygnid|taurid|leonid|geminid|ursid/i, name: "Meteor radiant", type: "Meteor shower", size: "wide radiant" },
     { match: /eclipse|solar|corona/i, name: "Solar event", type: "Solar", body: "Sun", size: "30-32 arcmin" },
     { match: /comet/i, name: "Comet", type: "Comet", size: "variable coma" }
   ];
@@ -161,6 +168,7 @@
     root.addEventListener("focusout", handleWeatherTipOut);
     root.addEventListener("click", handleWeatherTipClick);
     document.addEventListener("visibilitychange", refreshWeatherWhenVisible);
+    window.addEventListener("resize", handleResponsiveLayout, { passive: true });
   }
 
   async function showMonth(monthId, options = {}) {
@@ -234,7 +242,7 @@
     if (!expanded) return;
     const date = new Date(Date.UTC(state.month.year, state.month.monthIndex, day, 12));
     const events = dayEvents(day);
-    expanded.innerHTML = expandedDay(day, weekdays[date.getUTCDay()], moonForDay(day), events, primaryEvent(events));
+    expanded.innerHTML = expandedDay(day, weekdays[date.getUTCDay()], moonForDay(day), events, primaryEvent(events), isMobileCarousel());
   }
 
   function refreshLivePanels() {
@@ -300,9 +308,13 @@
   }
 
   function renderCalendar() {
+    const mobileCarousel = isMobileCarousel();
     const todayDay = currentCalendarDay();
     const html = [];
-    for (let i = 0; i < state.month.firstDayOffset; i += 1) html.push(`<div class="amc-empty" aria-hidden="true"></div>`);
+    if (!mobileCarousel) {
+      for (let i = 0; i < state.month.firstDayOffset; i += 1) html.push(`<div class="amc-empty" aria-hidden="true"></div>`);
+    }
+    if (mobileCarousel) state.expandedDay = state.selectedDay;
     for (let day = 1; day <= state.month.days; day += 1) {
       const date = new Date(Date.UTC(state.month.year, state.month.monthIndex, day, 12));
       const weekday = weekdays[date.getUTCDay()];
@@ -311,7 +323,7 @@
       const nightInfo = state.hasLocation ? state.night[day] || noDark() : locationNeeded();
       const events = dayEvents(day);
       const primary = primaryEvent(events);
-      const expanded = day === state.expandedDay;
+      const expanded = day === (mobileCarousel ? state.selectedDay : state.expandedDay);
       const css = eventMeta(primary).css;
       const observing = weatherForCalendarDay(day);
       const observingSummary = observing ? `, observing conditions ${observing.observingLabel}` : "";
@@ -324,8 +336,16 @@
       const rowBottom = rowIndex === totalRows - 1;
       const isToday = day === todayDay;
       const isNewMoon = isNewMoonDay(day);
+      const moonSrc = moonImage(day, 216);
+      const moonSource = mobileCarousel && Math.abs(day - state.selectedDay) > 2
+        ? `data-src="${moonSrc}"`
+        : `src="${moonSrc}"`;
+      const element = mobileCarousel ? "article" : "button";
+      const type = mobileCarousel ? "" : ` type="button"`;
+      const current = mobileCarousel && expanded ? ` aria-current="date"` : "";
+      const mobileAttributes = mobileCarousel ? ` role="group" tabindex="${expanded ? "0" : "-1"}"` : "";
       html.push(`
-        <button type="button" class="amc-day ${css}${rowEnd ? " is-row-end" : ""}${rowTail ? " is-row-tail" : ""}${rowBottom ? " is-row-bottom" : ""}${isToday ? " is-today" : ""}${isNewMoon ? " is-new-moon" : ""}${observing ? " has-observing" : ""}${hasMajorEvent ? " is-major-event" : ""}" data-day="${day}" aria-expanded="${expanded}" aria-label="${isToday ? "Today, " : ""}${weekdayShort} ${day} ${monthTitle()}, ${moon.name}, ${moon.phase}% lit, astro night ${durationClock(nightInfo)}${observingSummary}">
+        <${element}${type}${mobileAttributes} class="amc-day ${css}${rowEnd ? " is-row-end" : ""}${rowTail ? " is-row-tail" : ""}${rowBottom ? " is-row-bottom" : ""}${isToday ? " is-today" : ""}${isNewMoon ? " is-new-moon" : ""}${observing ? " has-observing" : ""}${hasMajorEvent ? " is-major-event" : ""}${mobileCarousel && expanded ? " is-mobile-active" : ""}" data-day="${day}" aria-expanded="${expanded}"${current} aria-label="${isToday ? "Today, " : ""}${weekdayShort} ${day} ${monthTitle()}, ${moon.name}, ${moon.phase}% lit, astro night ${durationClock(nightInfo)}${observingSummary}">
           ${dayObservingBar(observing)}
           <span class="amc-date">
             <strong>${day}</strong>
@@ -336,25 +356,127 @@
             </span>
           </span>
           <span class="amc-moon-line">
-            <img class="amc-moon-img" src="${moonImage(day, 216)}" alt="" loading="lazy" decoding="async" width="52" height="52">
+            <img class="amc-moon-img" ${moonSource} alt="" loading="lazy" decoding="async" width="52" height="52">
             <span class="amc-moon-copy"><b>${escapeHtml(moon.name)}</b><span>${moon.phase}% lit</span></span>
           </span>
           <span class="amc-dark-line">Astro night: ${durationClock(nightInfo)}</span>
           <span class="amc-tags">${tagsFor(events).map(tag => `<span class="amc-tag ${tag.css}">${tag.label}</span>`).join("")}</span>
-          <span class="amc-expanded">${expanded ? expandedDay(day, weekday, moon, events, primary) : ""}</span>
-        </button>
+          <span class="amc-expanded">${expanded ? expandedDay(day, weekday, moon, events, primary, mobileCarousel) : ""}</span>
+        </${element}>
       `);
     }
     els.grid.innerHTML = html.join("");
-    els.grid.querySelectorAll(".amc-day").forEach(button => {
-      button.addEventListener("click", event => {
+    els.grid.querySelectorAll(".amc-day").forEach(card => {
+      card.addEventListener("click", event => {
         if (event.target.closest(".amc-weather-segments i")) return;
-        selectDay(Number(button.dataset.day));
+        if (mobileCarousel) {
+          if (event.target.closest("a, button, input")) return;
+          centreMobileDay(Number(card.dataset.day), true);
+          if (!card.classList.contains("is-mobile-active")) activateMobileDay(Number(card.dataset.day));
+          return;
+        }
+        selectDay(Number(card.dataset.day));
       });
+      if (mobileCarousel) card.addEventListener("keydown", handleMobileDayKeydown);
     });
+    els.grid.onscroll = mobileCarousel ? handleMobileDayScroll : null;
+    if (mobileCarousel) els.grid.setAttribute("aria-roledescription", "carousel");
+    else els.grid.removeAttribute("aria-roledescription");
+    if (mobileCarousel) {
+      hydrateMobileMoonImages(state.selectedDay);
+      window.requestAnimationFrame(() => centreMobileDay(state.selectedDay, false));
+    }
   }
 
-  function expandedDay(day, weekday, moon, events, primary) {
+  function isMobileCarousel() {
+    return window.matchMedia("(max-width: 600px)").matches;
+  }
+
+  function handleResponsiveLayout() {
+    if (state.resizeTimer) window.clearTimeout(state.resizeTimer);
+    state.resizeTimer = window.setTimeout(() => {
+      const mobileLayout = isMobileCarousel();
+      if (mobileLayout !== state.mobileLayout) {
+        state.mobileLayout = mobileLayout;
+        state.expandedDay = mobileLayout ? state.selectedDay : null;
+        renderAll();
+      }
+    }, 140);
+  }
+
+  function handleMobileDayScroll() {
+    if (state.mobileScrollTimer) window.clearTimeout(state.mobileScrollTimer);
+    state.mobileScrollTimer = window.setTimeout(() => {
+      const gridRect = els.grid.getBoundingClientRect();
+      const centre = gridRect.left + (gridRect.width / 2);
+      const cards = [...els.grid.querySelectorAll(".amc-day")];
+      const closest = cards.reduce((selected, card) => {
+        const rect = card.getBoundingClientRect();
+        const distance = Math.abs((rect.left + rect.width / 2) - centre);
+        return !selected || distance < selected.distance ? { card, distance } : selected;
+      }, null)?.card;
+      const day = Number(closest?.dataset.day);
+      if (validDay(day) && day !== state.selectedDay) activateMobileDay(day);
+    }, 90);
+  }
+
+  function handleMobileDayKeydown(event) {
+    if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+    event.preventDefault();
+    const direction = event.key === 'ArrowRight' ? 1 : -1;
+    const day = clamp(Number(event.currentTarget.dataset.day) + direction, 1, state.month.days);
+    activateMobileDay(day);
+    centreMobileDay(day, true);
+    els.grid.querySelector(`.amc-day[data-day="${day}"]`)?.focus({ preventScroll: true });
+  }
+
+  function activateMobileDay(day) {
+    if (!isMobileCarousel() || !validDay(day)) return;
+    const previous = els.grid.querySelector(".amc-day.is-mobile-active");
+    const next = els.grid.querySelector(`.amc-day[data-day="${day}"]`);
+    if (!next) return;
+
+    if (previous && previous !== next) {
+      previous.classList.remove("is-mobile-active");
+      previous.removeAttribute("aria-current");
+      previous.setAttribute("aria-expanded", "false");
+      previous.setAttribute("tabindex", "-1");
+      const previousExpanded = previous.querySelector(".amc-expanded");
+      if (previousExpanded) previousExpanded.innerHTML = "";
+    }
+
+    state.selectedDay = day;
+    state.expandedDay = day;
+    hydrateMobileMoonImages(day);
+    const date = new Date(Date.UTC(state.month.year, state.month.monthIndex, day, 12));
+    const events = dayEvents(day);
+    next.classList.add("is-mobile-active");
+    next.setAttribute("aria-current", "date");
+    next.setAttribute("aria-expanded", "true");
+    next.setAttribute("tabindex", "0");
+    const expanded = next.querySelector(".amc-expanded");
+    if (expanded) expanded.innerHTML = expandedDay(day, weekdays[date.getUTCDay()], moonForDay(day), events, primaryEvent(events), true);
+    renderDetail();
+    renderRecommendations();
+  }
+
+  function hydrateMobileMoonImages(day) {
+    for (let candidate = Math.max(1, day - 2); candidate <= Math.min(state.month.days, day + 2); candidate += 1) {
+      const image = els.grid.querySelector(`.amc-day[data-day="${candidate}"] .amc-moon-img[data-src]`);
+      if (!image) continue;
+      image.src = image.dataset.src;
+      image.removeAttribute("data-src");
+    }
+  }
+
+  function centreMobileDay(day, smooth = true) {
+    const card = els.grid.querySelector(`.amc-day[data-day="${day}"]`);
+    if (!card) return;
+    const left = card.offsetLeft - ((els.grid.clientWidth - card.offsetWidth) / 2);
+    els.grid.scrollTo({ left, behavior: smooth ? "smooth" : "auto" });
+  }
+
+  function expandedDay(day, weekday, moon, events, primary, includeRecommendations = false) {
     const nightInfo = state.hasLocation ? state.night[day] || noDark() : locationNeeded();
     const skyInfo = state.hasLocation ? state.sky[day] : null;
     return `
@@ -384,6 +506,7 @@
         ${events.length ? `<span class="amc-expanded-event-list">${events.map(expandedEventItem).join("")}</span>` : ""}
         ${moonChart(skyInfo, nightInfo, true)}
         ${cellWeatherPanel()}
+        ${includeRecommendations ? `<span class="amc-mobile-recommendations">${recommendationsMarkup(day)}</span>` : ""}
       </span>
     `;
   }
@@ -462,12 +585,15 @@
   }
 
   function renderRecommendations() {
-    const day = state.selectedDay;
+    els.recommendations.innerHTML = recommendationsMarkup(state.selectedDay);
+  }
+
+  function recommendationsMarkup(day) {
     const moon = moonForDay(day);
     const events = dayEvents(day);
     const targets = targetSuggestions(day, events, moon);
     const articles = recommendedArticles(events, moon);
-    els.recommendations.innerHTML = `
+    return `
       <div class="amc-recommendation-group">
         <h3>Tonight point your camera to:</h3>
         <ol class="amc-target-list">${targets.map(targetCard).join("")}</ol>
@@ -513,7 +639,9 @@
       6: ["Dumbbell Nebula (M27)", "Pinwheel Galaxy (M101)", "Lagoon Nebula (M8)", "Hercules Cluster (M13)", "Omega Nebula (M17)"],
       7: ["North America Nebula (NGC 7000)", "Dumbbell Nebula (M27)", "Andromeda Galaxy (M31)", "Ring Nebula (M57)", "Sculptor Galaxy (NGC 253)"],
       8: ["Andromeda Galaxy (M31)", "North America Nebula (NGC 7000)", "Messier 15", "Triangulum Galaxy (M33)", "Sculptor Galaxy (NGC 253)"],
-      9: ["Andromeda Galaxy (M31)", "Triangulum Galaxy (M33)", "Double Cluster (NGC 869 and NGC 884)", "Sculptor Galaxy (NGC 253)", "Dumbbell Nebula (M27)"]
+      9: ["Andromeda Galaxy (M31)", "Triangulum Galaxy (M33)", "Double Cluster (NGC 869 and NGC 884)", "Sculptor Galaxy (NGC 253)", "Dumbbell Nebula (M27)"],
+      10: ["Andromeda Galaxy (M31)", "Triangulum Galaxy (M33)", "Double Cluster (NGC 869 and NGC 884)", "Orion Nebula (M42)", "California Nebula (NGC 1499)"],
+      11: ["Orion Nebula (M42)", "Horsehead Nebula (Barnard 33)", "Rosette Nebula (NGC 2237)", "Pleiades (M45)", "Andromeda Galaxy (M31)"]
     };
     const deepSky = deepSkyByMonth[state.month.monthIndex] || ["Andromeda Galaxy (M31)", "Dumbbell Nebula (M27)", "Hercules Cluster (M13)"];
     if (moon.phase <= 35) return deepSky;
@@ -544,7 +672,7 @@
   function targetGroup(name, meta) {
     const text = `${meta?.type || ""} ${name}`.toLowerCase();
     if (/moon|lunar|crater/.test(text)) return "lunar";
-    if (/meteor|aquariid|capricornid|perseid|cygnid|aurigid/.test(text)) return "meteor";
+    if (/meteor|aquariid|capricornid|perseid|cygnid|aurigid|taurid|leonid|geminid|ursid/.test(text)) return "meteor";
     if (/nebula/.test(text)) return "nebula";
     if (/galaxy/.test(text)) return "galaxy";
     if (/cluster/.test(text)) return "cluster";
