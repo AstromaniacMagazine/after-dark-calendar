@@ -236,6 +236,84 @@
       url: "https://www.astromaniacmagazine.com/articles/the-earliest-galaxies-formed-amazingly-fast",
       image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/67329fdca137590340b1bcb5/1731370972851/IC+2163+and+NGC+2207+galaxies.jpg?format=750w",
       kind: "Article"
+    },
+    lunarClock: {
+      title: "Humans Have An Internal Lunar Clock – But Light Pollution Is Disrupting It",
+      url: "https://www.astromaniacmagazine.com/articles/humans-have-an-internal-lunar-clock-but-light-pollution-is-disrupting-it",
+      image: "https://images.squarespace-cdn.com/content/v1/6707b4b3f2000e3c80442056/1761469923471-BKN13XDPSQ214ZLEZQ42/unsplash-image-b1zSvNTakfQ.jpg?format=750w",
+      kind: "Article"
+    },
+    darkEnergy: {
+      title: "The Death of Dark Energy Is A False Alarm – The Universe Is Still Accelerating",
+      url: "https://www.astromaniacmagazine.com/articles/the-death-of-dark-energy-is-a-false-alarm-the-universe-is-still-accelerating",
+      image: "https://images.squarespace-cdn.com/content/v1/6707b4b3f2000e3c80442056/437c55bc-fdc0-49ab-87bd-ea41ef0b6d70/55455270035_6f263b870a_k.jpg?format=750w",
+      kind: "Article"
+    },
+    wormholes: {
+      title: "Wormholes May Not Exist – What They Reveal About Time and the Universe",
+      url: "https://www.astromaniacmagazine.com/articles/wormholes-may-not-exist-weve-found-they-reveal-something-deeper-about-time-and-the-universe",
+      image: "https://images.squarespace-cdn.com/content/v1/6707b4b3f2000e3c80442056/1770575899713-NPRVP19L1754XXK606JG/Wormholes+may+not+exist.jpg?format=750w",
+      kind: "Article"
+    },
+    asi6200Review: {
+      title: "ZWO ASI6200MC Pro: The Full-Frame Promise In Astrophotography",
+      url: "https://www.astromaniacmagazine.com/reviews/zwo-asi6200mc-pro",
+      image: "https://images.squarespace-cdn.com/content/v1/6707b4b3f2000e3c80442056/807dd1bd-d4dd-4e3d-8c84-6d9549430fbb/Astromaniac+Magazine+review+-+ZWO+ASI6200MC+Pro.jpg?format=750w",
+      kind: "Review"
+    },
+    atr2600Review: {
+      title: "ToupTek ATR2600C: A Serious Challenger to APS-C DSO Cameras",
+      url: "https://www.astromaniacmagazine.com/reviews/touptek-atr2600c-astronomy-cooled-camera",
+      image: "https://images.squarespace-cdn.com/content/v1/6707b4b3f2000e3c80442056/1775051213494-M1V62KD5LYFQJDR1JKGO/ToupTek+ATR2600C+-+Astromaniac+Magazine+Review+1.jpg?format=750w",
+      kind: "Review"
+    },
+    falconReview: {
+      title: "Falcon Rotator v2: Meticulously Crafted Camera Rotator",
+      url: "https://www.astromaniacmagazine.com/reviews/pegasus-astro-falcon-rotator-v2",
+      image: "https://images.squarespace-cdn.com/content/v1/6707b4b3f2000e3c80442056/ac0352c5-f20a-4aaa-9aa9-d0872373f472/Falcon+Rotator+v2+Review+by+Astromaniac+Magazine.jpg?format=750w",
+      kind: "Review"
+    },
+    flatPanelReview: {
+      title: "WandererCover V4-EC: Automating a Crucial Part of Astrophotography",
+      url: "https://www.astromaniacmagazine.com/reviews/wanderercover-v4-ec-motorised-flat-panel",
+      image: "https://images.squarespace-cdn.com/content/v1/6707b4b3f2000e3c80442056/66aa67ec-b983-41c1-a150-60b836020f85/WandererCover+V4-EC+Review+-+Astromaniac+Magazine+2.jpg?format=750w",
+      kind: "Review"
+    },
+    powerReview: {
+      title: "SV241 Pro Astro Power Controller: Budget-Friendly and Built To Compete",
+      url: "https://www.astromaniacmagazine.com/reviews/astro-power-controller-sv241-pro-svbony",
+      image: "https://images.squarespace-cdn.com/content/v1/6707b4b3f2000e3c80442056/98eb2616-1397-412e-abb2-e8c12349f989/12_20250901175456_2630.jpg?format=750w",
+      kind: "Review"
+    },
+    monitorReview: {
+      title: "BenQ 27-inch 5K IPS Monitor for Astrophotography",
+      url: "https://www.astromaniacmagazine.com/reviews/benq-27-5k-ips-monitor-the-search-for-the-ideal-astrophotography-display",
+      image: "https://images.squarespace-cdn.com/content/v1/6707b4b3f2000e3c80442056/9c223112-c03e-42aa-884b-852fe7ce3b8d/Benq+PD2730S+monitor+review+for+astrophotography+-+Astromaniac+Magazine+1.jpg?format=750w",
+      kind: "Review"
+    },
+    askar80Review: {
+      title: "Askar 80ED: Astonishingly Light and Budget-Friendly",
+      url: "https://www.astromaniacmagazine.com/reviews/askar80ed",
+      image: "https://images.squarespace-cdn.com/content/v1/6707b4b3f2000e3c80442056/588d0e8c-efa5-4692-b966-30e2f175a051/Askar+80ED+Review+by+Astromaniac+Magazine+1.jpg?format=750w",
+      kind: "Review"
+    },
+    sqa55Review: {
+      title: "Askar SQA55: A Portable Powerhouse for Deep-Sky Astrophotography",
+      url: "https://www.astromaniacmagazine.com/reviews/askar-sqa55",
+      image: "https://images.squarespace-cdn.com/content/v1/6707b4b3f2000e3c80442056/1744487612362-TNCJZHYOR90KQSU6X2B4/Askar+SQA55+Review+by+Astromaniac+Magazine.jpg?format=750w",
+      kind: "Review"
+    },
+    askar103Review: {
+      title: "Askar 103APO Refractor Telescope: A Leap Forward?",
+      url: "https://www.astromaniacmagazine.com/reviews/askar103apo",
+      image: "https://images.squarespace-cdn.com/content/v1/6707b4b3f2000e3c80442056/c0251c0e-c224-4096-91fb-e0a070181934/Askar+103APO+Field+Correctors+Optional.jpg?format=750w",
+      kind: "Review"
+    },
+    ts130Review: {
+      title: "TS-Optics Photoline 130mm: Big Optics, Full-Frame Ready",
+      url: "https://www.astromaniacmagazine.com/reviews/ts-optics130apo",
+      image: "https://images.squarespace-cdn.com/content/v1/6707b4b3f2000e3c80442056/a0644de6-409e-474d-8397-d0af87800e41/TS-Optics+130mm+Telescope.png?format=750w",
+      kind: "Review"
     }
   };
 

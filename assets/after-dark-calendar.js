@@ -22,10 +22,7 @@
     sources: root.querySelector("#amc-source-list"),
     tooltip: root.querySelector("#amc-weather-tooltip"),
     mobileDayNav: root.querySelector("#amc-mobile-day-nav"),
-    mobileDayLabel: root.querySelector("#amc-mobile-day-label"),
-    mobileDayProgress: root.querySelector("#amc-mobile-day-progress"),
-    mobileDayPrev: root.querySelector("#amc-mobile-day-prev"),
-    mobileDayNext: root.querySelector("#amc-mobile-day-next")
+    mobileDayRail: root.querySelector("#amc-mobile-day-rail")
   };
 
   const shared = window.AMC_SHARED || {};
@@ -106,6 +103,12 @@
     mobileNavigationTimer: null,
     mobileNavigationTarget: null,
     mobileMonthTransition: false,
+    mobileRailFrame: null,
+    mobileRailTimer: null,
+    mobileRailSyncing: false,
+    mobileRailMonthId: "",
+    parentManagedEmbed: false,
+    embedTouch: null,
     resizeTimer: null,
     embedResizeTimer: null,
     embedResizeObserver: null,
@@ -122,6 +125,15 @@
     { match: /dumbbell|m27\b/i, name: "Dumbbell Nebula (M27)", type: "Planetary nebula", ra: 19.99, dec: 22.72, size: "8 x 6 arcmin" },
     { match: /ring nebula|m57\b/i, name: "Ring Nebula (M57)", type: "Planetary nebula", ra: 18.89, dec: 33.03, size: "1.4 x 1 arcmin" },
     { match: /north america|ngc\s*7000/i, name: "North America Nebula (NGC 7000)", type: "Emission nebula", ra: 20.98, dec: 44.33, size: "120 x 100 arcmin" },
+    { match: /cygnus loop|veil nebula|ngc\s*6960|ngc\s*6992/i, name: "Cygnus Loop (Veil Nebula)", type: "Supernova remnant", ra: 20.75, dec: 30.97, size: "about 180 arcmin" },
+    { match: /clamshell|sh2[-\s]*119/i, name: "Clamshell Nebula (Sh2-119)", type: "Emission nebula", ra: 21.3, dec: 44.0, size: "about 150 arcmin" },
+    { match: /sadr|gamma cygni|ic\s*1318/i, name: "Sadr Region (IC 1318)", type: "Emission nebula", ra: 20.37, dec: 40.42, size: "about 180 arcmin" },
+    { match: /elephant trunk|ic\s*1396a|vdB\s*142/i, name: "Elephant Trunk Nebula (IC 1396A)", type: "Dark nebula", ra: 21.59, dec: 57.49, size: "about 20 x 10 arcmin" },
+    { match: /pelican|ic\s*5070/i, name: "Pelican Nebula (IC 5070)", type: "Emission nebula", ra: 20.85, dec: 44.35, size: "about 60 x 50 arcmin" },
+    { match: /crescent nebula|ngc\s*6888|caldwell\s*27/i, name: "Crescent Nebula (NGC 6888)", type: "Emission nebula", ra: 20.2, dec: 38.35, size: "18 x 12 arcmin" },
+    { match: /bubble nebula|ngc\s*7635/i, name: "Bubble Nebula (NGC 7635)", type: "Emission nebula", ra: 23.35, dec: 61.2, size: "15 x 8 arcmin" },
+    { match: /heart nebula|ic\s*1805/i, name: "Heart Nebula (IC 1805)", type: "Emission nebula", ra: 2.55, dec: 61.45, size: "150 x 150 arcmin" },
+    { match: /soul nebula|ic\s*1848/i, name: "Soul Nebula (IC 1848)", type: "Emission nebula", ra: 2.85, dec: 60.42, size: "150 x 75 arcmin" },
     { match: /andromeda|m31\b/i, name: "Andromeda Galaxy (M31)", type: "Galaxy", ra: 0.71, dec: 41.27, size: "178 x 63 arcmin" },
     { match: /triangulum|m33\b/i, name: "Triangulum Galaxy (M33)", type: "Galaxy", ra: 1.56, dec: 30.66, size: "62 x 39 arcmin" },
     { match: /whirlpool|m51\b/i, name: "Whirlpool Galaxy (M51)", type: "Galaxy", ra: 13.5, dec: 47.2, size: "11 x 7 arcmin" },
@@ -141,6 +153,8 @@
     { match: /messier 2|m2\b/i, name: "Messier 2", type: "Globular cluster", ra: 21.56, dec: -0.82, size: "16 arcmin" },
     { match: /messier 15|m15\b/i, name: "Messier 15", type: "Globular cluster", ra: 21.5, dec: 12.17, size: "18 arcmin" },
     { match: /double cluster|ngc\s*869|ngc\s*884/i, name: "Double Cluster (NGC 869 and NGC 884)", type: "Open clusters", ra: 2.34, dec: 57.13, size: "about 60 arcmin" },
+    { match: /antares/i, name: "Antares", type: "Red supergiant", ra: 16.49, dec: -26.43, size: "point source" },
+    { match: /asteroid|\bmetis\b|\bvesta\b|\bnausikaa\b/i, name: "Asteroid target", type: "Asteroid", size: "point source" },
     { match: /milky way/i, name: "Milky Way core", type: "Wide-field", ra: 17.76, dec: -29.01, size: "wide-field" },
     { match: /saturn/i, name: "Saturn", type: "Planet", body: "Saturn", size: "15-20 arcsec" },
     { match: /jupiter/i, name: "Jupiter", type: "Planet", body: "Jupiter", size: "30-50 arcsec" },
@@ -178,8 +192,7 @@
     els.previousMonth?.addEventListener("click", () => goToAdjacentMonth(-1));
     els.nextMonth?.addEventListener("click", () => goToAdjacentMonth(1));
     els.today?.addEventListener("click", goToToday);
-    els.mobileDayPrev?.addEventListener("click", () => moveMobileDay(-1));
-    els.mobileDayNext?.addEventListener("click", () => moveMobileDay(1));
+    if (els.mobileDayRail) els.mobileDayRail.addEventListener("scroll", handleMobileRailScroll, { passive: true });
     root.addEventListener("pointerover", handleWeatherTipIn);
     root.addEventListener("pointerout", handleWeatherTipOut);
     root.addEventListener("focusin", handleWeatherTipIn);
@@ -188,6 +201,8 @@
     document.addEventListener("visibilitychange", refreshWeatherWhenVisible);
     window.addEventListener("resize", handleResponsiveLayout, { passive: true });
     window.addEventListener("message", handleEmbedMessage);
+    document.addEventListener("touchstart", handleEmbedTouchStart, { passive: true });
+    document.addEventListener("touchmove", handleEmbedTouchMove, { passive: false });
   }
 
   async function showMonth(monthId, options = {}) {
@@ -603,46 +618,115 @@
     if (!state.month || !validDay(state.selectedDay)) return;
     const date = new Date(Date.UTC(state.month.year, state.month.monthIndex, state.selectedDay, 12));
     const weekday = new Intl.DateTimeFormat("en-GB", { weekday: "long", timeZone: "UTC" }).format(date);
-    const label = weekday;
     const progress = `${state.selectedDay} ${monthName()}`;
     if (els.mobileDayNav) {
       els.mobileDayNav.classList.toggle("is-today", isTodayDay(state.selectedDay));
-      if (els.mobileDayLabel) els.mobileDayLabel.textContent = label;
-      if (els.mobileDayProgress) els.mobileDayProgress.textContent = progress;
     }
-    const previousDay = setMobileDayButton(els.mobileDayPrev, -1);
-    const nextDay = setMobileDayButton(els.mobileDayNext, 1);
-    if (els.mobileDayPrev) els.mobileDayPrev.disabled = state.selectedDay <= 1 && !adjacentMonth(-1);
-    if (els.mobileDayNext) els.mobileDayNext.disabled = state.selectedDay >= state.month.days && !adjacentMonth(1);
+    renderMobileDayRail();
+    syncMobileDayRail(state.selectedDay, true);
+    const dayRail = mobileDayRailEntries().map(entry => ({
+      monthId: entry.monthId,
+      day: entry.day,
+      weekday: entry.weekday,
+      date: entry.date,
+      active: entry.monthId === state.monthId && entry.day === state.selectedDay,
+      today: entry.today
+    }));
     postEmbedMessage({
       type: "amc:day-state",
       label: `${weekday}, ${progress} ${state.month.year}`,
       progress,
-      previousDay,
-      nextDay,
+      monthId: state.monthId,
+      day: state.selectedDay,
+      dayRail,
       canPrevious: state.selectedDay > 1 || Boolean(adjacentMonth(-1)),
       canNext: state.selectedDay < state.month.days || Boolean(adjacentMonth(1))
     });
   }
 
-  function setMobileDayButton(button, direction) {
-    if (!button) return null;
-    let year = state.month.year;
-    let monthIndex = state.month.monthIndex;
-    let day = state.selectedDay + direction;
-    if (day < 1 || day > state.month.days) {
-      const entry = adjacentMonth(direction);
-      if (!entry) return null;
-      const parts = entry.id.split("-").map(Number);
-      year = parts[0];
-      monthIndex = parts[1] - 1;
-      day = direction < 0 ? daysInMonth(year, monthIndex) : 1;
+  function mobileDayRailEntries() {
+    const entries = [];
+    const previous = adjacentMonth(-1);
+    if (previous) {
+      const [year, month] = previous.id.split("-").map(Number);
+      const count = daysInMonth(year, month - 1);
+      for (let day = Math.max(1, count - 2); day <= count; day += 1) entries.push(mobileRailEntry(previous.id, year, month - 1, day, true));
     }
+    for (let day = 1; day <= state.month.days; day += 1) entries.push(mobileRailEntry(state.monthId, state.month.year, state.month.monthIndex, day, false));
+    const next = adjacentMonth(1);
+    if (next) {
+      const [year, month] = next.id.split("-").map(Number);
+      for (let day = 1; day <= 3; day += 1) entries.push(mobileRailEntry(next.id, year, month - 1, day, true));
+    }
+    return entries;
+  }
+
+  function mobileRailEntry(monthId, year, monthIndex, day, adjacent) {
     const date = new Date(Date.UTC(year, monthIndex, day, 12));
     const weekday = new Intl.DateTimeFormat("en-GB", { weekday: "short", timeZone: "UTC" }).format(date);
-    button.innerHTML = `<small>${escapeHtml(weekday)}</small><span>${day} ${monthShort[monthIndex]}</span>`;
-    button.setAttribute("aria-label", `${direction < 0 ? "Previous" : "Next"} day: ${weekday}, ${day} ${monthLong[monthIndex]} ${year}`);
-    return { weekday, date: `${day} ${monthShort[monthIndex]}` };
+    const now = new Date();
+    const today = now.getFullYear() === year && now.getMonth() === monthIndex && now.getDate() === day;
+    return { monthId, day, weekday, date: `${day} ${monthShort[monthIndex]}`, adjacent, today };
+  }
+
+  function renderMobileDayRail() {
+    if (!els.mobileDayRail || !isMobileCarousel()) return;
+    if (state.mobileRailMonthId === state.monthId && els.mobileDayRail.childElementCount) return;
+    const entries = mobileDayRailEntries();
+    els.mobileDayRail.innerHTML = entries.map(entry => `<span class="amc-mobile-day-chip${entry.adjacent ? " is-adjacent" : ""}${entry.today ? " is-today" : ""}" role="option" data-month-id="${escapeHtml(entry.monthId)}" data-day="${entry.day}" aria-label="${escapeHtml(`${entry.weekday}, ${entry.date}`)}" aria-selected="false"><small>${escapeHtml(entry.weekday)}</small><b>${escapeHtml(entry.date)}</b></span>`).join("");
+    state.mobileRailMonthId = state.monthId;
+  }
+
+  function syncMobileDayRail(day, smooth = false) {
+    if (!els.mobileDayRail || !isMobileCarousel()) return;
+    const chips = [...els.mobileDayRail.querySelectorAll(".amc-mobile-day-chip")];
+    const active = chips.find(chip => chip.dataset.monthId === state.monthId && Number(chip.dataset.day) === day);
+    chips.forEach(chip => {
+      const selected = chip === active;
+      chip.classList.toggle("is-active", selected);
+      chip.setAttribute("aria-selected", String(selected));
+    });
+    if (!active) return;
+    state.mobileRailSyncing = true;
+    const left = Math.max(0, Math.min(active.offsetLeft + active.offsetWidth / 2 - els.mobileDayRail.clientWidth / 2, els.mobileDayRail.scrollWidth - els.mobileDayRail.clientWidth));
+    els.mobileDayRail.scrollTo({ left, behavior: smooth && !window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "smooth" : "auto" });
+    window.setTimeout(() => { state.mobileRailSyncing = false; }, smooth ? 260 : 32);
+  }
+
+  function handleMobileRailScroll() {
+    if (state.mobileRailSyncing || !isMobileCarousel()) return;
+    if (state.mobileRailFrame) window.cancelAnimationFrame(state.mobileRailFrame);
+    state.mobileRailFrame = window.requestAnimationFrame(() => {
+      state.mobileRailFrame = null;
+      if (state.mobileRailTimer) window.clearTimeout(state.mobileRailTimer);
+      state.mobileRailTimer = window.setTimeout(settleMobileRail, 96);
+    });
+  }
+
+  function settleMobileRail() {
+    state.mobileRailTimer = null;
+    if (!els.mobileDayRail || state.mobileRailSyncing || state.mobileMonthTransition) return;
+    const rect = els.mobileDayRail.getBoundingClientRect();
+    const centre = rect.left + rect.width / 2;
+    const chip = [...els.mobileDayRail.querySelectorAll(".amc-mobile-day-chip")].reduce((best, candidate) => {
+      const candidateRect = candidate.getBoundingClientRect();
+      const distance = Math.abs(candidateRect.left + candidateRect.width / 2 - centre);
+      return !best || distance < best.distance ? { candidate, distance } : best;
+    }, null)?.candidate;
+    if (!chip) return;
+    navigateMobileRailTarget(chip.dataset.monthId, Number(chip.dataset.day));
+  }
+
+  async function navigateMobileRailTarget(monthId, day) {
+    if (monthId === state.monthId) {
+      if (day !== state.selectedDay) beginMobileNavigation(day, true);
+      else syncMobileDayRail(day, true);
+      return;
+    }
+    const currentIndex = manifest.findIndex(entry => entry.id === state.monthId);
+    const targetIndex = manifest.findIndex(entry => entry.id === monthId);
+    if (targetIndex < 0 || currentIndex < 0) return;
+    await transitionMobileMonth(targetIndex > currentIndex ? 1 : -1, day, monthId);
   }
 
   function hydrateMobileMoonImages(day) {
@@ -729,9 +813,9 @@
     state.mobileNavigationTimer = null;
   }
 
-  async function transitionMobileMonth(direction) {
+  async function transitionMobileMonth(direction, targetDay = null, targetMonthId = "") {
     if (!isMobileCarousel() || state.mobileMonthTransition || ![-1, 1].includes(direction)) return;
-    const entry = adjacentMonth(direction);
+    const entry = targetMonthId ? manifest.find(item => item.id === targetMonthId) : adjacentMonth(direction);
     if (!entry) return;
     state.mobileMonthTransition = true;
     state.mobileNavigationTarget = null;
@@ -740,7 +824,8 @@
     try {
       const data = await loadMonthData(entry.id);
       const month = data.MONTH || data.month || {};
-      const selectedDay = direction > 0 ? 1 : Number(month.days || daysInMonth(month.year, month.monthIndex));
+      const monthDays = Number(month.days || daysInMonth(month.year, month.monthIndex));
+      const selectedDay = Number.isFinite(Number(targetDay)) ? clamp(Number(targetDay), 1, monthDays) : direction > 0 ? 1 : monthDays;
       await showMonth(entry.id, { selectedDay, direction, mobileContinuity: true });
       restoreVerticalScroll(verticalScroll);
       window.requestAnimationFrame(() => {
@@ -785,9 +870,41 @@
 
   function handleEmbedMessage(event) {
     if (event.source !== window.parent || !embedParentOrigins.has(event.origin)) return;
-    if (event.data?.type !== "amc:navigate-day") return;
-    const direction = Number(event.data.direction);
-    if (direction === -1 || direction === 1) moveMobileDay(direction);
+    if (event.data?.type === "amc:embed-ready") {
+      state.parentManagedEmbed = true;
+      root.classList.add("is-parent-managed");
+      scheduleEmbedResize();
+      updateMobileDayNavigation();
+      return;
+    }
+    if (event.data?.type === "amc:navigate-date") {
+      const monthId = String(event.data.monthId || "");
+      const day = Number(event.data.day);
+      if (monthId && Number.isFinite(day)) navigateMobileRailTarget(monthId, day);
+      return;
+    }
+    if (event.data?.type === "amc:navigate-day") {
+      const direction = Number(event.data.direction);
+      if (direction === -1 || direction === 1) moveMobileDay(direction);
+    }
+  }
+
+  function handleEmbedTouchStart(event) {
+    if (!state.parentManagedEmbed || !isMobileCarousel() || event.touches.length !== 1) return;
+    state.embedTouch = { x: event.touches[0].clientX, y: event.touches[0].clientY, axis: "" };
+  }
+
+  function handleEmbedTouchMove(event) {
+    if (!state.parentManagedEmbed || !state.embedTouch || event.touches.length !== 1) return;
+    const touch = event.touches[0];
+    const dx = touch.clientX - state.embedTouch.x;
+    const dy = touch.clientY - state.embedTouch.y;
+    if (!state.embedTouch.axis && Math.max(Math.abs(dx), Math.abs(dy)) > 6) state.embedTouch.axis = Math.abs(dy) > Math.abs(dx) * 1.08 ? "y" : "x";
+    if (state.embedTouch.axis !== "y") return;
+    event.preventDefault();
+    postEmbedMessage({ type: "amc:scroll-parent", deltaY: -dy });
+    state.embedTouch.x = touch.clientX;
+    state.embedTouch.y = touch.clientY;
   }
 
   function expandedDay(day, weekday, moon, events, primary, includeRecommendations = false) {
@@ -906,7 +1023,7 @@
     const moon = moonForDay(day);
     const events = dayEvents(day);
     const targets = targetSuggestions(day, events, moon);
-    const articles = recommendedArticles(events, moon);
+    const articles = recommendedArticles(day, events, moon);
     return `
       <div class="amc-recommendation-group">
         <h3>Tonight point your camera to:</h3>
@@ -921,10 +1038,17 @@
 
   function targetSuggestions(day, events, moon) {
     const seeded = (state.targets[day] || []).filter(isSpecificTarget);
-    const seasonal = seasonalTargetPool(moon);
-    const rankedSeasonal = [...seasonal].sort((left, right) => targetRank(right, day) - targetRank(left, day));
+    const seasonalPool = seasonalTargetPool(moon);
+    const seasonal = rotateTargets(seasonalPool, (day * 3 + state.month.monthIndex) % Math.max(1, seasonalPool.length));
+    const seasonalPosition = new Map(seasonal.map((name, index) => [name, index]));
+    const rankedSeasonal = [...seasonal].sort((left, right) => {
+      const leftScore = targetRank(left, day) + (seasonal.length - seasonalPosition.get(left)) * 2.8;
+      const rightScore = targetRank(right, day) + (seasonal.length - seasonalPosition.get(right)) * 2.8;
+      return rightScore - leftScore;
+    });
     const fallbacks = fallbackTargetPool(moon);
-    const candidates = uniqueTargetNames([...seeded, ...rankedSeasonal, ...fallbacks]);
+    const featuredDeepSky = seasonal[0];
+    const candidates = uniqueTargetNames([...seeded, featuredDeepSky, ...rankedSeasonal, ...fallbacks].filter(Boolean));
     const selected = [];
     const groups = new Set();
 
@@ -944,7 +1068,7 @@
     candidates.forEach(name => addTarget(name, false));
     fallbacks.forEach(name => addTarget(name, false, false));
 
-    const deepSkyCandidates = uniqueTargetNames([...rankedSeasonal, ...seeded, ...fallbacks])
+    const deepSkyCandidates = uniqueTargetNames([featuredDeepSky, ...rankedSeasonal, ...seeded, ...fallbacks].filter(Boolean))
       .filter(name => isDeepSkyTarget(name));
     let deepSkyAdded = deepSkyCandidates.some(name => addTarget(name, false, true, 4));
     if (!deepSkyAdded) deepSkyAdded = deepSkyCandidates.some(name => addTarget(name, false, false, 4));
@@ -953,15 +1077,21 @@
     return selected.slice(0, 4).map(name => targetDetails(name, day, moon));
   }
 
+  function rotateTargets(targets, offset) {
+    if (!targets.length) return [];
+    const index = ((offset % targets.length) + targets.length) % targets.length;
+    return [...targets.slice(index), ...targets.slice(0, index)];
+  }
+
   function seasonalTargetPool(moon) {
     const deepSkyByMonth = {
       4: ["Whirlpool Galaxy (M51)", "Hercules Cluster (M13)", "Ring Nebula (M57)", "Centaurus A (NGC 5128)", "Omega Centauri (NGC 5139)"],
       5: ["Dumbbell Nebula (M27)", "Whirlpool Galaxy (M51)", "Hercules Cluster (M13)", "Lagoon Nebula (M8)", "Centaurus A (NGC 5128)"],
-      6: ["Dumbbell Nebula (M27)", "Pinwheel Galaxy (M101)", "Lagoon Nebula (M8)", "Hercules Cluster (M13)", "Omega Nebula (M17)"],
-      7: ["North America Nebula (NGC 7000)", "Dumbbell Nebula (M27)", "Andromeda Galaxy (M31)", "Ring Nebula (M57)", "Sculptor Galaxy (NGC 253)"],
-      8: ["Andromeda Galaxy (M31)", "North America Nebula (NGC 7000)", "Messier 15", "Triangulum Galaxy (M33)", "Sculptor Galaxy (NGC 253)"],
-      9: ["Andromeda Galaxy (M31)", "Triangulum Galaxy (M33)", "Double Cluster (NGC 869 and NGC 884)", "Sculptor Galaxy (NGC 253)", "Dumbbell Nebula (M27)"],
-      10: ["Andromeda Galaxy (M31)", "Triangulum Galaxy (M33)", "Double Cluster (NGC 869 and NGC 884)", "Orion Nebula (M42)", "California Nebula (NGC 1499)"],
+      6: ["Dumbbell Nebula (M27)", "Cygnus Loop (Veil Nebula)", "Sadr Region (IC 1318)", "Pinwheel Galaxy (M101)", "Lagoon Nebula (M8)", "Hercules Cluster (M13)", "Omega Nebula (M17)"],
+      7: ["Cygnus Loop (Veil Nebula)", "Clamshell Nebula (Sh2-119)", "Sadr Region (IC 1318)", "Elephant Trunk Nebula (IC 1396A)", "Crescent Nebula (NGC 6888)", "Pelican Nebula (IC 5070)", "North America Nebula (NGC 7000)", "Dumbbell Nebula (M27)", "Andromeda Galaxy (M31)", "Ring Nebula (M57)"],
+      8: ["Elephant Trunk Nebula (IC 1396A)", "Bubble Nebula (NGC 7635)", "Heart Nebula (IC 1805)", "Cygnus Loop (Veil Nebula)", "Clamshell Nebula (Sh2-119)", "Sadr Region (IC 1318)", "Andromeda Galaxy (M31)", "Triangulum Galaxy (M33)", "Double Cluster (NGC 869 and NGC 884)", "Messier 15"],
+      9: ["Heart Nebula (IC 1805)", "Soul Nebula (IC 1848)", "Bubble Nebula (NGC 7635)", "Elephant Trunk Nebula (IC 1396A)", "Andromeda Galaxy (M31)", "Triangulum Galaxy (M33)", "Double Cluster (NGC 869 and NGC 884)", "California Nebula (NGC 1499)", "Pleiades (M45)"],
+      10: ["Heart Nebula (IC 1805)", "Soul Nebula (IC 1848)", "Orion Nebula (M42)", "Horsehead Nebula (Barnard 33)", "California Nebula (NGC 1499)", "Pleiades (M45)", "Andromeda Galaxy (M31)", "Double Cluster (NGC 869 and NGC 884)"],
       11: ["Orion Nebula (M42)", "Horsehead Nebula (Barnard 33)", "Rosette Nebula (NGC 2237)", "Pleiades (M45)", "Andromeda Galaxy (M31)"]
     };
     const deepSky = deepSkyByMonth[state.month.monthIndex] || ["Andromeda Galaxy (M31)", "Dumbbell Nebula (M27)", "Hercules Cluster (M13)"];
@@ -972,7 +1102,7 @@
 
   function fallbackTargetPool(moon) {
     const moonTarget = moon.phase >= 70 ? "Moon" : "Milky Way fields";
-    return [moonTarget, "Andromeda Galaxy (M31)", "North America Nebula (NGC 7000)", "Pleiades (M45)", "Saturn", "Jupiter", "Dumbbell Nebula (M27)"];
+    return [moonTarget, "Andromeda Galaxy (M31)", "Cygnus Loop (Veil Nebula)", "North America Nebula (NGC 7000)", "Elephant Trunk Nebula (IC 1396A)", "Pleiades (M45)", "Saturn", "Jupiter", "Dumbbell Nebula (M27)"];
   }
 
   function isSpecificTarget(name) {
@@ -994,7 +1124,7 @@
     const text = `${meta?.type || ""} ${name}`.toLowerCase();
     if (/moon|lunar|crater/.test(text)) return "lunar";
     if (/meteor|aquariid|capricornid|perseid|cygnid|aurigid|taurid|leonid|geminid|ursid/.test(text)) return "meteor";
-    if (/nebula/.test(text)) return "nebula";
+    if (/nebula|supernova remnant/.test(text)) return "nebula";
     if (/galaxy/.test(text)) return "galaxy";
     if (/cluster/.test(text)) return "cluster";
     if (/planet|saturn|jupiter|venus|mars|mercury|uranus|neptune|pluto/.test(text)) return "planet";
@@ -1043,39 +1173,51 @@
     </li>`;
   }
 
-  function recommendedArticles(events, moon) {
+  function recommendedArticles(day, events, moon) {
     const typeSet = new Set(events.map(item => item.type));
-    let contextual;
-    if (state.monthId === "2026-08" && [10, 11, 12].includes(state.selectedDay)) contextual = [state.articles.solarEclipse2026, state.articles.deepSky, state.articles.numbers];
-    else if (typeSet.has("launch")) contextual = [state.articles.launch, state.articles.artemis, state.articles.spaceDebris];
-    else if (typeSet.has("meteor")) contextual = [state.articles.deepSky, state.articles.numbers, state.articles.lightPollution];
-    else if (typeSet.has("moon") || moon.phase >= 70) contextual = [state.articles.moon, state.articles.lunarLife, state.articles.artemis];
-    else if (typeSet.has("telescope")) contextual = [state.articles.telescope, state.articles.rubin, state.articles.jamesWebb];
-    else if (typeSet.has("opposition")) contextual = [state.articles.planetary, state.articles.planetNine, state.articles.earthLike];
-    else if (moon.phase < 25) contextual = [state.articles.deepSky, state.articles.rubin, state.articles.earliestGalaxies];
-    else contextual = [state.articles.numbers, state.articles.deepSky, state.articles.accessories];
+    const seed = day + (state.month.monthIndex + 1) * 37;
+    let editorial;
+    let reviews;
+    if (typeSet.has("launch")) {
+      editorial = [state.articles.launch, state.articles.artemis, state.articles.spaceDebris, state.articles.jamesWebb];
+      reviews = [state.articles.powerReview, state.articles.zwoReview, state.articles.falconReview];
+    } else if (typeSet.has("meteor")) {
+      editorial = [state.articles.deepSky, state.articles.lightPollution, state.articles.numbers, state.articles.accessories];
+      reviews = [state.articles.sqmReview, state.articles.askar80Review, state.articles.sqa55Review, state.articles.atr2600Review];
+    } else if (typeSet.has("moon") || moon.phase >= 70) {
+      editorial = [state.articles.moon, state.articles.lunarClock, state.articles.lunarLife, state.articles.lightPollution];
+      reviews = [state.articles.sqmReview, state.articles.monitorReview, state.articles.powerReview, state.articles.zwoReview];
+    } else if (typeSet.has("telescope")) {
+      editorial = [state.articles.telescope, state.articles.rubin, state.articles.jamesWebb, state.articles.deepSky];
+      reviews = [state.articles.askar103Review, state.articles.ts130Review, state.articles.askar80Review, state.articles.sqa55Review, state.articles.zwoReview];
+    } else if (typeSet.has("opposition")) {
+      editorial = [state.articles.planetary, state.articles.planetNine, state.articles.marsLife, state.articles.earthLike];
+      reviews = [state.articles.asi6200Review, state.articles.atr2600Review, state.articles.ts130Review, state.articles.falconReview];
+    } else if (moon.phase < 35) {
+      editorial = [state.articles.deepSky, state.articles.rubin, state.articles.earliestGalaxies, state.articles.darkStars, state.articles.darkEnergy, state.articles.wormholes, state.articles.numbers];
+      reviews = [state.articles.asi6200Review, state.articles.atr2600Review, state.articles.sqa55Review, state.articles.askar80Review, state.articles.askar103Review, state.articles.ts130Review, state.articles.falconReview, state.articles.flatPanelReview];
+    } else {
+      editorial = [state.articles.numbers, state.articles.deepSky, state.articles.accessories, state.articles.lightPollution, state.articles.earthLike, state.articles.darkEnergy];
+      reviews = [state.articles.powerReview, state.articles.monitorReview, state.articles.flatPanelReview, state.articles.falconReview, state.articles.zwoReview, state.articles.sqmReview];
+    }
 
-    const widerPool = uniqueArticles([
-      ...contextual,
-      state.articles.darkStars,
-      state.articles.marsLife,
-      state.articles.planetNine,
-      state.articles.earthLike,
-      state.articles.spaceDebris,
-      state.articles.jamesWebb,
-      state.articles.artemis,
-      state.articles.sqmReview,
-      state.articles.accessories
-    ]);
-    if (widerPool.length <= 2) return widerPool;
-    const secondaryIndex = 1 + ((state.selectedDay + state.month.monthIndex) % (widerPool.length - 1));
-    return [widerPool[0], widerPool[secondaryIndex]];
+    const editorialPool = uniqueArticles(editorial);
+    const reviewPool = uniqueArticles(reviews);
+    if (state.monthId === "2026-08" && [10, 11, 12].includes(day)) {
+      return uniqueArticles([state.articles.solarEclipse2026, pickArticle(reviewPool, seed)]).slice(0, 2);
+    }
+    return uniqueArticles([pickArticle(editorialPool, seed), pickArticle(reviewPool, seed * 5 + 3)]).slice(0, 2);
+  }
+
+  function pickArticle(pool, seed) {
+    if (!pool.length) return null;
+    return pool[Math.abs(seed) % pool.length];
   }
 
   function articlePromo(article) {
     if (!article) return "";
     return `<a class="amc-article-promo" href="${escapeHtml(article.url)}" target="_blank" rel="noopener">
-      <img src="${escapeHtml(article.image || state.media.milkyWay?.src || "")}" alt="" loading="lazy" decoding="async" width="96" height="72">
+      <img src="${escapeHtml(article.image || state.media.milkyWay?.src || "")}" alt="${escapeHtml(article.title)}" loading="lazy" decoding="async" width="96" height="72">
       <span class="amc-article-copy"><small>${escapeHtml(article.kind || "Article")}</small><b>${escapeHtml(article.title)}</b></span>
     </a>`;
   }
@@ -2016,6 +2158,14 @@
     if (/omega nebula|swan nebula|m17/.test(text)) return imageAsset("https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/VST_image_of_the_spectacular_star-forming_region_Messier_17_%28Omega_Nebula%29.jpg/330px-VST_image_of_the_spectacular_star-forming_region_Messier_17_%28Omega_Nebula%29.jpg", "Omega Nebula thumbnail");
     if (/dumbbell|m27/.test(text)) return imageAsset("https://assets.science.nasa.gov/content/dam/science/missions/hubble/releases/2003/02/STScI-01EVVK02SYNTXZDX0JXGS3DGHN.tif/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "Dumbbell Nebula thumbnail");
     if (/ring nebula|m57/.test(text)) return wikimediaImage("M57 The Ring Nebula.JPG", "Ring Nebula thumbnail");
+    if (/cygnus loop|veil nebula|ngc 6960|ngc 6992/.test(text)) return imageAsset("https://science.nasa.gov/wp-content/uploads/2023/07/veil-nebula.jpg", "Cygnus Loop and Veil Nebula thumbnail");
+    if (/clamshell|sh2-119/.test(text)) return imageAsset("https://images.squarespace-cdn.com/content/v1/5debd4b16fcd7b02905712ff/37b3f6ce-ed44-41dd-8be1-a4ecd415dcca/BEAFD85B-9D1F-4069-9A39-DDD2042D1D5E.jpeg?format=750w", "Clamshell Nebula Sh2-119 thumbnail");
+    if (/sadr|gamma cygni|ic 1318/.test(text)) return imageAsset("https://www.guidetothesky.com/images/s/out/sadr_1h_40m_49s_siril_2.jpg", "Sadr Region IC 1318 thumbnail");
+    if (/elephant trunk|ic 1396a|vdb 142/.test(text)) return imageAsset("https://storage.noirlab.edu/media/archives/images/large/noao-ic1396.jpg", "Elephant Trunk Nebula IC 1396A thumbnail");
+    if (/pelican|ic 5070/.test(text)) return wikimediaImage("Pelican Nebula.jpg", "Pelican Nebula IC 5070 thumbnail");
+    if (/crescent nebula|ngc 6888|caldwell 27/.test(text)) return imageAsset("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/releases/2000/07/STScI-01EVVP4D33NAHDY0D95T7RPFRE.tif?w=1200", "Crescent Nebula NGC 6888 thumbnail");
+    if (/bubble nebula|ngc 7635/.test(text)) return imageAsset("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/releases/2016/04/STScI-01EVVGYQGFWPRBWKW0HNACJMEB.tif?w=1200", "Bubble Nebula NGC 7635 thumbnail");
+    if (/heart nebula|soul nebula|ic 1805|ic 1848/.test(text)) return imageAsset("https://assets.science.nasa.gov/dynamicimage/assets/science/psd/photojournal/pia/pia13/pia13112/PIA13112.jpg?w=1400&h=995&fit=clip&crop=faces%2Cfocalpoint", "Heart and Soul nebulae thumbnail");
     if (/north america|ngc 7000/.test(text)) return imageAsset("https://science.nasa.gov/wp-content/uploads/2023/04/ngc7000_wfpc2_2flat_final-jpg.webp", "North America Nebula thumbnail");
     if (/andromeda|m31/.test(text)) return imageAsset("https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Andromeda_Galaxy_%28with_h-alpha%29.jpg/330px-Andromeda_Galaxy_%28with_h-alpha%29.jpg", "Andromeda Galaxy thumbnail");
     if (/triangulum|m33/.test(text)) return imageAsset("https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Triangulum_Galaxy_M33.jpg/330px-Triangulum_Galaxy_M33.jpg", "Triangulum Galaxy thumbnail");
@@ -2035,6 +2185,7 @@
     if (/rosette|ngc 2237/.test(text)) return wikimediaImage("Rosette nebula s.jpg", "Rosette Nebula thumbnail");
     if (/california|ngc 1499/.test(text)) return wikimediaImage("California nebula NGC1499.jpg", "California Nebula thumbnail");
     if (/double cluster|ngc 869|ngc 884/.test(text)) return wikimediaImage("Double cluster.jpg", "Double Cluster thumbnail");
+    if (/asteroid 9 metis|\bmetis\b/.test(text)) return imageAsset("https://damit.cuni.cz/projects/damit/stored_files/open/85/shape.png", "Asteroid 9 Metis shape model thumbnail");
     if (/meteor|perseid|aquariid|capricornid|cygnid|aurigid|taurid|leonid|geminid|ursid/.test(text)) return wikimediaImage("Perseid meteor shower.jpg", "Meteor shower thumbnail");
     if (/moon|lunar|crater/.test(text)) return wikimediaImage("Full Moon Luc Viatour.jpg", "Moon thumbnail");
     if (/venus/.test(text)) return wikimediaImage("Venus-real color.jpg", "Venus thumbnail");

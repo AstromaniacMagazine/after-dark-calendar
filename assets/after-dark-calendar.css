@@ -41,6 +41,8 @@ body {
   --telescope: #4c8d62;
   --occultation: #8b5a2b;
   --accent: #0f6f84;
+  --weekday-bg: #0f5f70;
+  --weekday-text: #ffffff;
   --good: #2f9e44;
   --ok: #d69a1f;
   --bad: #d94a45;
@@ -93,6 +95,8 @@ body {
   --telescope: #85d396;
   --occultation: #ffbc74;
   --accent: #78d8ee;
+  --weekday-bg: #182d41;
+  --weekday-text: #f4fbff;
   --good: #6fdc87;
   --ok: #f2c14e;
   --bad: #ff6b6b;
@@ -123,6 +127,8 @@ body {
   --telescope: #c95e55;
   --occultation: #ff8865;
   --accent: #ff675c;
+  --weekday-bg: #3a0d0d;
+  --weekday-text: #ffd3ce;
   --good: #d87d69;
   --ok: #ff8a5c;
   --bad: #ff4c4c;
@@ -150,6 +156,8 @@ body {
   --telescope: #8ad6a8;
   --occultation: #f0bd77;
   --accent: #5ed5c7;
+  --weekday-bg: #174b50;
+  --weekday-text: #effffb;
   --good: #86d699;
   --ok: #f0c55f;
   --bad: #ff7374;
@@ -681,9 +689,9 @@ body {
 .amc-expanded-title.occultation { --event-colour: var(--occultation); color: var(--occultation); }
 
 .amc-weekdays {
-  background: #0a2342;
+  background: var(--weekday-bg);
   border-radius: var(--radius-panel);
-  color: #fff;
+  color: var(--weekday-text);
   display: grid;
   font-size: .76rem;
   font-weight: 600;
@@ -1481,7 +1489,7 @@ body {
 .amc-cell-weather-list {
   display: grid;
   gap: 7px;
-  max-height: 464px;
+  max-height: 520px;
   min-width: 0;
   overflow-x: hidden;
   overflow-y: auto;
@@ -1502,7 +1510,8 @@ body {
 }
 
 .amc-detail .amc-weather-card {
-  height: 150px;
+  height: auto;
+  min-height: 166px;
 }
 
 .amc-weather-card-head {
@@ -1714,6 +1723,7 @@ body {
   font-size: .8rem;
   font-weight: 600;
   line-height: 1.1;
+  overflow-wrap: anywhere;
 }
 
 .amc-target-type {
@@ -1722,6 +1732,7 @@ body {
   font-weight: 600;
   letter-spacing: .07em;
   line-height: 1;
+  overflow-wrap: anywhere;
   text-transform: uppercase;
 }
 
@@ -2530,10 +2541,10 @@ body {
     grid-column: 1 / -1;
     grid-row: 3;
     height: 27px;
-    justify-self: stretch;
-    max-width: none;
+    justify-self: start;
+    max-width: 100%;
     padding: 5px 8px;
-    width: 100%;
+    width: max-content;
   }
 
   .amc-manual-location {
@@ -2573,8 +2584,13 @@ body {
   }
 
   .amc-month-strip {
+    border: 0;
     grid-column: 1 / -1;
     grid-row: 4;
+  }
+
+  .amc-top {
+    border-bottom: 0;
   }
 
   .amc-intel-strip {
@@ -2634,18 +2650,16 @@ body {
   }
 
   .amc-mobile-day-nav {
-    align-items: center;
     backdrop-filter: blur(14px);
     background: color-mix(in srgb, var(--panel) 93%, transparent);
     border: 0;
     border-radius: 13px;
     box-shadow: 0 8px 24px color-mix(in srgb, var(--shadow) 22%, transparent);
-    display: grid;
-    gap: 5px;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
+    display: block;
     margin: 2px 0 5px;
-    min-height: 46px;
-    padding: 3px;
+    min-height: 58px;
+    overflow: hidden;
+    padding: 4px 0;
     position: sticky;
     top: max(0px, env(safe-area-inset-top));
     z-index: 30;
@@ -2656,70 +2670,85 @@ body {
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 19%, transparent), 0 8px 24px color-mix(in srgb, var(--accent) 22%, transparent);
   }
 
-  .amc-mobile-day-nav button {
+  .amc-mobile-day-rail {
     align-items: center;
-    background: var(--panel-soft);
-    border: 1px solid var(--line-strong);
+    display: flex;
+    gap: 5px;
+    min-height: 50px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-inline: contain;
+    padding-inline: calc(50% - 27px);
+    scroll-padding-inline: calc(50% - 27px);
+    scrollbar-width: none;
+    scroll-snap-type: x mandatory;
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .amc-mobile-day-rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .amc-mobile-day-chip {
+    align-content: center;
+    background: color-mix(in srgb, var(--panel-soft) 86%, transparent);
+    border: 1px solid var(--line);
     border-radius: 10px;
     color: var(--muted);
-    cursor: pointer;
     display: grid;
-    font: inherit;
+    flex: 0 0 54px;
     gap: 1px;
-    height: 40px;
-    justify-content: center;
-    line-height: 1.1;
-    min-width: 0;
-    padding: 3px 4px;
+    height: 38px;
+    line-height: 1;
+    opacity: .62;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
     text-align: center;
+    transform: scale(.94);
+    transition: height .16s ease, opacity .16s ease, transform .16s ease, border-color .16s ease, background .16s ease;
   }
 
-  .amc-mobile-day-nav button small {
-    font-size: .58rem;
+  .amc-mobile-day-chip small {
+    font-size: .52rem;
     font-weight: 700;
+    letter-spacing: .04em;
     text-transform: uppercase;
   }
 
-  .amc-mobile-day-nav button span {
-    font-size: .62rem;
+  .amc-mobile-day-chip b {
+    color: inherit;
+    font-size: .74rem;
     font-weight: 600;
-    overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .amc-mobile-day-nav button:disabled {
-    cursor: default;
-    opacity: .3;
-  }
-
-  .amc-mobile-day-nav-copy {
-    align-content: center;
-    background: color-mix(in srgb, var(--accent) 9%, var(--panel));
-    border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--line));
-    border-radius: 10px;
-    display: grid;
-    gap: 1px;
-    min-width: 0;
-    text-align: center;
-  }
-
-  .amc-mobile-day-nav-copy strong {
+  .amc-mobile-day-chip.is-active {
+    background: color-mix(in srgb, var(--accent) 12%, var(--panel));
+    border-color: color-mix(in srgb, var(--accent) 64%, var(--line));
     color: var(--text);
-    font-size: clamp(.84rem, 3.7vw, .98rem);
-    line-height: 1.15;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    height: 50px;
+    opacity: 1;
+    transform: scale(1);
   }
 
-  .amc-mobile-day-nav-copy small {
-    color: var(--accent);
-    font-size: .64rem;
+  .amc-mobile-day-chip.is-active small,
+  .amc-mobile-day-chip.is-active b {
     font-weight: 700;
-    letter-spacing: .025em;
-    line-height: 1.2;
-    text-transform: uppercase;
+  }
+
+  .amc-mobile-day-chip.is-today {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 70%, transparent);
+  }
+
+  .amc-mobile-day-chip.is-adjacent {
+    border-style: dashed;
+    color: var(--accent);
+    opacity: .48;
+  }
+
+  .amc-sky-calendar.is-parent-managed .amc-mobile-day-nav {
+    display: none;
   }
 
   .amc-grid {
