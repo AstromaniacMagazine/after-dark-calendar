@@ -16,7 +16,7 @@
   <meta property="og:image" content="https://astromaniacmagazine.github.io/after-dark-calendar/assets/after-dark-calendar-social.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="After Dark Calendar August 2026 night-sky and astrophotography planner">
+  <meta property="og:image:alt" content="After Dark Calendar September 2026 night-sky and astrophotography planner">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Astrophotography Calendar 2026 | After Dark Night-Sky Planner">
   <meta name="twitter:description" content="A mobile-first 2026 astronomy planner for deep-sky targets, Moon phases, celestial events and colour-coded local observing conditions.">
@@ -40,7 +40,7 @@
         "name": "Astrophotography Calendar 2026 | After Dark Night-Sky Planner",
         "description": "Plan better nights with After Dark Calendar by Astromaniac Magazine: a mobile-friendly 2026 astrophotography calendar for deep-sky targets, Moon phases, meteor showers, eclipses, astronomical darkness, target altitude and a live, colour-coded seven-night observing forecast tailored to your location.",
         "inLanguage": "en-GB",
-        "dateModified": "2026-08-16",
+        "dateModified": "2026-08-22",
         "isPartOf": { "@id": "https://www.astromaniacmagazine.com/#website" },
         "publisher": { "@id": "https://www.astromaniacmagazine.com/#organization" },
         "mainEntity": { "@id": "https://www.astromaniacmagazine.com/after-dark-calendar#calendar" }
@@ -63,7 +63,7 @@
         "applicationSubCategory": "Astrophotography planner and night-sky calendar",
         "operatingSystem": "Any",
         "browserRequirements": "Requires JavaScript and a modern web browser",
-        "softwareVersion": "Beta0.9b",
+        "softwareVersion": "Beta0.9c",
         "isAccessibleForFree": true,
         "inLanguage": "en-GB",
         "publisher": { "@id": "https://www.astromaniacmagazine.com/#organization" },
@@ -85,12 +85,15 @@
   <link rel="preload" href="assets/astromaniac-logo.webp" as="image" type="image/webp">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://svs.gsfc.nasa.gov" crossorigin>
+  <link rel="dns-prefetch" href="https://commons.wikimedia.org">
+  <link rel="dns-prefetch" href="https://images.squarespace-cdn.com">
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/after-dark-calendar.css?v=Beta0.9b-20260816">
+  <link rel="stylesheet" href="assets/after-dark-calendar.css?v=Beta0.9c-20260822">
 </head>
 <body>
   <main class="amc-preview-shell">
-    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="Beta0.9b" data-asset-version="Beta0.9b-20260816" aria-labelledby="amc-title">
+    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="Beta0.9c" data-asset-version="Beta0.9c-20260822" aria-labelledby="amc-title">
       <div class="amc-print-brand" aria-hidden="true">
         <img class="amc-print-logo" src="assets/astromaniac-logo.webp" alt="">
         <div>
@@ -103,7 +106,7 @@
       <header class="amc-top">
         <div class="amc-brand-lockup">
           <img class="amc-brand-logo" src="assets/astromaniac-logo.webp" alt="" width="56" height="56" loading="eager" decoding="async">
-          <h1 class="amc-title" id="amc-title"><span class="amc-title-line"><span>After Dark Calendar</span><small class="amc-version-badge" aria-label="Current version Beta0.9b">Beta0.9b</small></span><span class="amc-byline">by Astromaniac Magazine</span></h1>
+          <h1 class="amc-title" id="amc-title"><span class="amc-title-line"><span>After Dark Calendar</span><small class="amc-version-badge" aria-label="Current version Beta0.9c">Beta0.9c</small></span><span class="amc-byline">by Astromaniac Magazine</span></h1>
         </div>
 
         <div class="amc-month-strip">
@@ -155,12 +158,12 @@
             <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
           </div>
           <nav class="amc-mobile-day-nav" id="amc-mobile-day-nav" aria-label="Mobile day navigation">
-            <button type="button" id="amc-mobile-day-prev" aria-label="Previous day">‹</button>
+            <button type="button" id="amc-mobile-day-prev" aria-label="Previous day"><small>Previous</small><span>Day</span></button>
             <span class="amc-mobile-day-nav-copy">
               <strong id="amc-mobile-day-label">Selected day</strong>
-              <small id="amc-mobile-day-progress">Swipe left or right</small>
+              <small id="amc-mobile-day-progress">Date</small>
             </span>
-            <button type="button" id="amc-mobile-day-next" aria-label="Next day">›</button>
+            <button type="button" id="amc-mobile-day-next" aria-label="Next day"><small>Next</small><span>Day</span></button>
           </nav>
           <div class="amc-grid" id="amc-grid" role="group" aria-label="Month day selector"></div>
         </div>
@@ -174,10 +177,10 @@
           <summary>Sources and logs</summary>
           <ul class="amc-source-list" id="amc-source-list"></ul>
           <div class="amc-version-panel">
-            <h3>Current version: Beta0.9b</h3>
+            <h3>Current version: Beta0.9c</h3>
             <ul class="amc-version-list">
+              <li><b>Beta0.9c:</b> sharpens mobile navigation and scrolling, accelerates imagery and strengthens September and October event accuracy ahead of version 1.0.</li>
               <li><b>Beta0.9b:</b> adds seamless cross-month mobile swiping, stronger Today and location cues, four-target imaging guidance and more accurate target imagery.</li>
-              <li><b>Beta0.9a:</b> rebuilds mobile day switching for instant magnetic swipes, equal-height adjacent days, a persistent date navigator and smoother embedded scrolling.</li>
               <li><b>Beta0.9:</b> introduces the mobile day-by-day swipe planner, expands deep-sky guidance, adds November and December, and strengthens search visibility and performance.</li>
             </ul>
             <section class="amc-about" aria-labelledby="amc-about-title">
@@ -191,10 +194,10 @@
     </section>
   </main>
 
-  <script src="assets/astronomy.browser.js?v=Beta0.9b-20260816"></script>
-  <script src="data/common.js?v=Beta0.9b-20260816"></script>
-  <script src="data/month-manifest.js?v=Beta0.9b-20260816"></script>
-  <script src="data/2026-07.js?v=Beta0.9b-20260816"></script>
-  <script src="assets/after-dark-calendar.js?v=Beta0.9b-20260816"></script>
+  <script src="assets/astronomy.browser.js?v=Beta0.9c-20260822"></script>
+  <script src="data/common.js?v=Beta0.9c-20260822"></script>
+  <script src="data/month-manifest.js?v=Beta0.9c-20260822"></script>
+  <script src="data/2026-07.js?v=Beta0.9c-20260822"></script>
+  <script src="assets/after-dark-calendar.js?v=Beta0.9c-20260822"></script>
 </body>
 </html>

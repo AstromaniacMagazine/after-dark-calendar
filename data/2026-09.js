@@ -26,6 +26,16 @@
       label: "Royal Observatory Greenwich 2026 night-sky guide",
       url: "https://www.rmg.co.uk/stories/space-astronomy/2026-guide-night-sky",
       note: "High-level 2026 observing context and seasonal sky highlights."
+    },
+    usnoPhases: {
+      label: "US Naval Observatory 2026 Moon phases",
+      url: "https://aa.usno.navy.mil/calculated/moon/phases?year=2026",
+      note: "Primary Moon phase dates and times are taken from the USNO table in Universal Time."
+    },
+    usnoSeasons: {
+      label: "US Naval Observatory 2026 seasons",
+      url: "https://aa.usno.navy.mil/calculated/seasons?year=2026&tz=0&dst=false",
+      note: "Primary equinox timing in Universal Time."
     }
   };
 
@@ -57,7 +67,9 @@
     8: ["Moon-Jupiter pairing", "Jupiter", "Waning crescent Moon"],
     9: ["September Epsilon Perseids", "Andromeda Galaxy (M31)", "Dumbbell Nebula (M27)"],
     11: ["Milky Way core", "Lagoon Nebula (M8)", "Trifid Nebula (M20)"],
+    12: ["Moon-Mercury pairing", "Mercury", "Andromeda Galaxy (M31)"],
     14: ["Moon-Venus pairing", "Crescent Moon", "Venus"],
+    17: ["Moon-Antares pairing", "Antares occultation", "Andromeda Galaxy (M31)"],
     18: ["First Quarter Moon", "Lunar terminator", "Craters"],
     22: ["Venus", "Andromeda Galaxy (M31)", "Dumbbell Nebula (M27)"],
     25: ["NGC 55", "Dumbbell Nebula (M27)", "Pleiades (M45)"],
@@ -74,7 +86,7 @@
       event("sky", "Moon near the Pleiades", "The Moon passes near the Pleiades cluster.", "Moon-cluster pairing.", ["inSky"], media.pleiades)
     ],
     4: [
-      event("moon", "Last Quarter Moon", "The Moon rises late, improving early-night sky contrast.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "inSky"])
+      event("moon", "Last Quarter Moon", "Last Quarter occurs at 07:51 UTC; the Moon rises late, improving early-night sky contrast.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "usnoPhases", "inSky"])
     ],
     6: [
       event("sky", "Moon and Mars", "The Moon passes close to Mars.", "Moon-planet pairing.", ["inSky"], media.planets)
@@ -86,33 +98,43 @@
       event("meteor", "September Epsilon Perseid meteor shower", "A minor shower with a favourable darker-sky context near New Moon.", "Meteor shower peak.", ["inSky"], media.meteor)
     ],
     11: [
-      event("moon", "New Moon", "Lunar illumination is near zero, giving the month its best dark-sky window.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "inSky"])
+      event("moon", "New Moon", "New Moon occurs at 03:27 UTC, giving the month its best dark-sky window.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "usnoPhases", "inSky"])
+    ],
+    12: [
+      event("sky", "Moon and Mercury", "A slim crescent Moon passes Mercury in evening twilight; visibility depends on latitude and a clear western horizon.", "Twilight planet pairing.", ["inSky"], media.planets)
     ],
     14: [
       event("sky", "Moon and Venus", "A slim Moon passes Venus in evening twilight; occultation visibility is path-dependent.", "Twilight pairing.", ["inSky"], media.venus)
     ],
+    17: [
+      event("occultation", "Moon occults Antares", "The Moon passes in front of Antares for observers inside a limited visibility path; elsewhere it is a close conjunction.", "Location-dependent occultation.", ["inSky"], media.planets)
+    ],
     18: [
-      event("moon", "First Quarter Moon", "The lunar terminator is strong for visual observing and high-resolution Moon imaging.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "inSky"])
+      event("moon", "First Quarter Moon", "First Quarter occurs at 20:44 UTC; the lunar terminator is strong for visual observing and high-resolution Moon imaging.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "usnoPhases", "inSky"])
+    ],
+    20: [
+      event("occultation", "Moon occults Sigma Sagittarii", "The Moon occults Sigma Sagittarii along a limited geographic track; observers outside it see a close lunar pass.", "Location-dependent occultation.", ["inSky"], media.planets)
     ],
     22: [
       event("sky", "Venus at greatest brightness", "Venus reaches its brightest evening appearance.", "Evening planet highlight.", ["inSky"], media.venus)
     ],
     23: [
-      event("sky", "September equinox", "The Sun crosses the celestial equator, marking the September equinox.", "Season marker.", ["inSky", "rmg2026"], media.sun)
+      event("sky", "September equinox", "The Sun crosses the celestial equator at 00:05 UTC, marking the September equinox.", "Season marker.", ["usnoSeasons", "inSky", "rmg2026"], media.sun)
     ],
     25: [
       event("telescope", "NGC 55 well placed", "The Sculptor Galaxy is well placed for southern observers.", "Southern deep-sky target.", ["inSky"], media.cluster)
     ],
     26: [
-      event("opposition", "Neptune at opposition", "Neptune is opposite the Sun in Earth's sky, but the Full Moon makes contrast difficult.", "Advanced telescope target.", ["inSky"], media.planets),
-      event("moon", "Harvest Moon (Full Moon)", "The Moon is effectively fully illuminated. In 2026, September's Full Moon is the popular traditional Harvest Moon.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "inSky", "fullMoonNames"])
+      event("opposition", "Neptune at opposition", "Neptune reaches opposition at 01:28 UTC, but the Full Moon makes contrast difficult.", "Advanced telescope target.", ["inSky"], media.planets),
+      event("moon", "Harvest Moon (Full Moon)", "Full Moon occurs at 16:49 UTC. In 2026, September's Full Moon is the popular traditional Harvest Moon.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "usnoPhases", "inSky", "fullMoonNames"])
     ],
     27: [
       event("sky", "Moon and Saturn", "The Moon passes close to Saturn.", "Moon-planet pairing.", ["inSky"], media.saturn),
-      event("sky", "Mercury high in the evening sky", "Mercury reaches a better evening placement, with visibility still dependent on horizon and latitude.", "Twilight planet highlight.", ["inSky"], media.planets)
+      event("sky", "Mercury at aphelion", "Mercury reaches the farthest point of its orbit from the Sun; this geometric milestone does not by itself guarantee easy visibility.", "Solar-system orbital milestone.", ["inSky"], media.planets)
     ],
     30: [
-      event("sky", "Moon near the Pleiades", "The Moon returns near the Pleiades at the end of the month.", "Moon-cluster pairing.", ["inSky"], media.pleiades)
+      event("sky", "Moon near the Pleiades", "The Moon returns near the Pleiades at the end of the month.", "Moon-cluster pairing.", ["inSky"], media.pleiades),
+      event("opposition", "Asteroid 187 Nausikaa at opposition", "Nausikaa reaches opposition; a telescope, current finder chart and accurate coordinates are needed.", "Advanced asteroid target.", ["inSky"], media.planets)
     ]
   };
 

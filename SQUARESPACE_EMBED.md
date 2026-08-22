@@ -7,9 +7,9 @@ Replace the existing calendar iframe Code Block with this snippet:
 ```html
 <div class="adc-embed" id="adc-embed">
   <nav class="adc-mobile-day-nav" aria-label="Calendar day navigation">
-    <button type="button" data-adc-direction="-1" aria-label="Previous day">&lsaquo;</button>
-    <span><strong>Loading calendar...</strong><small>Swipe left or right</small></span>
-    <button type="button" data-adc-direction="1" aria-label="Next day">&rsaquo;</button>
+    <button type="button" data-adc-direction="-1" aria-label="Previous day"><small>Previous</small><span>Day</span></button>
+    <span class="adc-current-day"><strong>Loading calendar...</strong><small>Date</small></span>
+    <button type="button" data-adc-direction="1" aria-label="Next day"><small>Next</small><span>Day</span></button>
   </nav>
   <iframe
     id="adc-calendar-frame"
@@ -23,25 +23,25 @@ Replace the existing calendar iframe Code Block with this snippet:
 </div>
 
 <style>
-  .adc-embed { width: 100%; }
-  #adc-calendar-frame { border: 0; display: block; overflow: hidden; width: 100%; }
+  .adc-embed { box-sizing: border-box; max-width: 100%; overflow: clip; width: 100%; }
+  #adc-calendar-frame { border: 0; display: block; max-width: 100%; overflow: hidden; width: 100%; }
   .adc-mobile-day-nav { display: none; }
   @media (max-width: 600px) {
     .adc-mobile-day-nav {
       align-items: center;
       backdrop-filter: blur(14px);
       background: rgba(255,253,248,.96);
-      border: 1px solid rgba(24,28,34,.2);
+      border: 0;
       border-radius: 13px;
       box-shadow: 0 8px 24px rgba(22,25,29,.14);
       box-sizing: border-box;
       display: grid;
       font-family: Manrope, Inter, system-ui, sans-serif;
-      gap: 7px;
-      grid-template-columns: 38px minmax(0,1fr) 38px;
+      gap: 5px;
+      grid-template-columns: minmax(0,1fr) minmax(0,2fr) minmax(0,1fr);
       margin: 0 0 5px;
-      min-height: 50px;
-      padding: 5px;
+      min-height: 46px;
+      padding: 3px;
       position: sticky;
       top: max(0px, env(safe-area-inset-top));
       z-index: 20;
@@ -50,14 +50,26 @@ Replace the existing calendar iframe Code Block with this snippet:
       background: #f1ece3;
       border: 1px solid rgba(24,28,34,.2);
       border-radius: 10px;
-      color: #0f6f84;
-      font: 1.55rem/1 system-ui, sans-serif;
-      height: 38px;
+      color: #5d6671;
+      display: grid;
+      font-family: Manrope, Inter, system-ui, sans-serif;
+      gap: 1px;
+      height: 40px;
+      min-width: 0;
+      padding: 3px 4px;
     }
+    .adc-mobile-day-nav button small { font-size: .58rem; font-weight: 700; text-transform: uppercase; }
+    .adc-mobile-day-nav button span { font-size: .62rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .adc-mobile-day-nav button:disabled { opacity: .3; }
-    .adc-mobile-day-nav span { display: grid; gap: 1px; min-width: 0; text-align: center; }
+    .adc-mobile-day-nav .adc-current-day { align-content: center; background: #e7f1f2; border: 1px solid rgba(15,111,132,.5); border-radius: 10px; display: grid; gap: 1px; min-width: 0; text-align: center; }
     .adc-mobile-day-nav strong { color: #16191d; font-size: .94rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .adc-mobile-day-nav small { color: #0f6f84; font-size: .6rem; font-weight: 700; text-transform: uppercase; }
+    body#collection-6a4777cf704b782ab47f350c { overflow-x: clip !important; }
+    body#collection-6a4777cf704b782ab47f350c .header-title-nav-wrapper,
+    body#collection-6a4777cf704b782ab47f350c .header-mobile-logo { box-sizing: border-box; max-width: calc(100vw - 90px) !important; min-width: 0 !important; width: calc(100vw - 90px) !important; }
+    body#collection-6a4777cf704b782ab47f350c .header-mobile-logo a,
+    body#collection-6a4777cf704b782ab47f350c .header-mobile-logo picture,
+    body#collection-6a4777cf704b782ab47f350c .header-mobile-logo img { height: auto !important; max-width: 100% !important; min-width: 0 !important; width: 100% !important; }
   }
 </style>
 
@@ -81,6 +93,8 @@ Replace the existing calendar iframe Code Block with this snippet:
     if (event.data?.type === 'amc:day-state') {
       label.textContent = event.data.label || 'After Dark Calendar';
       progress.textContent = event.data.progress || 'Swipe left or right';
+      if (event.data.previousDay) previous.innerHTML = `<small>${event.data.previousDay.weekday}</small><span>${event.data.previousDay.date}</span>`;
+      if (event.data.nextDay) next.innerHTML = `<small>${event.data.nextDay.weekday}</small><span>${event.data.nextDay.date}</span>`;
       previous.disabled = !event.data.canPrevious;
       next.disabled = !event.data.canNext;
     }

@@ -164,6 +164,29 @@ if (august) {
   }
 }
 
+const september = context.window.AMC_MONTH_DATA?.["2026-09"];
+if (september) {
+  const expectedPhases = { 4: "Last Quarter", 11: "New Moon", 18: "First Quarter", 26: "Harvest Moon (Full Moon)" };
+  for (const [day, label] of Object.entries(expectedPhases)) {
+    if (september.exactMoon?.[day] !== label) fail(`2026-09 day ${day} Moon phase should be "${label}".`);
+  }
+  if (!eventTitles("2026-09", 23).includes("September equinox")) fail("The September equinox must be listed on 2026-09-23 UTC.");
+  if (!eventTitles("2026-09", 26).includes("Neptune at opposition")) fail("Neptune opposition must be listed on 2026-09-26 UTC.");
+  if (!eventTitles("2026-09", 27).includes("Mercury at aphelion")) fail("Mercury aphelion must be listed on 2026-09-27.");
+}
+
+const october = context.window.AMC_MONTH_DATA?.["2026-10"];
+if (october) {
+  const expectedPhases = { 3: "Last Quarter", 10: "New Moon", 18: "First Quarter", 26: "Hunter's Moon (Full Moon)" };
+  for (const [day, label] of Object.entries(expectedPhases)) {
+    if (october.exactMoon?.[day] !== label) fail(`2026-10 day ${day} Moon phase should be "${label}".`);
+  }
+  if (!eventTitles("2026-10", 12).includes("Mercury at greatest eastern elongation")) fail("Mercury greatest eastern elongation must be listed on 2026-10-12 UTC.");
+  if (eventTitles("2026-10", 11).includes("Mercury at greatest eastern elongation")) fail("Mercury greatest eastern elongation is incorrectly listed on 2026-10-11.");
+  const orionids = (october.eventData?.[21] || []).find(event => /Orionid/i.test(event.title));
+  if (!/waxing Moon/i.test(orionids?.copy || "")) fail("The 2026 Orionids entry must explain the waxing-Moon conditions.");
+}
+
 const november = context.window.AMC_MONTH_DATA?.["2026-11"];
 if (november) {
   const expectedPhases = { 1: "Last Quarter", 9: "New Moon", 17: "First Quarter", 24: "Beaver Moon (Full Moon)" };
@@ -208,7 +231,7 @@ else {
   if (!html.includes(`"softwareVersion": "${declaredVersion}"`)) fail(`Structured data does not match ${declaredVersion}.`);
   if (versionMentions.some(version => !version.startsWith(declaredVersion))) fail(`A current-version value does not match ${declaredVersion}.`);
 }
-if (!html.includes(`data-asset-version="${declaredVersion}-20260816"`)) fail("The dynamic month cache-busting version is missing or inconsistent.");
+if (!new RegExp(`data-asset-version="${declaredVersion.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}-\\d{8}"`).test(html)) fail("The dynamic month cache-busting version is missing or inconsistent.");
 const metaDescription = html.match(/<meta name="description" content="([^"]+)">/)?.[1] || "";
 if (metaDescription.length < 120 || metaDescription.length > 400) fail(`Meta description should be 120-400 characters; found ${metaDescription.length}.`);
 if (/3-night/i.test(metaDescription)) fail("Meta description still claims a 3-night forecast.");

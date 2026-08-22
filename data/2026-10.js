@@ -55,9 +55,9 @@
 
   const monthIntel = [
     { title: "Saturn opposition", text: "4 Oct. Saturn is opposite the Sun and visible through most of the night.", image: media.saturn.src, alt: "Saturn" },
-    { title: "New Moon", text: "10 Oct. The darkest lunar window of the month.", image: moonImage(10, 216), alt: "New Moon" },
     { title: "Draconids", text: "9 Oct. A moon-free maximum favours northern observers.", image: media.meteor.src, alt: "Meteor shower" },
-    { title: "Orionids", text: "21 Oct. Halley's Comet debris peaks with no significant Moon interference.", image: media.meteor.src, alt: "Meteor shower" }
+    { title: "New Moon", text: "10 Oct. The darkest lunar window of the month.", image: moonImage(10, 216), alt: "New Moon" },
+    { title: "Orionids", text: "21 Oct. A waxing Moon sets before dawn, leaving a useful darker pre-dawn window.", image: media.meteor.src, alt: "Meteor shower" }
   ];
 
   const targetData = {
@@ -67,7 +67,8 @@
     6: ["Jupiter", "Waning crescent Moon", "Double Cluster (NGC 869 and NGC 884)"],
     9: ["Draconids", "Andromeda Galaxy (M31)", "Triangulum Galaxy (M33)"],
     10: ["Andromeda Galaxy (M31)", "Triangulum Galaxy (M33)", "Sculptor Galaxy (NGC 253)"],
-    11: ["Mercury", "Andromeda Galaxy (M31)", "Dumbbell Nebula (M27)"],
+    11: ["Moon-Venus pairing", "Venus", "Andromeda Galaxy (M31)"],
+    12: ["Mercury", "Andromeda Galaxy (M31)", "Dumbbell Nebula (M27)"],
     15: ["Triangulum Galaxy (M33)", "Andromeda Galaxy (M31)", "Sculptor Galaxy (NGC 253)"],
     18: ["First Quarter Moon", "Dumbbell Nebula (M27)", "Messier 15"],
     21: ["Orionids", "Moon", "Jupiter"],
@@ -85,7 +86,8 @@
       event("telescope", "Sculptor Galaxy well placed", "NGC 253 is well placed for southern observers and low-latitude northern sites.", "Southern galaxy target.", ["inSky"], media.cluster)
     ],
     4: [
-      event("opposition", "Saturn at opposition", "Saturn lies opposite the Sun in Earth's sky, remaining visible for most of the night and reaching its best annual illumination.", "Planetary imaging highlight.", ["inSky", "nasaSkyCal"], media.saturn)
+      event("opposition", "Saturn at opposition", "Saturn lies opposite the Sun at 11:52 UTC, remaining visible for most of the night and reaching its best annual illumination.", "Planetary imaging highlight.", ["inSky", "nasaSkyCal"], media.saturn),
+      event("sky", "Moon and Mars", "The waning Moon passes Mars; local altitude and twilight determine the best observing window.", "Moon-planet pairing.", ["inSky", "nasaSkyCal"], media.planets)
     ],
     6: [
       event("meteor", "October Camelopardalids", "This minor shower reaches maximum around 04:40 UTC under favourable Moon conditions.", "Minor meteor shower.", ["imo2026"], media.meteor),
@@ -98,10 +100,15 @@
       event("moon", "New Moon", "New Moon occurs at 15:50 UTC, providing the month's strongest lunar-darkness window.", "Moon phase marker.", ["usnoPhases", "nasaSkyCal", "nasaSvs", "astronomyEngine"])
     ],
     11: [
-      event("sky", "Mercury at greatest eastern elongation", "Mercury reaches its greatest evening angular separation from the Sun; visibility depends strongly on latitude and the western horizon.", "Evening planet highlight.", ["inSky"], media.planets)
+      event("sky", "Moon and Venus", "A young crescent Moon passes Venus in evening twilight; visibility depends on latitude and a clear western horizon.", "Twilight planet pairing.", ["inSky"], media.venus)
+    ],
+    12: [
+      event("sky", "Mercury at greatest eastern elongation", "Mercury reaches greatest eastern elongation at 09:59 UTC; visibility depends strongly on latitude and the western horizon.", "Evening planet highlight.", ["inSky", "nasaSkyCal"], media.planets),
+      event("sky", "Moon and Mercury", "The slim Moon passes Mercury in evening twilight.", "Twilight planet pairing.", ["inSky"], media.planets)
     ],
     13: [
-      event("opposition", "Asteroid 4 Vesta at opposition", "Vesta is opposite the Sun and near its brightest for the year, but still requires accurate charts and suitable optics.", "Asteroid imaging target.", ["inSky"], media.planets)
+      event("opposition", "Asteroid 4 Vesta at opposition", "Vesta is opposite the Sun and near its brightest for the year, but still requires accurate charts and suitable optics.", "Asteroid imaging target.", ["inSky"], media.planets),
+      event("meteor", "Southern Taurid early maximum", "The broad Southern Taurid stream has a possible early maximum in 2026. Rates are low, but slow bright meteors and fireballs are possible.", "Broad, low-rate meteor activity.", ["imo2026"], media.meteor)
     ],
     15: [
       event("telescope", "Triangulum Galaxy well placed", "M33 is well placed during the night, with the best results under dark, transparent skies.", "Low-surface-brightness galaxy.", ["inSky"], media.milkyWay)
@@ -111,7 +118,10 @@
       event("meteor", "Epsilon Geminids", "This minor meteor shower reaches maximum with increasing moonlight interference.", "Minor meteor shower.", ["imo2026"], media.meteor)
     ],
     21: [
-      event("meteor", "Orionid meteor shower peak", "The Orionids peak around 20-21 October with no significant Moon interference expected in 2026.", "Meteor shower from Halley's Comet debris.", ["imo2026", "inSky"], media.meteor)
+      event("meteor", "Orionid meteor shower peak", "The Orionids peak around 20-21 October. A waxing Moon affects the evening, but it sets before dawn and leaves a useful darker window before morning twilight.", "Meteor shower from Halley's Comet debris.", ["imo2026", "inSky"], media.meteor)
+    ],
+    23: [
+      event("sky", "Venus at inferior conjunction", "Venus passes between Earth and the Sun. It is lost in solar glare and must not be searched for with unfiltered optics.", "Solar conjunction; not an observing target.", ["nasaSkyCal", "inSky"], media.venus)
     ],
     24: [
       event("sky", "Moon and Saturn", "The waxing Moon passes close to Saturn; their apparent separation and timing vary by location.", "Moon-planet pairing.", ["inSky"], media.saturn),

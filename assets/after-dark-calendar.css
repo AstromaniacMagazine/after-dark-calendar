@@ -3,6 +3,12 @@
   --page-bg: #eef0f3;
 }
 
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
 body {
   background: var(--page-bg);
   margin: 0;
@@ -849,11 +855,21 @@ body {
 
 .amc-moon-img {
   aspect-ratio: 1;
+  border: 0;
   border-radius: 50%;
   display: block;
-  height: 42px;
+  height: 112%;
   object-fit: cover;
-  width: 42px;
+  transform: translate(-5.35%, -5.35%);
+  width: 112%;
+}
+
+.amc-moon-visual {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: block;
+  overflow: hidden;
+  width: 100%;
 }
 
 .amc-moon-copy {
@@ -1536,13 +1552,13 @@ body {
 
 .amc-weather-metrics {
   display: grid;
-  gap: 6px;
+  gap: 6.6px;
 }
 
 .amc-weather-row {
   align-items: center;
   display: grid;
-  gap: 7px;
+  gap: 7.7px;
   grid-template-columns: minmax(82px, .62fr) minmax(116px, 1fr);
   min-width: 0;
 }
@@ -1550,7 +1566,7 @@ body {
 .amc-weather-row b {
   font-size: .66rem;
   font-weight: 600;
-  line-height: 1;
+  line-height: 1.12;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2442,14 +2458,17 @@ body {
   .amc-sky-calendar {
     overflow-x: clip;
     padding: 10px 12px 12px;
+    width: 100%;
   }
 
   .amc-top {
     gap: 8px;
-    grid-template-columns: minmax(0, 1fr) 38px;
+    grid-template-columns: auto minmax(0, 1fr) auto 34px;
   }
 
   .amc-brand-lockup {
+    grid-column: 1 / 4;
+    grid-row: 1;
     min-width: 0;
   }
 
@@ -2476,14 +2495,7 @@ body {
   }
 
   .amc-actions {
-    align-items: stretch;
-    display: grid;
-    gap: 5px;
-    grid-column: 1 / -1;
-    grid-row: 2;
-    grid-template-columns: auto minmax(0, 1fr) auto 34px;
-    justify-self: stretch;
-    width: 100%;
+    display: contents;
   }
 
   .amc-location-controls {
@@ -2493,6 +2505,7 @@ body {
   #amc-use-location {
     font-size: 0;
     grid-column: 1;
+    grid-row: 2;
     min-width: 0;
     padding: 7px 8px;
     white-space: nowrap;
@@ -2515,7 +2528,7 @@ body {
     display: inline-flex;
     font-size: .62rem;
     grid-column: 1 / -1;
-    grid-row: 2;
+    grid-row: 3;
     height: 27px;
     justify-self: stretch;
     max-width: none;
@@ -2527,7 +2540,7 @@ body {
     display: grid;
     gap: 4px;
     grid-column: 2 / 4;
-    grid-row: 1;
+    grid-row: 2;
     grid-template-columns: minmax(0, 1fr) auto;
     max-width: none;
     min-width: 0;
@@ -2561,18 +2574,18 @@ body {
 
   .amc-month-strip {
     grid-column: 1 / -1;
-    grid-row: 3;
+    grid-row: 4;
   }
 
   .amc-intel-strip {
     display: flex;
     gap: 8px;
-    margin-inline: -12px;
+    margin-inline: 0;
     overflow-x: auto;
     overscroll-behavior-inline: contain;
-    padding: 0 12px 5px;
+    padding: 0 0 5px;
     scrollbar-width: none;
-    scroll-padding-inline: 12px;
+    scroll-padding-inline: 0;
     scroll-snap-type: x mandatory;
   }
 
@@ -2607,10 +2620,10 @@ body {
 
   .amc-legend {
     flex-wrap: nowrap;
-    margin-inline: -12px;
+    margin-inline: 0;
     overflow-x: auto;
     overscroll-behavior-inline: contain;
-    padding: 0 12px 6px;
+    padding: 0 0 6px;
     scrollbar-width: none;
     scroll-snap-type: x proximity;
   }
@@ -2624,27 +2637,18 @@ body {
     align-items: center;
     backdrop-filter: blur(14px);
     background: color-mix(in srgb, var(--panel) 93%, transparent);
-    border: 1px solid var(--line-strong);
+    border: 0;
     border-radius: 13px;
     box-shadow: 0 8px 24px color-mix(in srgb, var(--shadow) 22%, transparent);
     display: grid;
-    gap: 7px;
-    grid-template-columns: 38px minmax(0, 1fr) 38px;
+    gap: 5px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
     margin: 2px 0 5px;
-    min-height: 50px;
-    padding: 4px 5px;
+    min-height: 46px;
+    padding: 3px;
     position: sticky;
     top: max(0px, env(safe-area-inset-top));
     z-index: 30;
-  }
-
-  .amc-mobile-day-nav-copy {
-    transition: opacity .14s ease, transform .14s ease;
-  }
-
-  .amc-mobile-day-nav.is-updating .amc-mobile-day-nav-copy {
-    opacity: .58;
-    transform: translateY(1px);
   }
 
   .amc-mobile-day-nav.is-today {
@@ -2657,15 +2661,31 @@ body {
     background: var(--panel-soft);
     border: 1px solid var(--line-strong);
     border-radius: 10px;
-    color: var(--accent);
+    color: var(--muted);
     cursor: pointer;
-    display: flex;
+    display: grid;
     font: inherit;
-    font-size: 1.55rem;
-    height: 38px;
+    gap: 1px;
+    height: 40px;
     justify-content: center;
-    line-height: 1;
-    padding: 0 0 3px;
+    line-height: 1.1;
+    min-width: 0;
+    padding: 3px 4px;
+    text-align: center;
+  }
+
+  .amc-mobile-day-nav button small {
+    font-size: .58rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .amc-mobile-day-nav button span {
+    font-size: .62rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .amc-mobile-day-nav button:disabled {
@@ -2674,6 +2694,10 @@ body {
   }
 
   .amc-mobile-day-nav-copy {
+    align-content: center;
+    background: color-mix(in srgb, var(--accent) 9%, var(--panel));
+    border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--line));
+    border-radius: 10px;
     display: grid;
     gap: 1px;
     min-width: 0;
@@ -2682,7 +2706,7 @@ body {
 
   .amc-mobile-day-nav-copy strong {
     color: var(--text);
-    font-size: clamp(.86rem, 3.8vw, 1rem);
+    font-size: clamp(.84rem, 3.7vw, .98rem);
     line-height: 1.15;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2691,7 +2715,7 @@ body {
 
   .amc-mobile-day-nav-copy small {
     color: var(--accent);
-    font-size: .6rem;
+    font-size: .64rem;
     font-weight: 700;
     letter-spacing: .025em;
     line-height: 1.2;
@@ -2700,18 +2724,22 @@ body {
 
   .amc-grid {
     align-items: stretch;
+    box-sizing: border-box;
     display: flex;
     gap: 10px;
     grid-auto-rows: auto;
-    margin-inline: -12px;
+    margin-inline: 0;
+    max-width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
     overscroll-behavior-inline: contain;
-    padding: 5px 24px 14px;
+    padding: 5px 18px 14px;
     scrollbar-width: none;
-    scroll-padding-inline: 24px;
+    scroll-padding-inline: 18px;
     scroll-snap-type: x mandatory;
-    touch-action: pan-x pan-y;
+    touch-action: pan-x pan-y pinch-zoom;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
   }
 
   .amc-day {
@@ -2721,6 +2749,7 @@ body {
     margin: 0;
     max-width: none;
     min-height: 136px;
+    min-width: 0;
     opacity: .62;
     overflow: hidden;
     scroll-snap-align: center;
@@ -2906,6 +2935,11 @@ body {
 
   .amc-swipe-hint::after {
     content: "›";
+  }
+
+  .amc-moon-visual .amc-moon-img {
+    height: 112%;
+    width: 112%;
   }
 }
 

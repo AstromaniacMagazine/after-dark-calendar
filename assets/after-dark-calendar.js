@@ -45,7 +45,7 @@
   const monthShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const monthLong = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   const quarterLabels = ["16:00-20:00", "20:00-00:00", "00:00-04:00", "04:00-08:00"];
-  const mobileDetailRadius = 2;
+  const mobileDetailRadius = 1;
   const embedParentOrigins = new Set([
     "https://www.astromaniacmagazine.com",
     "https://astromaniacmagazine.com"
@@ -102,10 +102,10 @@
     monthTransitionTimer: null,
     mobileScrollFrame: null,
     mobileSnapTimer: null,
+    mobileScrollAnimationFrame: null,
     mobileNavigationTimer: null,
     mobileNavigationTarget: null,
     mobileMonthTransition: false,
-    mobileHeaderFrame: null,
     resizeTimer: null,
     embedResizeTimer: null,
     embedResizeObserver: null,
@@ -307,9 +307,9 @@
   }
 
   function renderHighlights() {
-    els.intel.innerHTML = [...state.highlights].sort((left, right) => highlightDay(left) - highlightDay(right)).map(item => `
+    els.intel.innerHTML = [...state.highlights].sort((left, right) => highlightDay(left) - highlightDay(right)).map((item, index) => `
       <div class="amc-intel-card">
-        <img src="${escapeHtml(item.image || state.media.milkyWay?.src || "")}" alt="${escapeHtml(item.alt || "")}" loading="lazy" decoding="async">
+        <img src="${escapeHtml(item.image || state.media.milkyWay?.src || "")}" alt="${escapeHtml(item.alt || "")}" loading="${index < 2 ? "eager" : "lazy"}" fetchpriority="${index === 0 ? "high" : "auto"}" decoding="async" width="64" height="64">
         <span class="amc-intel-copy">
           <b>${escapeHtml(item.title)}</b>
           <span>${escapeHtml(item.text)}</span>
@@ -385,7 +385,7 @@
             </span>
           </span>
           <span class="amc-moon-line">
-            <img class="amc-moon-img" ${moonSource} alt="" loading="lazy" decoding="async" width="52" height="52">
+            <span class="amc-moon-visual"><img class="amc-moon-img" ${moonSource} alt="" loading="${mobileReady ? "eager" : "lazy"}" fetchpriority="${active ? "high" : "auto"}" decoding="async" width="52" height="52"></span>
             <span class="amc-moon-copy"><b>${escapeHtml(moon.name)}</b><span>${moon.phase}% lit</span></span>
           </span>
           <span class="amc-dark-line">Astro night: ${durationClock(nightInfo)}</span>
@@ -502,8 +502,11 @@
     if (!validDay(day)) return;
     if (day !== state.selectedDay) activateMobileDay(day);
     const desired = mobileSlideLeft(closest.slide);
-    if (Math.abs(els.grid.scrollLeft - desired) > 1) beginMobileNavigation(day, true, false);
-    else clearMobileNavigation(day);
+    if (Math.abs(els.grid.scrollLeft - desired) > .5) {
+      state.mobileNavigationTarget = day;
+      els.grid.scrollTo({ left: desired, behavior: "auto" });
+    }
+    clearMobileNavigation(day);
   }
 
   function handleMobileDayKeydown(event) {
@@ -567,6 +570,7 @@
       if (card && (force || !card.classList.contains("is-mobile-ready"))) populateMobileDay(card, candidate);
     }
     hydrateMobileMoonImages(day);
+    preloadMobileDayAssets(day);
     if (force) syncMobileDayHeight(els.grid.querySelector(`.amc-day[data-day="${day}"]`));
     scheduleEmbedResize();
   }
@@ -599,28 +603,46 @@
     if (!state.month || !validDay(state.selectedDay)) return;
     const date = new Date(Date.UTC(state.month.year, state.month.monthIndex, state.selectedDay, 12));
     const weekday = new Intl.DateTimeFormat("en-GB", { weekday: "long", timeZone: "UTC" }).format(date);
-    const label = `${isTodayDay(state.selectedDay) ? "Today - " : ""}${weekday}, ${state.selectedDay} ${monthName()} ${state.month.year}`;
-    const progress = `Day ${state.selectedDay} of ${state.month.days} - swipe left or right`;
+    const label = weekday;
+    const progress = `${state.selectedDay} ${monthName()}`;
     if (els.mobileDayNav) {
       els.mobileDayNav.classList.toggle("is-today", isTodayDay(state.selectedDay));
-      els.mobileDayNav.classList.add("is-updating");
-      if (state.mobileHeaderFrame) window.cancelAnimationFrame(state.mobileHeaderFrame);
-      state.mobileHeaderFrame = window.requestAnimationFrame(() => {
-        if (els.mobileDayLabel) els.mobileDayLabel.textContent = label;
-        if (els.mobileDayProgress) els.mobileDayProgress.textContent = progress;
-        els.mobileDayNav.classList.remove("is-updating");
-        state.mobileHeaderFrame = null;
-      });
+      if (els.mobileDayLabel) els.mobileDayLabel.textContent = label;
+      if (els.mobileDayProgress) els.mobileDayProgress.textContent = progress;
     }
+    const previousDay = setMobileDayButton(els.mobileDayPrev, -1);
+    const nextDay = setMobileDayButton(els.mobileDayNext, 1);
     if (els.mobileDayPrev) els.mobileDayPrev.disabled = state.selectedDay <= 1 && !adjacentMonth(-1);
     if (els.mobileDayNext) els.mobileDayNext.disabled = state.selectedDay >= state.month.days && !adjacentMonth(1);
     postEmbedMessage({
       type: "amc:day-state",
-      label,
+      label: `${weekday}, ${progress} ${state.month.year}`,
       progress,
+      previousDay,
+      nextDay,
       canPrevious: state.selectedDay > 1 || Boolean(adjacentMonth(-1)),
       canNext: state.selectedDay < state.month.days || Boolean(adjacentMonth(1))
     });
+  }
+
+  function setMobileDayButton(button, direction) {
+    if (!button) return null;
+    let year = state.month.year;
+    let monthIndex = state.month.monthIndex;
+    let day = state.selectedDay + direction;
+    if (day < 1 || day > state.month.days) {
+      const entry = adjacentMonth(direction);
+      if (!entry) return null;
+      const parts = entry.id.split("-").map(Number);
+      year = parts[0];
+      monthIndex = parts[1] - 1;
+      day = direction < 0 ? daysInMonth(year, monthIndex) : 1;
+    }
+    const date = new Date(Date.UTC(year, monthIndex, day, 12));
+    const weekday = new Intl.DateTimeFormat("en-GB", { weekday: "short", timeZone: "UTC" }).format(date);
+    button.innerHTML = `<small>${escapeHtml(weekday)}</small><span>${day} ${monthShort[monthIndex]}</span>`;
+    button.setAttribute("aria-label", `${direction < 0 ? "Previous" : "Next"} day: ${weekday}, ${day} ${monthLong[monthIndex]} ${year}`);
+    return { weekday, date: `${day} ${monthShort[monthIndex]}` };
   }
 
   function hydrateMobileMoonImages(day) {
@@ -632,15 +654,63 @@
     }
   }
 
+  function preloadMobileDayAssets(day) {
+    const preload = () => {
+      const days = [day - 1, day, day + 1].filter(validDay);
+      const sources = days.flatMap(candidate => {
+        const moon = moonImage(candidate, 216);
+        const targets = targetSuggestions(candidate, dayEvents(candidate), moonForDay(candidate)).map(target => targetThumbnail(target.name, candidate).src);
+        return [moon, ...targets];
+      });
+      [...new Set(sources)].forEach(source => {
+        if (!source) return;
+        const image = new Image();
+        image.decoding = "async";
+        image.src = source;
+      });
+    };
+    if ("requestIdleCallback" in window) window.requestIdleCallback(preload, { timeout: 500 });
+    else window.setTimeout(preload, 40);
+  }
+
   function centreMobileDay(day, smooth = true) {
     const card = els.grid.querySelector(`.amc-day[data-day="${day}"]`);
     if (!card) return;
     const left = mobileSlideLeft(card);
-    els.grid.scrollTo({ left, behavior: smooth ? "smooth" : "auto" });
+    if (!smooth || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      if (state.mobileScrollAnimationFrame) window.cancelAnimationFrame(state.mobileScrollAnimationFrame);
+      state.mobileScrollAnimationFrame = null;
+      els.grid.scrollTo({ left, behavior: "auto" });
+      return;
+    }
+    animateMobileScroll(left);
+  }
+
+  function animateMobileScroll(targetLeft) {
+    if (state.mobileScrollAnimationFrame) window.cancelAnimationFrame(state.mobileScrollAnimationFrame);
+    const startLeft = els.grid.scrollLeft;
+    const distance = targetLeft - startLeft;
+    if (Math.abs(distance) < .5) return;
+    const startedAt = performance.now();
+    const duration = 230;
+    const step = now => {
+      const progress = Math.min(1, (now - startedAt) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      els.grid.scrollLeft = startLeft + distance * eased;
+      if (progress < 1) state.mobileScrollAnimationFrame = window.requestAnimationFrame(step);
+      else {
+        els.grid.scrollLeft = targetLeft;
+        state.mobileScrollAnimationFrame = null;
+      }
+    };
+    state.mobileScrollAnimationFrame = window.requestAnimationFrame(step);
   }
 
   function mobileSlideLeft(slide) {
-    return slide.offsetLeft - ((els.grid.clientWidth - slide.offsetWidth) / 2);
+    const gridRect = els.grid.getBoundingClientRect();
+    const slideRect = slide.getBoundingClientRect();
+    const desired = els.grid.scrollLeft + (slideRect.left + slideRect.width / 2) - (gridRect.left + gridRect.width / 2);
+    return Math.max(0, Math.min(desired, els.grid.scrollWidth - els.grid.clientWidth));
   }
 
   function beginMobileNavigation(day, smooth = true, activate = true) {
@@ -649,7 +719,7 @@
     if (state.mobileNavigationTimer) window.clearTimeout(state.mobileNavigationTimer);
     if (activate) activateMobileDay(day);
     centreMobileDay(day, smooth);
-    state.mobileNavigationTimer = window.setTimeout(() => clearMobileNavigation(day), smooth ? 460 : 40);
+    state.mobileNavigationTimer = window.setTimeout(() => clearMobileNavigation(day), smooth ? 360 : 40);
   }
 
   function clearMobileNavigation(day) {
@@ -840,7 +910,7 @@
     return `
       <div class="amc-recommendation-group">
         <h3>Tonight point your camera to:</h3>
-        <ol class="amc-target-list">${targets.map(targetCard).join("")}</ol>
+        <ol class="amc-target-list">${targets.map((target, index) => targetCard(target, index)).join("")}</ol>
       </div>
       <div class="amc-recommendation-group">
         <h3>Related Articles</h3>
@@ -957,9 +1027,9 @@
     };
   }
 
-  function targetCard(target) {
+  function targetCard(target, index = 0) {
     return `<li class="amc-target-card">
-      <img src="${escapeHtml(target.image.src)}" alt="${escapeHtml(target.image.alt)}" loading="lazy" decoding="async" width="82" height="82">
+      <img src="${escapeHtml(target.image.src)}" alt="${escapeHtml(target.image.alt)}" loading="${isMobileCarousel() && index < 2 ? "eager" : "lazy"}" fetchpriority="${isMobileCarousel() && index === 0 ? "high" : "auto"}" decoding="async" width="82" height="82">
       <span class="amc-target-copy">
         <span class="amc-target-type">${escapeHtml(target.type)}</span>
         <span class="amc-target-name">${escapeHtml(target.name)}</span>
@@ -1124,7 +1194,7 @@
     const cardClass = compact ? "amc-cell-weather-row" : "amc-weather-card";
     return `<span class="${cardClass}">
       <span class="amc-weather-card-head">
-        <span class="amc-weather-card-date"><b>${escapeHtml(day.label)}</b><span>${escapeHtml(day.summary)}</span></span>
+        <span class="amc-weather-card-date"><b>${escapeHtml(day.label)}</b></span>
         <span class="amc-weather-icons">${day.icons.map(weatherIcon).join("")}</span>
       </span>
       <span class="amc-weather-metrics">
@@ -1337,7 +1407,6 @@
       return {
         dateKey,
         label: shortWeatherDate(dateKey, index),
-        summary: `${Math.round(cloud)}% cloud | ${transparencyLabel(transparency)} transparency`,
         cloud,
         temperature,
         wind,
