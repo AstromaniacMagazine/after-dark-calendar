@@ -29,6 +29,7 @@
   const shared = window.AMC_SHARED || {};
   const manifest = Array.isArray(window.AMC_MONTH_MANIFEST) ? window.AMC_MONTH_MANIFEST : [];
   const assetVersion = root.dataset.assetVersion || root.dataset.version || "";
+  const assetBase = root.dataset.assetBase || "";
   const locationKey = "amc-sky-calendar-location";
   const themeKey = "amc-sky-calendar-theme";
   const themeOrder = ["light", "dark", "red", "teal"];
@@ -113,13 +114,14 @@
     mobileRailTimer: null,
     mobileRailSyncing: false,
     mobileRailMonthId: "",
-    mobileRailFocusKey: "",
     lastHapticKey: "",
     parentManagedEmbed: false,
     embedTouch: null,
+    inlineHorizontalTouch: null,
     embedScrollDelta: 0,
     embedScrollFrame: null,
     embedMomentumFrame: null,
+    inlineScrollHoldFrame: null,
     resizeTimer: null,
     embedResizeTimer: null,
     embedResizeObserver: null,
@@ -185,7 +187,7 @@
   boot();
 
   async function boot() {
-    const embedded = isEmbeddedFrame();
+    const embedded = isEmbeddedFrame() && root.dataset.inline !== "true";
     const savedLocation = readSavedLocation();
     state.parentManagedEmbed = embedded;
     root.classList.toggle("is-embedded", embedded);
@@ -194,7 +196,7 @@
     const savedTheme = safeStorageGet(themeKey);
     setTheme(themeOrder.includes(savedTheme) ? savedTheme : "light");
     bindEvents();
-    setupEmbedBridge();
+    if (embedded) setupEmbedBridge();
     await showMonth(defaultMonthId());
     if (savedLocation) finishSavedLocationRestore();
     scheduleNowRefresh();
@@ -214,6 +216,12 @@
       els.mobileDayRail.addEventListener("scroll", handleMobileRailScroll, { passive: true });
       els.mobileDayRail.addEventListener("click", handleMobileRailClick);
     }
+    [els.mobileDayRail, els.grid].filter(Boolean).forEach(scroller => {
+      scroller.addEventListener("touchstart", handleInlineHorizontalTouchStart, { passive: true });
+      scroller.addEventListener("touchmove", handleInlineHorizontalTouchMove, { passive: false });
+      scroller.addEventListener("touchend", handleInlineHorizontalTouchEnd, { passive: true });
+      scroller.addEventListener("touchcancel", handleInlineHorizontalTouchEnd, { passive: true });
+    });
     els.feedbackLink?.addEventListener("click", event => event.stopPropagation());
     root.addEventListener("pointerover", handleWeatherTipIn);
     root.addEventListener("pointerout", handleWeatherTipOut);
@@ -276,7 +284,8 @@
     if (state.monthPromises[monthId]) return state.monthPromises[monthId];
     state.monthPromises[monthId] = new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = assetVersion ? `${entry.path}?v=${encodeURIComponent(assetVersion)}` : entry.path;
+      const source = assetBase ? new URL(entry.path, assetBase).href : entry.path;
+      script.src = assetVersion ? `${source}?v=${encodeURIComponent(assetVersion)}` : source;
       script.async = true;
       script.onload = () => registry[monthId] ? resolve(registry[monthId]) : reject(new Error(`Month data did not register: ${monthId}`));
       script.onerror = () => reject(new Error(`Could not load month data: ${monthId}`));
@@ -700,7 +709,6 @@
     const entries = mobileDayRailEntries();
     els.mobileDayRail.innerHTML = entries.map(entry => `<button class="amc-mobile-day-chip${entry.adjacent ? " is-adjacent" : ""}${entry.today ? " is-today" : ""}" type="button" role="option" data-month-id="${escapeHtml(entry.monthId)}" data-day="${entry.day}" aria-label="${escapeHtml(`${entry.weekday}, ${entry.date}`)}" aria-selected="false"><small>${escapeHtml(entry.weekday)}</small><b>${escapeHtml(entry.date)}</b></button>`).join("");
     state.mobileRailMonthId = state.monthId;
-    window.requestAnimationFrame(() => updateMobileRailWheel(false));
   }
 
   function handleMobileRailClick(event) {
@@ -725,8 +733,7 @@
     els.mobileDayRail.scrollTo({ left, behavior: smooth && !window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "smooth" : "auto" });
     window.setTimeout(() => {
       state.mobileRailSyncing = false;
-      updateMobileRailWheel(false);
-    }, smooth ? 340 : 32);
+    }, smooth ? 260 : 32);
   }
 
   function handleMobileRailScroll() {
@@ -734,43 +741,29 @@
     if (state.mobileRailFrame) window.cancelAnimationFrame(state.mobileRailFrame);
     state.mobileRailFrame = window.requestAnimationFrame(() => {
       state.mobileRailFrame = null;
-      updateMobileRailWheel(!state.mobileRailSyncing);
       if (state.mobileRailSyncing) return;
       if (state.mobileRailTimer) window.clearTimeout(state.mobileRailTimer);
-      state.mobileRailTimer = window.setTimeout(settleMobileRail, 118);
+      state.mobileRailTimer = window.setTimeout(settleMobileRail, 140);
     });
   }
 
-  function updateMobileRailWheel(userDriven = false) {
+  function closestMobileRailChip() {
     if (!els.mobileDayRail || !isMobileCarousel()) return null;
     const railRect = els.mobileDayRail.getBoundingClientRect();
     const centre = railRect.left + railRect.width / 2;
-    const radius = Math.max(1, railRect.width * .44);
     let closest = null;
     [...els.mobileDayRail.querySelectorAll(".amc-mobile-day-chip")].forEach(chip => {
       const rect = chip.getBoundingClientRect();
       const distancePx = Math.abs(rect.left + rect.width / 2 - centre);
-      const distance = clamp(distancePx / radius, 0, 1);
-      chip.style.setProperty("--amc-wheel-scale", (1 - distance * .1).toFixed(3));
-      chip.style.setProperty("--amc-wheel-lift", `${(distance * 3).toFixed(2)}px`);
-      chip.style.setProperty("--amc-wheel-opacity", (1 - distance * .48).toFixed(3));
       if (!closest || distancePx < closest.distance) closest = { chip, distance: distancePx };
     });
-    const focused = closest?.chip || null;
-    [...els.mobileDayRail.querySelectorAll(".amc-mobile-day-chip.is-wheel-focus")].forEach(chip => chip.classList.toggle("is-wheel-focus", chip === focused));
-    focused?.classList.add("is-wheel-focus");
-    if (focused && userDriven) {
-      const key = `${focused.dataset.monthId}:${focused.dataset.day}`;
-      if (key !== state.mobileRailFocusKey) hapticDateTick(key);
-      state.mobileRailFocusKey = key;
-    }
-    return focused;
+    return closest?.chip || null;
   }
 
   function settleMobileRail() {
     state.mobileRailTimer = null;
     if (!els.mobileDayRail || state.mobileRailSyncing || state.mobileMonthTransition) return;
-    const chip = updateMobileRailWheel(false);
+    const chip = closestMobileRailChip();
     if (!chip) return;
     navigateMobileRailTarget(chip.dataset.monthId, Number(chip.dataset.day));
   }
@@ -991,6 +984,7 @@
   }
 
   function handleEmbedTouchStart(event) {
+    cancelInlineScrollHold();
     if (!state.parentManagedEmbed || !isMobileCarousel() || event.touches.length !== 1) return;
     if (state.embedMomentumFrame) window.cancelAnimationFrame(state.embedMomentumFrame);
     state.embedMomentumFrame = null;
@@ -1041,7 +1035,7 @@
     const gesture = state.embedTouch;
     const velocity = gesture?.axis === "y" ? gesture.velocity : 0;
     state.embedTouch = null;
-    if (gesture?.axis === "x") settleEmbeddedHorizontalScroller(gesture.horizontalScroller);
+    if (gesture?.axis === "x") settleHorizontalScroller(gesture.horizontalScroller);
     if (Math.abs(velocity) > .7) startEmbedMomentum(velocity);
   }
 
@@ -1055,7 +1049,7 @@
     return scroller && scroller.scrollWidth > scroller.clientWidth + 1 ? scroller : null;
   }
 
-  function settleEmbeddedHorizontalScroller(scroller) {
+  function settleHorizontalScroller(scroller) {
     if (!scroller) return;
     if (scroller === els.grid) {
       scheduleMobileScrollSettle();
@@ -1065,6 +1059,61 @@
       if (state.mobileRailTimer) window.clearTimeout(state.mobileRailTimer);
       state.mobileRailTimer = window.setTimeout(settleMobileRail, 118);
     }
+  }
+
+  function handleInlineHorizontalTouchStart(event) {
+    if (root.dataset.inline !== "true" || !isMobileCarousel() || event.touches.length !== 1) return;
+    state.inlineHorizontalTouch = {
+      scroller: event.currentTarget,
+      x: event.touches[0].clientX,
+      y: event.touches[0].clientY,
+      scrollLeft: event.currentTarget.scrollLeft,
+      scrollTop: document.scrollingElement?.scrollTop || window.scrollY || 0,
+      axis: ""
+    };
+  }
+
+  function handleInlineHorizontalTouchMove(event) {
+    const gesture = state.inlineHorizontalTouch;
+    if (!gesture || gesture.scroller !== event.currentTarget || event.touches.length !== 1) return;
+    const dx = event.touches[0].clientX - gesture.x;
+    const dy = event.touches[0].clientY - gesture.y;
+    if (!gesture.axis && Math.max(Math.abs(dx), Math.abs(dy)) > 4) {
+      gesture.axis = Math.abs(dx) > Math.abs(dy) * 1.15 ? "x" : "y";
+    }
+    if (gesture.axis !== "x") return;
+    if (event.cancelable) event.preventDefault();
+    gesture.scroller.scrollLeft = gesture.scrollLeft - dx;
+  }
+
+  function handleInlineHorizontalTouchEnd(event) {
+    const gesture = state.inlineHorizontalTouch;
+    if (!gesture || gesture.scroller !== event.currentTarget) return;
+    state.inlineHorizontalTouch = null;
+    if (gesture.axis === "x") {
+      holdVerticalScroll(gesture.scrollTop);
+      settleHorizontalScroller(gesture.scroller);
+    }
+  }
+
+  function holdVerticalScroll(scrollTop, duration = 900) {
+    cancelInlineScrollHold();
+    const startedAt = performance.now();
+    const restore = () => {
+      restoreVerticalScroll(scrollTop);
+      if (performance.now() - startedAt < duration) {
+        state.inlineScrollHoldFrame = window.requestAnimationFrame(restore);
+      } else {
+        state.inlineScrollHoldFrame = null;
+      }
+    };
+    restore();
+  }
+
+  function cancelInlineScrollHold() {
+    if (!state.inlineScrollHoldFrame) return;
+    window.cancelAnimationFrame(state.inlineScrollHoldFrame);
+    state.inlineScrollHoldFrame = null;
   }
 
   function queueEmbedParentScroll(deltaY) {
@@ -1563,7 +1612,7 @@
       return;
     }
     els.useLocation.disabled = true;
-    els.useLocation.textContent = "Locating";
+    setLocationActionText("Locating");
     showLocationMessage("Finding location", "Your browser may ask for location permission.", false);
     navigator.geolocation.getCurrentPosition(
       position => {
@@ -1573,7 +1622,7 @@
       },
       error => {
         els.useLocation.disabled = false;
-        els.useLocation.textContent = useLocationText;
+        syncLocationActionLabel();
         if (error?.code === error.PERMISSION_DENIED) {
           showLocationMessage("Location permission denied", isEmbeddedFrame()
             ? "Location is being blocked by the embed. Add allow=\"geolocation\" to the iframe, then reload."
@@ -2111,12 +2160,18 @@
   }
 
   function syncLocationActionLabel() {
-    if (!els.useLocation || els.useLocation.disabled) return;
-    const label = isMobileCarousel() && state.hasLocation ? locationDisplay() : useLocationText;
-    els.useLocation.textContent = label;
+    if (!els.useLocation) return;
+    setLocationActionText(useLocationText);
     els.useLocation.title = state.hasLocation
       ? `Using ${locationDisplay()}. Tap to refresh your current location.`
       : "Use your device's current location";
+  }
+
+  function setLocationActionText(text) {
+    if (!els.useLocation) return;
+    const label = els.useLocation.querySelector(".amc-use-location-text");
+    if (label) label.textContent = text;
+    else els.useLocation.textContent = text;
   }
 
   function restoreTodayOnPageShow(event) {

@@ -246,9 +246,16 @@ const versionEntries = html.match(/<ul class="amc-version-list">([\s\S]*?)<\/ul>
 if (versionEntries !== 3) fail(`The current-version panel must contain exactly three release entries; found ${versionEntries}.`);
 const calendarScript = read("assets/after-dark-calendar.js");
 const calendarCss = read("assets/after-dark-calendar.css");
+const inlineLoader = read("assets/squarespace-inline.js");
+const squarespaceInstall = read("SQUARESPACE_EMBED.md");
 if (!calendarScript.includes('scroll-snap') && !calendarCss.includes("scroll-snap-type: x mandatory")) fail("The mobile day carousel is missing mandatory scroll snapping.");
 if (!calendarScript.includes("activateMobileDay")) fail("The mobile day activation controller is missing.");
 if (!html.includes("Sources and logs")) fail("The sources section title has not been updated.");
+if (!inlineLoader.includes('id="amc-after-dark-calendar"') || !inlineLoader.includes(`data-version="${declaredVersion}"`)) fail("The Squarespace inline loader is missing or has the wrong version.");
+if (!inlineLoader.includes(`const build = "${declaredVersion}-`)) fail("The Squarespace inline loader cache key does not match the calendar version.");
+if (!squarespaceInstall.includes("adc-inline-calendar") || !squarespaceInstall.includes("assets/squarespace-inline.js")) fail("The current Squarespace installation does not use the inline loader.");
+const currentInstall = squarespaceInstall.split("## Legacy iframe installation")[0];
+if (/<iframe\b/i.test(currentInstall)) fail("The current Squarespace installation still contains an iframe.");
 
 if (failures.length) {
   console.error(`Calendar validation failed (${failures.length} issue${failures.length === 1 ? "" : "s"}):`);

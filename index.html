@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en-GB">
+<html class="amc-standalone-document" lang="en-GB">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -89,11 +89,11 @@
   <link rel="dns-prefetch" href="https://commons.wikimedia.org">
   <link rel="dns-prefetch" href="https://images.squarespace-cdn.com">
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/after-dark-calendar.css?v=Beta0.9.3-20260823b">
+  <link rel="stylesheet" href="assets/after-dark-calendar.css?v=Beta0.9.3-20260823c">
 </head>
-<body>
+<body class="amc-standalone-body">
   <main class="amc-preview-shell">
-    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="Beta0.9.3" data-asset-version="Beta0.9.3-20260823b" aria-labelledby="amc-title">
+    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="Beta0.9.3" data-asset-version="Beta0.9.3-20260823c" aria-labelledby="amc-title">
       <div class="amc-print-brand" aria-hidden="true">
         <img class="amc-print-logo" src="assets/astromaniac-logo.webp" alt="">
         <div>
@@ -124,7 +124,7 @@
 
         <div class="amc-actions">
           <div class="amc-location-controls">
-            <button class="amc-button" type="button" id="amc-use-location">Use Current Location</button>
+            <button class="amc-button amc-location-button" type="button" id="amc-use-location" aria-label="Use current location" title="Use your device's current location"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg><span class="amc-use-location-text">Use Current Location</span></button>
             <span class="amc-location-status" id="amc-location-label" aria-live="polite">Location not set</span>
           </div>
           <button class="amc-button secondary amc-icon-button" type="button" id="amc-theme-toggle" aria-label="Switch calendar theme" title="Switch calendar theme"></button>
@@ -174,7 +174,7 @@
           <div class="amc-version-panel">
             <h3>Current version: Beta0.9.3</h3>
             <ul class="amc-version-list">
-              <li><b>Beta0.9.3:</b> rebuilds embedded mobile scrolling, adds a tactile wheel-style date navigator and keeps location, city and date context ready across visits.</li>
+              <li><b>Beta0.9.3:</b> restores native one-finger mobile scrolling, simplifies the date strip and keeps location, city and date context ready across visits.</li>
               <li><b>Beta0.9.2:</b> delivers smoother embedded mobile scrolling, a theme-aware tap-and-swipe date rail, 30-day location memory, corrected target imagery and a final September event audit.</li>
               <li><b>Beta0.9.1:</b> introduces a fluid swipeable date rail, restores complete forecast cards, expands intelligent deep-sky guidance and refreshes relevant Astromaniac articles and reviews.</li>
             </ul>
@@ -189,10 +189,10 @@
     </section>
   </main>
 
-  <script src="assets/astronomy.browser.js?v=Beta0.9.3-20260823b"></script>
-  <script src="data/common.js?v=Beta0.9.3-20260823b"></script>
-  <script src="data/month-manifest.js?v=Beta0.9.3-20260823b"></script>
-  <script src="data/2026-07.js?v=Beta0.9.3-20260823b"></script>
-  <script src="assets/after-dark-calendar.js?v=Beta0.9.3-20260823b"></script>
+  <script src="assets/astronomy.browser.js?v=Beta0.9.3-20260823c"></script>
+  <script src="data/common.js?v=Beta0.9.3-20260823c"></script>
+  <script src="data/month-manifest.js?v=Beta0.9.3-20260823c"></script>
+  <script src="data/2026-07.js?v=Beta0.9.3-20260823c"></script>
+  <script src="assets/after-dark-calendar.js?v=Beta0.9.3-20260823c"></script>
 </body>
 </html>

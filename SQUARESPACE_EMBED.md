@@ -1,4 +1,18 @@
-# Squarespace embed for After Dark Calendar
+# Squarespace inline installation for After Dark Calendar
+
+Use this current installation. It renders the calendar directly in the Squarespace page, so mobile vertical scrolling is native and no cross-frame gesture forwarding is required.
+
+Replace the entire existing iframe Code Block with:
+
+```html
+<div id="adc-inline-calendar" aria-live="polite"></div>
+<script src="https://astromaniacmagazine.github.io/after-dark-calendar/assets/squarespace-inline.js?v=Beta0.9.3-20260823c"></script>
+<noscript><p><a href="https://astromaniacmagazine.github.io/after-dark-calendar/">Open After Dark Calendar</a></p></noscript>
+```
+
+Do not put the new snippet inside the old `.adc-embed` wrapper. Delete the old wrapper, iframe, styles and bridge script first. After saving, the page source should contain `adc-inline-calendar` and should not contain `adc-calendar-frame`.
+
+## Legacy iframe installation — do not use
 
 The calendar sends its full document height, active date, theme and the in-calendar navigator position to the parent page. This removes the iframe's second vertical scrollbar. On mobile, the date rail first appears naturally below the colour guides inside the calendar; the parent copy only appears when that rail reaches the viewport top.
 

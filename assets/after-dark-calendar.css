@@ -1,15 +1,18 @@
 ﻿:root {
+}
+
+.amc-standalone-body {
   color-scheme: light;
   --page-bg: #eef0f3;
 }
 
-html,
-body {
+html.amc-standalone-document,
+body.amc-standalone-body {
   max-width: 100%;
   overflow-x: clip;
 }
 
-body {
+body.amc-standalone-body {
   background: var(--page-bg);
   margin: 0;
   min-height: 100vh;
@@ -20,6 +23,22 @@ body {
   margin: 0 auto;
   max-width: 1540px;
   padding: 28px 14px;
+}
+
+.amc-inline-host {
+  box-sizing: border-box;
+  margin: 0;
+  max-width: 100%;
+  overflow: visible;
+  overflow-anchor: none;
+  padding: 0;
+  width: 100%;
+}
+
+.amc-inline-host > .amc-sky-calendar {
+  margin: 0 auto;
+  max-width: 1500px;
+  width: 100%;
 }
 
 .amc-sky-calendar {
@@ -398,6 +417,23 @@ body {
   display: flex;
   gap: 8px;
   min-width: 0;
+}
+
+.amc-location-button {
+  align-items: center;
+  display: inline-flex;
+  gap: 6px;
+}
+
+.amc-location-button svg {
+  fill: none;
+  flex: 0 0 auto;
+  height: 16px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  width: 16px;
 }
 
 .amc-location-status {
@@ -2490,8 +2526,8 @@ body {
 }
 
 @media (max-width: 600px) {
-  html,
-  body {
+  html.amc-standalone-document,
+  body.amc-standalone-body {
     overscroll-behavior-y: auto;
     touch-action: pan-y pinch-zoom;
   }
@@ -3007,17 +3043,17 @@ body {
   }
 }
 
-/* Beta0.9.3 mobile interaction pass */
+/* Beta0.9.3 native mobile interaction pass */
 @media (max-width: 600px) {
-  html,
-  body,
+  html.amc-standalone-document,
+  body.amc-standalone-body,
   .amc-sky-calendar {
     overscroll-behavior-y: auto;
     touch-action: auto;
   }
 
   .amc-sky-calendar.is-embedded {
-    touch-action: pinch-zoom;
+    touch-action: auto;
   }
 
   .amc-sky-calendar.is-embedded .amc-intel-strip,
@@ -3025,13 +3061,18 @@ body {
   .amc-sky-calendar.is-embedded .amc-mobile-day-rail,
   .amc-sky-calendar.is-embedded .amc-grid,
   .amc-sky-calendar.is-embedded .amc-mobile-recommendations .amc-target-list {
-    touch-action: pinch-zoom;
+    touch-action: pan-x pan-y pinch-zoom;
+  }
+
+  .amc-sky-calendar[data-inline="true"] .amc-mobile-day-rail,
+  .amc-sky-calendar[data-inline="true"] .amc-grid {
+    touch-action: pan-y pinch-zoom;
   }
 
   .amc-top {
     border: 0 !important;
     column-gap: 4px;
-    grid-template-columns: minmax(94px, .86fr) minmax(0, 1fr) auto 34px;
+    grid-template-columns: 34px minmax(74px, .68fr) minmax(0, 1fr) 34px;
     row-gap: 7px;
   }
 
@@ -3045,14 +3086,19 @@ body {
   }
 
   #amc-use-location {
-    font-size: .58rem;
+    align-items: center;
+    display: inline-flex;
     grid-column: 1;
     grid-row: 2;
     height: 32px;
-    overflow: hidden;
-    padding: 5px 6px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    justify-content: center;
+    min-width: 32px;
+    padding: 0;
+    width: 32px;
+  }
+
+  #amc-use-location .amc-use-location-text {
+    display: none;
   }
 
   #amc-use-location::after {
@@ -3064,6 +3110,21 @@ body {
     display: none;
   }
 
+  .amc-sky-calendar.has-location .amc-location-status {
+    background: var(--panel-soft);
+    border-radius: var(--radius-small);
+    display: inline-flex;
+    font-size: .56rem;
+    grid-column: 2;
+    grid-row: 2;
+    height: 32px;
+    justify-self: stretch;
+    max-width: none;
+    min-width: 0;
+    padding: 5px 6px;
+    width: 100%;
+  }
+
   .amc-location-status svg {
     height: 11px;
     width: 11px;
@@ -3071,12 +3132,16 @@ body {
 
   .amc-manual-location {
     gap: 3px;
-    grid-column: 2 / 4;
+    grid-column: 2 / 5;
     grid-row: 2;
     grid-template-columns: minmax(0, 1fr) auto;
     max-width: none;
     min-width: 0;
     width: 100%;
+  }
+
+  .amc-sky-calendar.has-location .amc-manual-location {
+    grid-column: 3 / 5;
   }
 
   .amc-location-input,
@@ -3113,12 +3178,12 @@ body {
   .amc-mobile-day-nav {
     background: color-mix(in srgb, var(--panel) 96%, transparent);
     border: 0;
-    border-radius: 0;
+    border-radius: 13px;
     box-shadow: 0 7px 20px color-mix(in srgb, var(--shadow) 18%, transparent);
-    margin: 6px -12px 5px;
-    min-height: 62px;
+    margin: 6px -8px 5px;
+    min-height: 58px;
     padding: 4px 0;
-    width: calc(100% + 24px);
+    width: auto;
   }
 
   .amc-mobile-day-nav.is-today {
@@ -3126,31 +3191,26 @@ body {
   }
 
   .amc-mobile-day-rail {
-    gap: 4px;
-    min-height: 54px;
-    padding-inline: calc(50% - 35px);
-    scroll-padding-inline: calc(50% - 35px);
+    gap: 5px;
+    min-height: 50px;
+    padding-inline: calc(50% - 32px);
+    scroll-padding-inline: calc(50% - 32px);
   }
 
   .amc-mobile-day-chip {
-    border-radius: 9px;
-    flex-basis: 52px;
-    opacity: var(--amc-wheel-opacity, .62);
-    transform: translateY(var(--amc-wheel-lift, 2px)) scale(var(--amc-wheel-scale, .92));
-    transition: flex-basis .22s cubic-bezier(.2,.75,.2,1), height .22s cubic-bezier(.2,.75,.2,1), opacity .12s linear, transform .12s linear, border-color .18s ease, background .18s ease;
-  }
-
-  .amc-mobile-day-chip.is-active,
-  .amc-mobile-day-chip.is-wheel-focus {
-    color: var(--text);
+    border-radius: 10px;
+    flex-basis: 54px;
+    opacity: .62;
+    transform: scale(.94);
+    transition: flex-basis .16s ease, height .16s ease, opacity .16s ease, transform .16s ease, border-color .16s ease, background .16s ease;
   }
 
   .amc-mobile-day-chip.is-active {
-    --amc-wheel-lift: 0px !important;
-    --amc-wheel-opacity: 1 !important;
-    --amc-wheel-scale: 1 !important;
-    flex-basis: 70px;
-    height: 52px;
+    color: var(--text);
+    flex-basis: 64px;
+    height: 50px;
+    opacity: 1;
+    transform: scale(1);
   }
 
   .amc-grid {
@@ -3190,8 +3250,7 @@ body {
 }
 
 @media print {
-  :root,
-  body {
+  .amc-standalone-body {
     background: #fff;
   }
 
