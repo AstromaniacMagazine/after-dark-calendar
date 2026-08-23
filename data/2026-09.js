@@ -36,6 +36,11 @@
       label: "US Naval Observatory 2026 seasons",
       url: "https://aa.usno.navy.mil/calculated/seasons?year=2026&tz=0&dst=false",
       note: "Primary equinox timing in Universal Time."
+    },
+    imo2026: {
+      label: "International Meteor Organization 2026 shower calendar",
+      url: "https://imo.net/files/meteor-shower/cal2026.pdf",
+      note: "Primary 2026 meteor-shower activity periods, maxima and observing circumstances."
     }
   };
 
@@ -80,22 +85,31 @@
 
   const eventData = {
     1: [
-      event("meteor", "Aurigids meteor shower", "A minor meteor shower best watched before dawn under clear skies.", "Meteor shower peak.", ["inSky"], media.meteor)
+      event("meteor", "Aurigids meteor shower", "The Aurigids reach maximum on 1 September, but the bright waning Moon strongly interferes with this normally minor shower.", "Meteor shower peak; typical ZHR around 6.", ["imo2026", "inSky"], media.meteor)
     ],
     3: [
       event("sky", "Moon near the Pleiades", "The Moon passes near the Pleiades cluster.", "Moon-cluster pairing.", ["inSky"], media.pleiades)
     ],
     4: [
-      event("moon", "Last Quarter Moon", "Last Quarter occurs at 07:51 UTC; the Moon rises late, improving early-night sky contrast.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "usnoPhases", "inSky"])
+      event("moon", "Last Quarter Moon", "Last Quarter occurs at 07:51 UTC; the Moon rises late, improving early-night sky contrast.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "usnoPhases", "inSky"]),
+      event("occultation", "Lunar occultation of Elnath", "The Moon occults Elnath (Beta Tauri) along a limited geographic path; elsewhere observers see a close Moon-star pass.", "Location-dependent occultation.", ["inSky"], media.pleiades),
+      event("sky", "Venus at aphelion", "Venus reaches the farthest point of its orbit from the Sun. This orbital milestone does not by itself determine local visibility.", "Solar-system orbital milestone.", ["inSky"], media.venus)
     ],
     6: [
       event("sky", "Moon and Mars", "The Moon passes close to Mars.", "Moon-planet pairing.", ["inSky"], media.planets)
     ],
+    7: [
+      event("sky", "Moon near the Beehive Cluster", "The waning crescent Moon passes close to Messier 44, the Beehive Cluster, before dawn.", "Moon-cluster close approach.", ["inSky"], media.cluster)
+    ],
     8: [
-      event("sky", "Moon and Jupiter", "The Moon passes close to Jupiter; occultation visibility is path-dependent.", "Moon-planet pairing.", ["inSky"], media.planets)
+      event("occultation", "Lunar occultation of Jupiter", "The Moon occults Jupiter for observers inside a limited visibility path; elsewhere the pair makes a close pre-dawn approach.", "Location-dependent occultation and close approach.", ["inSky"], media.planets)
     ],
     9: [
-      event("meteor", "September Epsilon Perseid meteor shower", "A minor shower with a favourable darker-sky context near New Moon.", "Meteor shower peak.", ["inSky"], media.meteor)
+      event("meteor", "September Epsilon Perseid meteor shower", "This minor shower peaks on 9/10 September under favourable dark skies near New Moon.", "Meteor shower peak; typical ZHR around 8.", ["imo2026", "inSky"], media.meteor),
+      event("meteor", "Possible weak Chi Capricornid activity", "Models suggest Earth may encounter a dust trail from comet 45P at about 22:17 UTC, although visible rates may be very low or zero.", "Uncertain predicted activity; treat as an observing watch, not a guaranteed shower.", ["imo2026"], media.meteor)
+    ],
+    10: [
+      event("sky", "Uranus enters retrograde motion", "Uranus appears to begin moving westward against the background stars as Earth and Uranus change relative orbital position.", "Apparent planetary motion milestone.", ["inSky"], media.planets)
     ],
     11: [
       event("moon", "New Moon", "New Moon occurs at 03:27 UTC, giving the month its best dark-sky window.", "Moon phase marker.", ["nasaSvs", "astronomyEngine", "usnoPhases", "inSky"])
@@ -103,8 +117,14 @@
     12: [
       event("sky", "Moon and Mercury", "A slim crescent Moon passes Mercury in evening twilight; visibility depends on latitude and a clear western horizon.", "Twilight planet pairing.", ["inSky"], media.planets)
     ],
+    13: [
+      event("meteor", "September Lyncids meteor shower", "The weak September Lyncids reach maximum, with a dark evening sky and only a slim Moon.", "Minor shower; typical ZHR around 3.", ["imo2026"], media.meteor)
+    ],
     14: [
-      event("sky", "Moon and Venus", "A slim Moon passes Venus in evening twilight; occultation visibility is path-dependent.", "Twilight pairing.", ["inSky"], media.venus)
+      event("occultation", "Lunar occultation of Venus", "The Moon occults Venus along a limited geographic path; elsewhere a slim crescent Moon and Venus form a close evening-twilight pairing.", "Location-dependent occultation and close approach.", ["inSky"], media.venus)
+    ],
+    16: [
+      event("sky", "Mercury high in the evening sky", "Mercury reaches its highest evening altitude for the current apparition from many mid-northern locations; exact visibility depends strongly on latitude.", "Use a clear western horizon and never sweep near the Sun with optics.", ["inSky"], media.planets)
     ],
     17: [
       event("occultation", "Moon occults Antares", "The Moon passes in front of Antares for observers inside a limited visibility path; elsewhere it is a close conjunction.", "Location-dependent occultation.", ["inSky"], media.planets)
@@ -130,11 +150,12 @@
     ],
     27: [
       event("sky", "Moon and Saturn", "The Moon passes close to Saturn.", "Moon-planet pairing.", ["inSky"], media.saturn),
-      event("sky", "Mercury at aphelion", "Mercury reaches the farthest point of its orbit from the Sun; this geometric milestone does not by itself guarantee easy visibility.", "Solar-system orbital milestone.", ["inSky"], media.planets)
+      event("sky", "Mercury at aphelion", "Mercury reaches the farthest point of its orbit from the Sun; this geometric milestone does not by itself guarantee easy visibility.", "Solar-system orbital milestone.", ["inSky"], media.planets),
+      event("telescope", "47 Tucanae well placed", "The great southern globular cluster 47 Tucanae is well placed around local midnight for southern observers.", "Southern deep-sky highlight.", ["inSky"], media.cluster)
     ],
     30: [
       event("sky", "Moon near the Pleiades", "The Moon returns near the Pleiades at the end of the month.", "Moon-cluster pairing.", ["inSky"], media.pleiades),
-      event("opposition", "Asteroid 187 Nausikaa at opposition", "Nausikaa reaches opposition; a telescope, current finder chart and accurate coordinates are needed.", "Advanced asteroid target.", ["inSky"], media.planets)
+      event("opposition", "Asteroid 192 Nausikaa at opposition", "Nausikaa reaches opposition; a telescope, current finder chart and accurate coordinates are needed.", "Advanced asteroid target.", ["inSky"], media.planets)
     ]
   };
 

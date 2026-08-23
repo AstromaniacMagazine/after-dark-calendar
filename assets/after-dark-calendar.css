@@ -41,7 +41,7 @@ body {
   --telescope: #4c8d62;
   --occultation: #8b5a2b;
   --accent: #0f6f84;
-  --weekday-bg: #0f5f70;
+  --weekday-bg: #253551;
   --weekday-text: #ffffff;
   --good: #2f9e44;
   --ok: #d69a1f;
@@ -169,7 +169,7 @@ body {
 }
 
 .amc-sky-calendar[data-theme="red"] .amc-alt-svg {
-  filter: sepia(1) saturate(4.2) hue-rotate(312deg) brightness(.72) contrast(1.08);
+  filter: none;
 }
 
 .amc-sky-calendar *,
@@ -227,6 +227,7 @@ body {
   display: inline-flex;
   font-size: .54rem;
   font-weight: 600;
+  letter-spacing: .09em;
   line-height: 1;
   padding: 4px 7px;
   text-transform: none;
@@ -695,12 +696,12 @@ body {
   display: grid;
   font-size: .76rem;
   font-weight: 600;
-  gap: var(--grid-gap);
+  gap: 0;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   letter-spacing: .03em;
   line-height: 1;
   margin-bottom: var(--grid-gap);
-  padding: 9px 8px;
+  padding: 0 8px;
   text-align: center;
   text-transform: uppercase;
 }
@@ -870,6 +871,14 @@ body {
   object-fit: cover;
   transform: translate(-5.35%, -5.35%);
   width: 112%;
+}
+
+.amc-weekdays span {
+  padding: 9px 0;
+}
+
+.amc-weekdays span + span {
+  border-left: 1px solid #E0E0DB;
 }
 
 .amc-moon-visual {
@@ -1839,7 +1848,10 @@ body {
 }
 
 .amc-sources summary {
+  align-items: center;
   cursor: pointer;
+  display: flex;
+  gap: 0;
   font-size: .78rem;
   font-weight: 600;
   list-style: none;
@@ -1861,6 +1873,18 @@ body {
 
 .amc-sources[open] summary::before {
   transform: rotate(90deg);
+}
+
+.amc-feedback-link {
+  color: var(--accent);
+  font-size: .68rem;
+  font-weight: 600;
+  margin-left: auto;
+  text-transform: none;
+}
+
+.amc-feedback-link:hover {
+  text-decoration: underline;
 }
 
 .amc-version-panel {
@@ -2466,9 +2490,16 @@ body {
 }
 
 @media (max-width: 600px) {
+  html,
+  body {
+    overscroll-behavior-y: auto;
+    touch-action: pan-y pinch-zoom;
+  }
+
   .amc-sky-calendar {
     overflow-x: clip;
     padding: 10px 12px 12px;
+    touch-action: pan-y pinch-zoom;
     width: 100%;
   }
 
@@ -2656,7 +2687,7 @@ body {
     border-radius: 13px;
     box-shadow: 0 8px 24px color-mix(in srgb, var(--shadow) 22%, transparent);
     display: block;
-    margin: 2px 0 5px;
+    margin: 6px -8px 5px;
     min-height: 58px;
     overflow: hidden;
     padding: 4px 0;
@@ -2678,8 +2709,8 @@ body {
     overflow-x: auto;
     overflow-y: hidden;
     overscroll-behavior-inline: contain;
-    padding-inline: calc(50% - 27px);
-    scroll-padding-inline: calc(50% - 27px);
+    padding-inline: calc(50% - 32px);
+    scroll-padding-inline: calc(50% - 32px);
     scrollbar-width: none;
     scroll-snap-type: x mandatory;
     touch-action: pan-x pan-y pinch-zoom;
@@ -2691,6 +2722,7 @@ body {
   }
 
   .amc-mobile-day-chip {
+    appearance: none;
     align-content: center;
     background: color-mix(in srgb, var(--panel-soft) 86%, transparent);
     border: 1px solid var(--line);
@@ -2698,15 +2730,17 @@ body {
     color: var(--muted);
     display: grid;
     flex: 0 0 54px;
+    font: inherit;
     gap: 1px;
     height: 38px;
     line-height: 1;
     opacity: .62;
+    padding: 0;
     scroll-snap-align: center;
     scroll-snap-stop: always;
     text-align: center;
     transform: scale(.94);
-    transition: height .16s ease, opacity .16s ease, transform .16s ease, border-color .16s ease, background .16s ease;
+    transition: flex-basis .16s ease, height .16s ease, opacity .16s ease, transform .16s ease, border-color .16s ease, background .16s ease;
   }
 
   .amc-mobile-day-chip small {
@@ -2727,6 +2761,7 @@ body {
     background: color-mix(in srgb, var(--accent) 12%, var(--panel));
     border-color: color-mix(in srgb, var(--accent) 64%, var(--line));
     color: var(--text);
+    flex-basis: 64px;
     height: 50px;
     opacity: 1;
     transform: scale(1);
@@ -2745,10 +2780,6 @@ body {
     border-style: dashed;
     color: var(--accent);
     opacity: .48;
-  }
-
-  .amc-sky-calendar.is-parent-managed .amc-mobile-day-nav {
-    display: none;
   }
 
   .amc-grid {

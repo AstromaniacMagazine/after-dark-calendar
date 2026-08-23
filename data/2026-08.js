@@ -86,7 +86,7 @@
   ];
 
   const targetData = {
-    2: ["Comet 10P/Tempel 2", "Mercury", "Pre-dawn eastern sky"],
+    2: ["Comet 10P/Tempel 2", "Mercury", "Pleiades (M45)"],
     3: ["Moon-Saturn pairing", "Saturn", "Comet 10P/Tempel 2"],
     7: ["Pleiades (M45)", "Waning crescent Moon", "Ring Nebula (M57)"],
     8: ["Moon-Elnath pairing", "Elnath (Beta Tauri)", "Waning crescent Moon"],

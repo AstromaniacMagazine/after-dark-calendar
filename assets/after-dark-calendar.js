@@ -22,7 +22,8 @@
     sources: root.querySelector("#amc-source-list"),
     tooltip: root.querySelector("#amc-weather-tooltip"),
     mobileDayNav: root.querySelector("#amc-mobile-day-nav"),
-    mobileDayRail: root.querySelector("#amc-mobile-day-rail")
+    mobileDayRail: root.querySelector("#amc-mobile-day-rail"),
+    feedbackLink: root.querySelector(".amc-feedback-link")
   };
 
   const shared = window.AMC_SHARED || {};
@@ -37,6 +38,7 @@
   const chartSampleCount = 64;
   const weatherRefreshMs = 75 * 60 * 1000;
   const weatherRetryMs = 15 * 60 * 1000;
+  const locationMemoryMs = 30 * 24 * 60 * 60 * 1000;
   const useLocationText = "Use Current Location";
   const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const monthShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -84,6 +86,7 @@
     lat: null,
     lon: null,
     locationName: "",
+    locationSavedAt: 0,
     timeZone: browserTimeZone(),
     night: {},
     sky: {},
@@ -109,6 +112,8 @@
     mobileRailMonthId: "",
     parentManagedEmbed: false,
     embedTouch: null,
+    embedScrollDelta: 0,
+    embedScrollFrame: null,
     resizeTimer: null,
     embedResizeTimer: null,
     embedResizeObserver: null,
@@ -153,6 +158,7 @@
     { match: /messier 2|m2\b/i, name: "Messier 2", type: "Globular cluster", ra: 21.56, dec: -0.82, size: "16 arcmin" },
     { match: /messier 15|m15\b/i, name: "Messier 15", type: "Globular cluster", ra: 21.5, dec: 12.17, size: "18 arcmin" },
     { match: /double cluster|ngc\s*869|ngc\s*884/i, name: "Double Cluster (NGC 869 and NGC 884)", type: "Open clusters", ra: 2.34, dec: 57.13, size: "about 60 arcmin" },
+    { match: /rho ophiuchi|antares region/i, name: "Rho Ophiuchi Cloud Complex", type: "Reflection and dark nebulae", ra: 16.43, dec: -23.45, size: "about 4.5 degrees" },
     { match: /antares/i, name: "Antares", type: "Red supergiant", ra: 16.49, dec: -26.43, size: "point source" },
     { match: /asteroid|\bmetis\b|\bvesta\b|\bnausikaa\b/i, name: "Asteroid target", type: "Asteroid", size: "point source" },
     { match: /milky way/i, name: "Milky Way core", type: "Wide-field", ra: 17.76, dec: -29.01, size: "wide-field" },
@@ -192,7 +198,11 @@
     els.previousMonth?.addEventListener("click", () => goToAdjacentMonth(-1));
     els.nextMonth?.addEventListener("click", () => goToAdjacentMonth(1));
     els.today?.addEventListener("click", goToToday);
-    if (els.mobileDayRail) els.mobileDayRail.addEventListener("scroll", handleMobileRailScroll, { passive: true });
+    if (els.mobileDayRail) {
+      els.mobileDayRail.addEventListener("scroll", handleMobileRailScroll, { passive: true });
+      els.mobileDayRail.addEventListener("click", handleMobileRailClick);
+    }
+    els.feedbackLink?.addEventListener("click", event => event.stopPropagation());
     root.addEventListener("pointerover", handleWeatherTipIn);
     root.addEventListener("pointerout", handleWeatherTipOut);
     root.addEventListener("focusin", handleWeatherTipIn);
@@ -203,6 +213,8 @@
     window.addEventListener("message", handleEmbedMessage);
     document.addEventListener("touchstart", handleEmbedTouchStart, { passive: true });
     document.addEventListener("touchmove", handleEmbedTouchMove, { passive: false });
+    document.addEventListener("touchend", handleEmbedTouchEnd, { passive: true });
+    document.addEventListener("touchcancel", handleEmbedTouchEnd, { passive: true });
   }
 
   async function showMonth(monthId, options = {}) {
@@ -673,8 +685,15 @@
     if (!els.mobileDayRail || !isMobileCarousel()) return;
     if (state.mobileRailMonthId === state.monthId && els.mobileDayRail.childElementCount) return;
     const entries = mobileDayRailEntries();
-    els.mobileDayRail.innerHTML = entries.map(entry => `<span class="amc-mobile-day-chip${entry.adjacent ? " is-adjacent" : ""}${entry.today ? " is-today" : ""}" role="option" data-month-id="${escapeHtml(entry.monthId)}" data-day="${entry.day}" aria-label="${escapeHtml(`${entry.weekday}, ${entry.date}`)}" aria-selected="false"><small>${escapeHtml(entry.weekday)}</small><b>${escapeHtml(entry.date)}</b></span>`).join("");
+    els.mobileDayRail.innerHTML = entries.map(entry => `<button class="amc-mobile-day-chip${entry.adjacent ? " is-adjacent" : ""}${entry.today ? " is-today" : ""}" type="button" role="option" data-month-id="${escapeHtml(entry.monthId)}" data-day="${entry.day}" aria-label="${escapeHtml(`${entry.weekday}, ${entry.date}`)}" aria-selected="false"><small>${escapeHtml(entry.weekday)}</small><b>${escapeHtml(entry.date)}</b></button>`).join("");
     state.mobileRailMonthId = state.monthId;
+  }
+
+  function handleMobileRailClick(event) {
+    const chip = event.target.closest(".amc-mobile-day-chip");
+    if (!chip || state.mobileMonthTransition) return;
+    event.preventDefault();
+    navigateMobileRailTarget(chip.dataset.monthId, Number(chip.dataset.day));
   }
 
   function syncMobileDayRail(day, smooth = false) {
@@ -859,7 +878,15 @@
         document.body?.scrollHeight || 0,
         root.getBoundingClientRect().bottom + window.scrollY
       ));
-      postEmbedMessage({ type: "amc:resize", height, version: assetVersion });
+      const navRect = els.mobileDayNav?.getBoundingClientRect();
+      postEmbedMessage({
+        type: "amc:resize",
+        height,
+        version: assetVersion,
+        theme: root.dataset.theme,
+        navTop: navRect ? Math.max(0, Math.round(navRect.top + window.scrollY)) : 0,
+        navHeight: navRect ? Math.round(navRect.height) : 0
+      });
     }, 32);
   }
 
@@ -872,7 +899,6 @@
     if (event.source !== window.parent || !embedParentOrigins.has(event.origin)) return;
     if (event.data?.type === "amc:embed-ready") {
       state.parentManagedEmbed = true;
-      root.classList.add("is-parent-managed");
       scheduleEmbedResize();
       updateMobileDayNavigation();
       return;
@@ -899,12 +925,24 @@
     const touch = event.touches[0];
     const dx = touch.clientX - state.embedTouch.x;
     const dy = touch.clientY - state.embedTouch.y;
-    if (!state.embedTouch.axis && Math.max(Math.abs(dx), Math.abs(dy)) > 6) state.embedTouch.axis = Math.abs(dy) > Math.abs(dx) * 1.08 ? "y" : "x";
+    if (!state.embedTouch.axis && Math.max(Math.abs(dx), Math.abs(dy)) > 4) state.embedTouch.axis = Math.abs(dy) > Math.abs(dx) * 1.12 ? "y" : "x";
     if (state.embedTouch.axis !== "y") return;
-    event.preventDefault();
-    postEmbedMessage({ type: "amc:scroll-parent", deltaY: -dy });
+    if (event.cancelable) event.preventDefault();
+    state.embedScrollDelta += -dy;
+    if (!state.embedScrollFrame) {
+      state.embedScrollFrame = window.requestAnimationFrame(() => {
+        state.embedScrollFrame = null;
+        const deltaY = state.embedScrollDelta;
+        state.embedScrollDelta = 0;
+        if (Math.abs(deltaY) >= .25) postEmbedMessage({ type: "amc:scroll-parent", deltaY });
+      });
+    }
     state.embedTouch.x = touch.clientX;
     state.embedTouch.y = touch.clientY;
+  }
+
+  function handleEmbedTouchEnd() {
+    state.embedTouch = null;
   }
 
   function expandedDay(day, weekday, moon, events, primary, includeRecommendations = false) {
@@ -1442,6 +1480,7 @@
     state.lon = safeLon;
     state.locationName = options.name || state.locationName || `${safeLat.toFixed(2)}, ${safeLon.toFixed(2)}`;
     state.timeZone = cleanTimeZone(options.timeZone) || state.timeZone || browserTimeZone();
+    state.locationSavedAt = options.fromStorage ? Number(options.savedAt) : Date.now();
     root.classList.add("has-location");
     updateLocationLabel();
     showLocationMessage(state.locationName, "Local timing and forecast are using your saved location.", false);
@@ -1758,7 +1797,7 @@
   function applySavedLocation() {
     const saved = readSavedLocation();
     if (!saved) return;
-    applyCoordinates(saved.lat, saved.lon, { name: saved.name, timeZone: saved.timeZone, skipReverseGeocode: true });
+    applyCoordinates(saved.lat, saved.lon, { name: saved.name, timeZone: saved.timeZone, savedAt: saved.savedAt, fromStorage: true, skipReverseGeocode: true });
     els.useLocation.textContent = useLocationText;
   }
 
@@ -1767,8 +1806,10 @@
       const data = JSON.parse(safeStorageGet(locationKey) || "null");
       const lat = Number(data?.lat);
       const lon = Number(data?.lon);
+      const savedAt = Date.parse(data?.savedAt || "");
       if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
-      return { lat, lon, name: cleanName(data.name), timeZone: cleanTimeZone(data.timeZone) };
+      if (!Number.isFinite(savedAt) || Date.now() - savedAt > locationMemoryMs) return null;
+      return { lat, lon, name: cleanName(data.name), timeZone: cleanTimeZone(data.timeZone), savedAt };
     } catch {
       return null;
     }
@@ -1781,7 +1822,7 @@
       lon: Number(state.lon.toFixed(5)),
       name: cleanName(state.locationName),
       timeZone: cleanTimeZone(state.timeZone),
-      savedAt: new Date().toISOString()
+      savedAt: new Date(state.locationSavedAt || Date.now()).toISOString()
     }));
   }
 
@@ -1970,6 +2011,7 @@
     els.themeToggle.setAttribute("aria-label", `Current theme: ${labels[safeTheme]}. Switch to ${labels[nextTheme]}`);
     els.themeToggle.title = `Switch to ${labels[nextTheme]}`;
     safeStorageSet(themeKey, safeTheme);
+    postEmbedMessage({ type: "amc:theme-state", theme: safeTheme });
   }
 
   function handleWeatherTipIn(event) {
@@ -2144,6 +2186,13 @@
 
   function targetThumbnail(target, day) {
     const text = String(target).toLowerCase();
+    if (/moon[-\s]antares|antares occultation/.test(text)) return wikimediaImage("Antares and Crescent Moon.jpg", "Moon and Antares thumbnail");
+    if (/rho ophiuchi|antares region/.test(text)) return wikimediaImage("Antares and Rho Ophiuchi by Adam Block.jpg", "Rho Ophiuchi and Antares region thumbnail");
+    if (/antares/.test(text)) return wikimediaImage("Antares (Updated).jpg", "Antares thumbnail");
+    if (/elnath|beta tauri/.test(text)) return wikimediaImage("Elnath.png", "Elnath Beta Tauri thumbnail");
+    if (/regulus/.test(text)) return imageAsset("https://apod.nasa.gov/apod/image/2404/Regulus_Dwarf_by_Markus_Horn1024.png", "Regulus star field thumbnail");
+    if (/comet 10p|tempel 2/.test(text)) return imageAsset("https://assets.science.nasa.gov/content/dam/science/cds/apod/apod/2026/july/10P_Tempel2_20260711_DEBartlett2048.jpg?w=400&h=230&fit=crop&crop=faces%2Cfocalpoint", "Comet 10P Tempel 2 thumbnail");
+    if (/globular cluster/.test(text)) return wikimediaImage("Messier 13 Hubble WikiSky.jpg", "Globular cluster thumbnail");
     if (/saturn/.test(text)) return wikimediaImage("Saturn during Equinox.jpg", "Saturn thumbnail");
     if (/jupiter/.test(text)) return imageAsset("https://images-assets.nasa.gov/image/PIA22946/PIA22946~medium.jpg", "Jupiter thumbnail");
     if (/mars/.test(text)) return imageAsset("https://images-assets.nasa.gov/image/PIA00407/PIA00407~medium.jpg", "Mars thumbnail");
@@ -2158,15 +2207,15 @@
     if (/omega nebula|swan nebula|m17/.test(text)) return imageAsset("https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/VST_image_of_the_spectacular_star-forming_region_Messier_17_%28Omega_Nebula%29.jpg/330px-VST_image_of_the_spectacular_star-forming_region_Messier_17_%28Omega_Nebula%29.jpg", "Omega Nebula thumbnail");
     if (/dumbbell|m27/.test(text)) return imageAsset("https://assets.science.nasa.gov/content/dam/science/missions/hubble/releases/2003/02/STScI-01EVVK02SYNTXZDX0JXGS3DGHN.tif/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "Dumbbell Nebula thumbnail");
     if (/ring nebula|m57/.test(text)) return wikimediaImage("M57 The Ring Nebula.JPG", "Ring Nebula thumbnail");
-    if (/cygnus loop|veil nebula|ngc 6960|ngc 6992/.test(text)) return imageAsset("https://science.nasa.gov/wp-content/uploads/2023/07/veil-nebula.jpg", "Cygnus Loop and Veil Nebula thumbnail");
+    if (/cygnus loop|veil nebula|ngc 6960|ngc 6992/.test(text)) return imageAsset("https://science.nasa.gov/wp-content/uploads/2023/07/veil-nebula.jpg?w=600", "Cygnus Loop and Veil Nebula thumbnail");
     if (/clamshell|sh2-119/.test(text)) return imageAsset("https://images.squarespace-cdn.com/content/v1/5debd4b16fcd7b02905712ff/37b3f6ce-ed44-41dd-8be1-a4ecd415dcca/BEAFD85B-9D1F-4069-9A39-DDD2042D1D5E.jpeg?format=750w", "Clamshell Nebula Sh2-119 thumbnail");
     if (/sadr|gamma cygni|ic 1318/.test(text)) return imageAsset("https://www.guidetothesky.com/images/s/out/sadr_1h_40m_49s_siril_2.jpg", "Sadr Region IC 1318 thumbnail");
-    if (/elephant trunk|ic 1396a|vdb 142/.test(text)) return imageAsset("https://storage.noirlab.edu/media/archives/images/large/noao-ic1396.jpg", "Elephant Trunk Nebula IC 1396A thumbnail");
+    if (/elephant trunk|ic 1396a|vdb 142/.test(text)) return imageAsset("https://storage.noirlab.edu/media/archives/images/screen/noao-ic1396.jpg", "Elephant Trunk Nebula IC 1396A thumbnail");
     if (/pelican|ic 5070/.test(text)) return wikimediaImage("Pelican Nebula.jpg", "Pelican Nebula IC 5070 thumbnail");
-    if (/crescent nebula|ngc 6888|caldwell 27/.test(text)) return imageAsset("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/releases/2000/07/STScI-01EVVP4D33NAHDY0D95T7RPFRE.tif?w=1200", "Crescent Nebula NGC 6888 thumbnail");
-    if (/bubble nebula|ngc 7635/.test(text)) return imageAsset("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/releases/2016/04/STScI-01EVVGYQGFWPRBWKW0HNACJMEB.tif?w=1200", "Bubble Nebula NGC 7635 thumbnail");
-    if (/heart nebula|soul nebula|ic 1805|ic 1848/.test(text)) return imageAsset("https://assets.science.nasa.gov/dynamicimage/assets/science/psd/photojournal/pia/pia13/pia13112/PIA13112.jpg?w=1400&h=995&fit=clip&crop=faces%2Cfocalpoint", "Heart and Soul nebulae thumbnail");
-    if (/north america|ngc 7000/.test(text)) return imageAsset("https://science.nasa.gov/wp-content/uploads/2023/04/ngc7000_wfpc2_2flat_final-jpg.webp", "North America Nebula thumbnail");
+    if (/crescent nebula|ngc 6888|caldwell 27/.test(text)) return imageAsset("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/releases/2000/07/STScI-01EVVP4D33NAHDY0D95T7RPFRE.tif?w=600", "Crescent Nebula NGC 6888 thumbnail");
+    if (/bubble nebula|ngc 7635/.test(text)) return imageAsset("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/releases/2016/04/STScI-01EVVGYQGFWPRBWKW0HNACJMEB.tif?w=600", "Bubble Nebula NGC 7635 thumbnail");
+    if (/heart nebula|soul nebula|ic 1805|ic 1848/.test(text)) return imageAsset("https://assets.science.nasa.gov/dynamicimage/assets/science/psd/photojournal/pia/pia13/pia13112/PIA13112.jpg?w=600&h=426&fit=clip&crop=faces%2Cfocalpoint", "Heart and Soul nebulae thumbnail");
+    if (/north america|ngc 7000/.test(text)) return imageAsset("https://science.nasa.gov/wp-content/uploads/2023/04/ngc7000_wfpc2_2flat_final-jpg.webp?w=600", "North America Nebula thumbnail");
     if (/andromeda|m31/.test(text)) return imageAsset("https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Andromeda_Galaxy_%28with_h-alpha%29.jpg/330px-Andromeda_Galaxy_%28with_h-alpha%29.jpg", "Andromeda Galaxy thumbnail");
     if (/triangulum|m33/.test(text)) return imageAsset("https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Triangulum_Galaxy_M33.jpg/330px-Triangulum_Galaxy_M33.jpg", "Triangulum Galaxy thumbnail");
     if (/whirlpool|m51/.test(text)) return imageAsset("https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Messier51_sRGB.jpg/330px-Messier51_sRGB.jpg", "Whirlpool Galaxy thumbnail");
@@ -2175,11 +2224,11 @@
     if (/sculptor galaxy|ngc 253/.test(text)) return imageAsset("https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Sculptor_Galaxy%2C_NGC_253_%28noao-ngc-253%29.tiff/lossy-page1-330px-Sculptor_Galaxy%2C_NGC_253_%28noao-ngc-253%29.tiff.jpg", "Sculptor Galaxy thumbnail");
     if (/ngc 55/.test(text)) return imageAsset("https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Irregular_Galaxy_NGC_55_%28ESO_0914a%29.jpg/330px-Irregular_Galaxy_NGC_55_%28ESO_0914a%29.jpg", "NGC 55 thumbnail");
     if (/hercules cluster|m13/.test(text)) return wikimediaImage("Messier 13 Hubble WikiSky.jpg", "Hercules Cluster thumbnail");
-    if (/omega centauri|ngc 5139/.test(text)) return imageAsset("https://science.nasa.gov/wp-content/uploads/2023/04/c80-1-jpg.webp", "Omega Centauri thumbnail");
+    if (/omega centauri|ngc 5139/.test(text)) return imageAsset("https://science.nasa.gov/wp-content/uploads/2023/04/c80-1-jpg.webp?w=600", "Omega Centauri thumbnail");
     if (/messier 4|m4\b/.test(text)) return imageAsset("https://assets.science.nasa.gov/content/dam/science/missions/hubble/stars/globular-clusters/Hubble_M4_WFC3_ACS_ok_flat_cont_FINAL_NewImage.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "Messier 4 thumbnail");
     if (/messier 5|m5\b/.test(text)) return imageAsset("https://assets.science.nasa.gov/content/dam/science/missions/hubble/stars/globular-clusters/Hubble_M5_WFC3_UV_flat_FINAL_NewImage.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "Messier 5 thumbnail");
     if (/messier 2|m2\b/.test(text)) return imageAsset("https://assets.science.nasa.gov/content/dam/science/missions/hubble/stars/globular-clusters/Hubble_M2_potw1913a.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "Messier 2 thumbnail");
-    if (/messier 15|m15\b/.test(text)) return imageAsset("https://science.nasa.gov/wp-content/uploads/2023/04/heic1321a-jpg.webp", "Messier 15 thumbnail");
+    if (/messier 15|m15\b/.test(text)) return imageAsset("https://science.nasa.gov/wp-content/uploads/2023/04/heic1321a-jpg.webp?w=600", "Messier 15 thumbnail");
     if (/orion nebula|m42\b/.test(text)) return wikimediaImage("Orion Nebula (M42) part HST 4800px.jpg", "Orion Nebula thumbnail");
     if (/horsehead|barnard 33/.test(text)) return wikimediaImage("Horsehead-Hubble.jpg", "Horsehead Nebula thumbnail");
     if (/rosette|ngc 2237/.test(text)) return wikimediaImage("Rosette nebula s.jpg", "Rosette Nebula thumbnail");
