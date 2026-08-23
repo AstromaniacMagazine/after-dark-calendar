@@ -47,7 +47,9 @@
   const mobileDetailRadius = 1;
   const embedParentOrigins = new Set([
     "https://www.astromaniacmagazine.com",
-    "https://astromaniacmagazine.com"
+    "https://astromaniacmagazine.com",
+    "http://127.0.0.1:4174",
+    "http://localhost:4174"
   ]);
 
   const categoryMeta = {
@@ -110,10 +112,13 @@
     mobileRailTimer: null,
     mobileRailSyncing: false,
     mobileRailMonthId: "",
+    mobileRailFocusKey: "",
+    lastHapticKey: "",
     parentManagedEmbed: false,
     embedTouch: null,
     embedScrollDelta: 0,
     embedScrollFrame: null,
+    embedMomentumFrame: null,
     resizeTimer: null,
     embedResizeTimer: null,
     embedResizeObserver: null,
@@ -179,13 +184,18 @@
   boot();
 
   async function boot() {
-    if (isEmbeddedFrame()) root.classList.add("is-legacy-parent");
+    const embedded = isEmbeddedFrame();
+    const savedLocation = readSavedLocation();
+    state.parentManagedEmbed = embedded;
+    root.classList.toggle("is-embedded", embedded);
+    root.classList.toggle("is-legacy-parent", embedded);
+    if (savedLocation) primeSavedLocation(savedLocation);
     const savedTheme = safeStorageGet(themeKey);
     setTheme(themeOrder.includes(savedTheme) ? savedTheme : "light");
     bindEvents();
     setupEmbedBridge();
     await showMonth(defaultMonthId());
-    applySavedLocation();
+    if (savedLocation) finishSavedLocationRestore();
     scheduleNowRefresh();
   }
 
@@ -212,10 +222,10 @@
     document.addEventListener("visibilitychange", refreshWeatherWhenVisible);
     window.addEventListener("resize", handleResponsiveLayout, { passive: true });
     window.addEventListener("message", handleEmbedMessage);
-    document.addEventListener("touchstart", handleEmbedTouchStart, { passive: true });
-    document.addEventListener("touchmove", handleEmbedTouchMove, { passive: false });
-    document.addEventListener("touchend", handleEmbedTouchEnd, { passive: true });
-    document.addEventListener("touchcancel", handleEmbedTouchEnd, { passive: true });
+    document.addEventListener("touchstart", handleEmbedTouchStart, { passive: true, capture: true });
+    document.addEventListener("touchmove", handleEmbedTouchMove, { passive: false, capture: true });
+    document.addEventListener("touchend", handleEmbedTouchEnd, { passive: true, capture: true });
+    document.addEventListener("touchcancel", handleEmbedTouchCancel, { passive: true, capture: true });
   }
 
   async function showMonth(monthId, options = {}) {
@@ -688,6 +698,7 @@
     const entries = mobileDayRailEntries();
     els.mobileDayRail.innerHTML = entries.map(entry => `<button class="amc-mobile-day-chip${entry.adjacent ? " is-adjacent" : ""}${entry.today ? " is-today" : ""}" type="button" role="option" data-month-id="${escapeHtml(entry.monthId)}" data-day="${entry.day}" aria-label="${escapeHtml(`${entry.weekday}, ${entry.date}`)}" aria-selected="false"><small>${escapeHtml(entry.weekday)}</small><b>${escapeHtml(entry.date)}</b></button>`).join("");
     state.mobileRailMonthId = state.monthId;
+    window.requestAnimationFrame(() => updateMobileRailWheel(false));
   }
 
   function handleMobileRailClick(event) {
@@ -710,29 +721,54 @@
     state.mobileRailSyncing = true;
     const left = Math.max(0, Math.min(active.offsetLeft + active.offsetWidth / 2 - els.mobileDayRail.clientWidth / 2, els.mobileDayRail.scrollWidth - els.mobileDayRail.clientWidth));
     els.mobileDayRail.scrollTo({ left, behavior: smooth && !window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "smooth" : "auto" });
-    window.setTimeout(() => { state.mobileRailSyncing = false; }, smooth ? 260 : 32);
+    window.setTimeout(() => {
+      state.mobileRailSyncing = false;
+      updateMobileRailWheel(false);
+    }, smooth ? 340 : 32);
   }
 
   function handleMobileRailScroll() {
-    if (state.mobileRailSyncing || !isMobileCarousel()) return;
+    if (!isMobileCarousel()) return;
     if (state.mobileRailFrame) window.cancelAnimationFrame(state.mobileRailFrame);
     state.mobileRailFrame = window.requestAnimationFrame(() => {
       state.mobileRailFrame = null;
+      updateMobileRailWheel(!state.mobileRailSyncing);
+      if (state.mobileRailSyncing) return;
       if (state.mobileRailTimer) window.clearTimeout(state.mobileRailTimer);
-      state.mobileRailTimer = window.setTimeout(settleMobileRail, 96);
+      state.mobileRailTimer = window.setTimeout(settleMobileRail, 118);
     });
+  }
+
+  function updateMobileRailWheel(userDriven = false) {
+    if (!els.mobileDayRail || !isMobileCarousel()) return null;
+    const railRect = els.mobileDayRail.getBoundingClientRect();
+    const centre = railRect.left + railRect.width / 2;
+    const radius = Math.max(1, railRect.width * .44);
+    let closest = null;
+    [...els.mobileDayRail.querySelectorAll(".amc-mobile-day-chip")].forEach(chip => {
+      const rect = chip.getBoundingClientRect();
+      const distancePx = Math.abs(rect.left + rect.width / 2 - centre);
+      const distance = clamp(distancePx / radius, 0, 1);
+      chip.style.setProperty("--amc-wheel-scale", (1 - distance * .1).toFixed(3));
+      chip.style.setProperty("--amc-wheel-lift", `${(distance * 3).toFixed(2)}px`);
+      chip.style.setProperty("--amc-wheel-opacity", (1 - distance * .48).toFixed(3));
+      if (!closest || distancePx < closest.distance) closest = { chip, distance: distancePx };
+    });
+    const focused = closest?.chip || null;
+    [...els.mobileDayRail.querySelectorAll(".amc-mobile-day-chip.is-wheel-focus")].forEach(chip => chip.classList.toggle("is-wheel-focus", chip === focused));
+    focused?.classList.add("is-wheel-focus");
+    if (focused && userDriven) {
+      const key = `${focused.dataset.monthId}:${focused.dataset.day}`;
+      if (key !== state.mobileRailFocusKey) hapticDateTick(key);
+      state.mobileRailFocusKey = key;
+    }
+    return focused;
   }
 
   function settleMobileRail() {
     state.mobileRailTimer = null;
     if (!els.mobileDayRail || state.mobileRailSyncing || state.mobileMonthTransition) return;
-    const rect = els.mobileDayRail.getBoundingClientRect();
-    const centre = rect.left + rect.width / 2;
-    const chip = [...els.mobileDayRail.querySelectorAll(".amc-mobile-day-chip")].reduce((best, candidate) => {
-      const candidateRect = candidate.getBoundingClientRect();
-      const distance = Math.abs(candidateRect.left + candidateRect.width / 2 - centre);
-      return !best || distance < best.distance ? { candidate, distance } : best;
-    }, null)?.candidate;
+    const chip = updateMobileRailWheel(false);
     if (!chip) return;
     navigateMobileRailTarget(chip.dataset.monthId, Number(chip.dataset.day));
   }
@@ -746,6 +782,7 @@
     const currentIndex = manifest.findIndex(entry => entry.id === state.monthId);
     const targetIndex = manifest.findIndex(entry => entry.id === monthId);
     if (targetIndex < 0 || currentIndex < 0) return;
+    hapticDateTick(`${monthId}:${day}`);
     await transitionMobileMonth(targetIndex > currentIndex ? 1 : -1, day, monthId);
   }
 
@@ -796,7 +833,7 @@
     const distance = targetLeft - startLeft;
     if (Math.abs(distance) < .5) return;
     const startedAt = performance.now();
-    const duration = 230;
+    const duration = 320;
     const step = now => {
       const progress = Math.min(1, (now - startedAt) / duration);
       const eased = 1 - Math.pow(1 - progress, 3);
@@ -819,11 +856,24 @@
 
   function beginMobileNavigation(day, smooth = true, activate = true) {
     if (!validDay(day) || state.mobileMonthTransition) return;
+    const changed = day !== state.selectedDay;
     state.mobileNavigationTarget = day;
     if (state.mobileNavigationTimer) window.clearTimeout(state.mobileNavigationTimer);
-    if (activate) activateMobileDay(day);
+    if (activate) {
+      if (changed) hapticDateTick(`${state.monthId}:${day}`);
+      activateMobileDay(day);
+    }
     centreMobileDay(day, smooth);
-    state.mobileNavigationTimer = window.setTimeout(() => clearMobileNavigation(day), smooth ? 360 : 40);
+    state.mobileNavigationTimer = window.setTimeout(() => clearMobileNavigation(day), smooth ? 420 : 40);
+  }
+
+  function hapticDateTick(key) {
+    if (!key || state.lastHapticKey === key) return;
+    state.lastHapticKey = key;
+    if (typeof navigator.vibrate !== "function") return;
+    try {
+      navigator.vibrate(8);
+    } catch {}
   }
 
   function clearMobileNavigation(day) {
@@ -900,7 +950,7 @@
     if (event.source !== window.parent || !embedParentOrigins.has(event.origin)) return;
     if (event.data?.type === "amc:embed-ready") {
       state.parentManagedEmbed = true;
-      root.classList.toggle("is-legacy-parent", event.data.wrapperVersion !== "Beta0.9.2");
+      root.classList.toggle("is-legacy-parent", event.data.wrapperVersion !== "Beta0.9.3");
       scheduleEmbedResize();
       updateMobileDayNavigation();
       return;
@@ -919,7 +969,17 @@
 
   function handleEmbedTouchStart(event) {
     if (!state.parentManagedEmbed || !isMobileCarousel() || event.touches.length !== 1) return;
-    state.embedTouch = { x: event.touches[0].clientX, y: event.touches[0].clientY, axis: "" };
+    if (state.embedMomentumFrame) window.cancelAnimationFrame(state.embedMomentumFrame);
+    state.embedMomentumFrame = null;
+    const now = performance.now();
+    state.embedTouch = {
+      x: event.touches[0].clientX,
+      y: event.touches[0].clientY,
+      lastY: event.touches[0].clientY,
+      lastAt: now,
+      velocity: 0,
+      axis: ""
+    };
   }
 
   function handleEmbedTouchMove(event) {
@@ -927,24 +987,53 @@
     const touch = event.touches[0];
     const dx = touch.clientX - state.embedTouch.x;
     const dy = touch.clientY - state.embedTouch.y;
-    if (!state.embedTouch.axis && Math.max(Math.abs(dx), Math.abs(dy)) > 4) state.embedTouch.axis = Math.abs(dy) > Math.abs(dx) * 1.12 ? "y" : "x";
+    if (!state.embedTouch.axis && Math.max(Math.abs(dx), Math.abs(dy)) > 3) state.embedTouch.axis = Math.abs(dy) > Math.abs(dx) * 1.04 ? "y" : "x";
     if (state.embedTouch.axis !== "y") return;
     if (event.cancelable) event.preventDefault();
-    state.embedScrollDelta += -dy;
-    if (!state.embedScrollFrame) {
-      state.embedScrollFrame = window.requestAnimationFrame(() => {
-        state.embedScrollFrame = null;
-        const deltaY = state.embedScrollDelta;
-        state.embedScrollDelta = 0;
-        if (Math.abs(deltaY) >= .25) postEmbedMessage({ type: "amc:scroll-parent", deltaY });
-      });
-    }
-    state.embedTouch.x = touch.clientX;
-    state.embedTouch.y = touch.clientY;
+    const now = performance.now();
+    const step = state.embedTouch.lastY - touch.clientY;
+    const elapsed = clamp(now - state.embedTouch.lastAt, 4, 50);
+    const frameVelocity = step * (16.67 / elapsed);
+    state.embedTouch.velocity = state.embedTouch.velocity * .68 + frameVelocity * .32;
+    queueEmbedParentScroll(step);
+    state.embedTouch.lastY = touch.clientY;
+    state.embedTouch.lastAt = now;
   }
 
   function handleEmbedTouchEnd() {
+    const velocity = state.embedTouch?.axis === "y" ? state.embedTouch.velocity : 0;
     state.embedTouch = null;
+    if (Math.abs(velocity) > .7) startEmbedMomentum(velocity);
+  }
+
+  function handleEmbedTouchCancel() {
+    state.embedTouch = null;
+  }
+
+  function queueEmbedParentScroll(deltaY) {
+    state.embedScrollDelta += Number(deltaY) || 0;
+    if (state.embedScrollFrame) return;
+    state.embedScrollFrame = window.requestAnimationFrame(() => {
+      state.embedScrollFrame = null;
+      const delta = state.embedScrollDelta;
+      state.embedScrollDelta = 0;
+      if (Math.abs(delta) >= .2) postEmbedMessage({ type: "amc:scroll-parent", deltaY: delta });
+    });
+  }
+
+  function startEmbedMomentum(initialVelocity) {
+    if (state.embedMomentumFrame) window.cancelAnimationFrame(state.embedMomentumFrame);
+    let velocity = clamp(initialVelocity, -42, 42);
+    const step = () => {
+      velocity *= .925;
+      if (Math.abs(velocity) < .35 || state.embedTouch) {
+        state.embedMomentumFrame = null;
+        return;
+      }
+      queueEmbedParentScroll(velocity);
+      state.embedMomentumFrame = window.requestAnimationFrame(step);
+    };
+    state.embedMomentumFrame = window.requestAnimationFrame(step);
   }
 
   function expandedDay(day, weekday, moon, events, primary, includeRecommendations = false) {
@@ -1796,10 +1885,21 @@
     els.today.title = loaded ? `Show today, ${today.getDate()} ${monthLong[today.getMonth()]} ${today.getFullYear()}` : "Today's month is not loaded";
   }
 
-  function applySavedLocation() {
-    const saved = readSavedLocation();
-    if (!saved) return;
-    applyCoordinates(saved.lat, saved.lon, { name: saved.name, timeZone: saved.timeZone, savedAt: saved.savedAt, fromStorage: true, skipReverseGeocode: true });
+  function primeSavedLocation(saved) {
+    state.hasLocation = true;
+    state.lat = saved.lat;
+    state.lon = saved.lon;
+    state.locationName = saved.name || `${saved.lat.toFixed(2)}, ${saved.lon.toFixed(2)}`;
+    state.timeZone = saved.timeZone || browserTimeZone();
+    state.locationSavedAt = saved.savedAt;
+    root.classList.add("has-location");
+    updateLocationLabel();
+  }
+
+  function finishSavedLocationRestore() {
+    updateLocationLabel();
+    showLocationMessage(state.locationName, "Local timing and forecast are using your saved location.", false);
+    updateWeather();
     els.useLocation.textContent = useLocationText;
   }
 
@@ -2473,8 +2573,9 @@
   }
 
   function defaultMonthId() {
-    const requested = new URLSearchParams(window.location.search).get("month");
-    if (requested && manifest.some(item => item.id === requested)) return requested;
+    const params = new URLSearchParams(window.location.search);
+    const requested = params.get("month");
+    if (params.get("snapshot") === "1" && requested && manifest.some(item => item.id === requested)) return requested;
     const todayId = monthIdFromParts(new Date().getFullYear(), new Date().getMonth());
     if (manifest.some(item => item.id === todayId)) return todayId;
     const defaultEntry = manifest.find(item => item.default) || manifest[manifest.length - 1];
