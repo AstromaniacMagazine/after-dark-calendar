@@ -168,7 +168,7 @@ Replace the existing calendar iframe Code Block with this snippet:
   window.addEventListener('resize', updateStickyRail, { passive: true });
   mobile.addEventListener?.('change', updateStickyRail);
 
-  const announceParent = () => frame.contentWindow.postMessage({ type: 'amc:embed-ready' }, allowedOrigin);
+  const announceParent = () => frame.contentWindow.postMessage({ type: 'amc:embed-ready', wrapperVersion: 'Beta0.9.2' }, allowedOrigin);
   frame.addEventListener('load', announceParent);
   announceParent();
 })();

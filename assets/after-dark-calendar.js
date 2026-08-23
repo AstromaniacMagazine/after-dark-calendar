@@ -899,6 +899,7 @@
     if (event.source !== window.parent || !embedParentOrigins.has(event.origin)) return;
     if (event.data?.type === "amc:embed-ready") {
       state.parentManagedEmbed = true;
+      root.classList.toggle("is-legacy-parent", event.data.wrapperVersion !== "Beta0.9.2");
       scheduleEmbedResize();
       updateMobileDayNavigation();
       return;

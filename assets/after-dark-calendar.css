@@ -2782,6 +2782,10 @@ body {
     opacity: .48;
   }
 
+  .amc-sky-calendar.is-legacy-parent .amc-mobile-day-nav {
+    display: none;
+  }
+
   .amc-grid {
     align-items: stretch;
     box-sizing: border-box;
