@@ -105,6 +105,7 @@
     mobileScrollFrame: null,
     mobileSnapTimer: null,
     mobileScrollAnimationFrame: null,
+    mobileActivationTimer: null,
     mobileNavigationTimer: null,
     mobileNavigationTarget: null,
     mobileMonthTransition: false,
@@ -220,6 +221,7 @@
     root.addEventListener("focusout", handleWeatherTipOut);
     root.addEventListener("click", handleWeatherTipClick);
     document.addEventListener("visibilitychange", refreshWeatherWhenVisible);
+    window.addEventListener("pageshow", restoreTodayOnPageShow);
     window.addEventListener("resize", handleResponsiveLayout, { passive: true });
     window.addEventListener("message", handleEmbedMessage);
     document.addEventListener("touchstart", handleEmbedTouchStart, { passive: true, capture: true });
@@ -492,6 +494,7 @@
         state.expandedDay = mobileLayout ? state.selectedDay : null;
         renderAll();
       }
+      syncLocationActionLabel();
     }, 140);
   }
 
@@ -503,9 +506,6 @@
         const closest = closestMobileSlide();
         if (closest?.slide.classList.contains("amc-month-edge") && closest.distance < closest.slide.offsetWidth * .24) {
           transitionMobileMonth(Number(closest.slide.dataset.monthDirection));
-        } else {
-          const day = Number(closest?.slide.dataset.day);
-          if (validDay(day) && day !== state.selectedDay && closest.distance < closest.slide.offsetWidth * .18) activateMobileDay(day);
         }
       }
       scheduleMobileScrollSettle();
@@ -618,7 +618,9 @@
     card.classList.add("is-mobile-measuring");
     const height = Math.ceil(card.getBoundingClientRect().height);
     card.classList.remove("is-mobile-measuring");
-    if (height > 0) root.style.setProperty("--amc-mobile-day-height", `${height}px`);
+    const currentHeight = Number.parseFloat(root.style.getPropertyValue("--amc-mobile-day-height")) || 0;
+    const stableHeight = Math.max(currentHeight, height);
+    if (stableHeight > 0) root.style.setProperty("--amc-mobile-day-height", `${stableHeight}px`);
   }
 
   function restoreVerticalScroll(scrollTop) {
@@ -821,6 +823,7 @@
     if (!smooth || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       if (state.mobileScrollAnimationFrame) window.cancelAnimationFrame(state.mobileScrollAnimationFrame);
       state.mobileScrollAnimationFrame = null;
+      els.grid.classList.remove("is-mobile-programmatic");
       els.grid.scrollTo({ left, behavior: "auto" });
       return;
     }
@@ -831,7 +834,11 @@
     if (state.mobileScrollAnimationFrame) window.cancelAnimationFrame(state.mobileScrollAnimationFrame);
     const startLeft = els.grid.scrollLeft;
     const distance = targetLeft - startLeft;
-    if (Math.abs(distance) < .5) return;
+    if (Math.abs(distance) < .5) {
+      els.grid.classList.remove("is-mobile-programmatic");
+      return;
+    }
+    els.grid.classList.add("is-mobile-programmatic");
     const startedAt = performance.now();
     const duration = 320;
     const step = now => {
@@ -842,6 +849,7 @@
       else {
         els.grid.scrollLeft = targetLeft;
         state.mobileScrollAnimationFrame = null;
+        window.requestAnimationFrame(() => els.grid.classList.remove("is-mobile-programmatic"));
       }
     };
     state.mobileScrollAnimationFrame = window.requestAnimationFrame(step);
@@ -859,11 +867,24 @@
     const changed = day !== state.selectedDay;
     state.mobileNavigationTarget = day;
     if (state.mobileNavigationTimer) window.clearTimeout(state.mobileNavigationTimer);
-    if (activate) {
-      if (changed) hapticDateTick(`${state.monthId}:${day}`);
-      activateMobileDay(day);
+    if (state.mobileActivationTimer) window.clearTimeout(state.mobileActivationTimer);
+    state.mobileActivationTimer = null;
+    if (changed) {
+      hapticDateTick(`${state.monthId}:${day}`);
+      prepareMobileDayWindow(day);
+      syncMobileDayHeight(els.grid.querySelector(`.amc-day[data-day="${day}"]`));
     }
     centreMobileDay(day, smooth);
+    if (activate) {
+      if (changed && smooth && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        state.mobileActivationTimer = window.setTimeout(() => {
+          state.mobileActivationTimer = null;
+          if (state.mobileNavigationTarget === day) activateMobileDay(day);
+        }, 270);
+      } else {
+        activateMobileDay(day);
+      }
+    }
     state.mobileNavigationTimer = window.setTimeout(() => clearMobileNavigation(day), smooth ? 420 : 40);
   }
 
@@ -889,6 +910,8 @@
     if (!entry) return;
     state.mobileMonthTransition = true;
     state.mobileNavigationTarget = null;
+    if (state.mobileActivationTimer) window.clearTimeout(state.mobileActivationTimer);
+    state.mobileActivationTimer = null;
     const verticalScroll = document.scrollingElement?.scrollTop || 0;
     root.classList.add("is-mobile-month-switching");
     try {
@@ -972,13 +995,17 @@
     if (state.embedMomentumFrame) window.cancelAnimationFrame(state.embedMomentumFrame);
     state.embedMomentumFrame = null;
     const now = performance.now();
+    const horizontalScroller = embedHorizontalScroller(event.target);
     state.embedTouch = {
       x: event.touches[0].clientX,
       y: event.touches[0].clientY,
+      lastX: event.touches[0].clientX,
       lastY: event.touches[0].clientY,
       lastAt: now,
       velocity: 0,
-      axis: ""
+      axis: "",
+      horizontalScroller,
+      horizontalStart: horizontalScroller?.scrollLeft || 0
     };
   }
 
@@ -987,9 +1014,19 @@
     const touch = event.touches[0];
     const dx = touch.clientX - state.embedTouch.x;
     const dy = touch.clientY - state.embedTouch.y;
-    if (!state.embedTouch.axis && Math.max(Math.abs(dx), Math.abs(dy)) > 3) state.embedTouch.axis = Math.abs(dy) > Math.abs(dx) * 1.04 ? "y" : "x";
-    if (state.embedTouch.axis !== "y") return;
+    if (!state.embedTouch.axis && Math.max(Math.abs(dx), Math.abs(dy)) > 4) {
+      const horizontalIntent = state.embedTouch.horizontalScroller && Math.abs(dx) > Math.abs(dy) * 1.12;
+      state.embedTouch.axis = horizontalIntent ? "x" : "y";
+    }
+    if (!state.embedTouch.axis) return;
     if (event.cancelable) event.preventDefault();
+    if (state.embedTouch.axis === "x") {
+      state.embedTouch.horizontalScroller.scrollLeft = state.embedTouch.horizontalStart - dx;
+      state.embedTouch.lastX = touch.clientX;
+      state.embedTouch.lastY = touch.clientY;
+      state.embedTouch.lastAt = performance.now();
+      return;
+    }
     const now = performance.now();
     const step = state.embedTouch.lastY - touch.clientY;
     const elapsed = clamp(now - state.embedTouch.lastAt, 4, 50);
@@ -1001,13 +1038,33 @@
   }
 
   function handleEmbedTouchEnd() {
-    const velocity = state.embedTouch?.axis === "y" ? state.embedTouch.velocity : 0;
+    const gesture = state.embedTouch;
+    const velocity = gesture?.axis === "y" ? gesture.velocity : 0;
     state.embedTouch = null;
+    if (gesture?.axis === "x") settleEmbeddedHorizontalScroller(gesture.horizontalScroller);
     if (Math.abs(velocity) > .7) startEmbedMomentum(velocity);
   }
 
   function handleEmbedTouchCancel() {
     state.embedTouch = null;
+  }
+
+  function embedHorizontalScroller(target) {
+    if (!(target instanceof Element)) return null;
+    const scroller = target.closest(".amc-mobile-day-rail, .amc-grid, .amc-intel-strip, .amc-legend, .amc-target-list");
+    return scroller && scroller.scrollWidth > scroller.clientWidth + 1 ? scroller : null;
+  }
+
+  function settleEmbeddedHorizontalScroller(scroller) {
+    if (!scroller) return;
+    if (scroller === els.grid) {
+      scheduleMobileScrollSettle();
+      return;
+    }
+    if (scroller === els.mobileDayRail) {
+      if (state.mobileRailTimer) window.clearTimeout(state.mobileRailTimer);
+      state.mobileRailTimer = window.setTimeout(settleMobileRail, 118);
+    }
   }
 
   function queueEmbedParentScroll(deltaY) {
@@ -1512,7 +1569,7 @@
       position => {
         applyCoordinates(position.coords.latitude, position.coords.longitude);
         els.useLocation.disabled = false;
-        els.useLocation.textContent = "Using Current Location";
+        syncLocationActionLabel();
       },
       error => {
         els.useLocation.disabled = false;
@@ -1859,12 +1916,13 @@
     if (entry) showMonth(entry.id, { direction });
   }
 
-  function goToToday() {
+  function goToToday(option) {
+    const smooth = typeof option === "boolean" ? option : true;
     const today = new Date();
     const todayId = monthIdFromParts(today.getFullYear(), today.getMonth());
     if (!manifest.some(item => item.id === todayId)) return;
     if (state.monthId === todayId) {
-      if (isMobileCarousel()) beginMobileNavigation(today.getDate(), true);
+      if (isMobileCarousel()) beginMobileNavigation(today.getDate(), smooth);
       else {
         state.selectedDay = today.getDate();
         state.expandedDay = null;
@@ -1900,7 +1958,7 @@
     updateLocationLabel();
     showLocationMessage(state.locationName, "Local timing and forecast are using your saved location.", false);
     updateWeather();
-    els.useLocation.textContent = useLocationText;
+    syncLocationActionLabel();
   }
 
   function readSavedLocation() {
@@ -2049,6 +2107,21 @@
 
   function updateLocationLabel() {
     els.locationLabel.innerHTML = locationPill(locationDisplay());
+    syncLocationActionLabel();
+  }
+
+  function syncLocationActionLabel() {
+    if (!els.useLocation || els.useLocation.disabled) return;
+    const label = isMobileCarousel() && state.hasLocation ? locationDisplay() : useLocationText;
+    els.useLocation.textContent = label;
+    els.useLocation.title = state.hasLocation
+      ? `Using ${locationDisplay()}. Tap to refresh your current location.`
+      : "Use your device's current location";
+  }
+
+  function restoreTodayOnPageShow(event) {
+    if (!event.persisted) return;
+    window.requestAnimationFrame(() => goToToday(false));
   }
 
   function locationPill(text) {

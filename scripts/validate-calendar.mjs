@@ -231,7 +231,7 @@ else {
   if (!html.includes(`"softwareVersion": "${declaredVersion}"`)) fail(`Structured data does not match ${declaredVersion}.`);
   if (versionMentions.some(version => !version.startsWith(declaredVersion))) fail(`A current-version value does not match ${declaredVersion}.`);
 }
-if (!new RegExp(`data-asset-version="${declaredVersion.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}-\\d{8}"`).test(html)) fail("The dynamic month cache-busting version is missing or inconsistent.");
+if (!new RegExp(`data-asset-version="${declaredVersion.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}-\\d{8}[a-z]?"`).test(html)) fail("The dynamic month cache-busting version is missing or inconsistent.");
 const metaDescription = html.match(/<meta name="description" content="([^"]+)">/)?.[1] || "";
 if (metaDescription.length < 120 || metaDescription.length > 400) fail(`Meta description should be 120-400 characters; found ${metaDescription.length}.`);
 if (/3-night/i.test(metaDescription)) fail("Meta description still claims a 3-night forecast.");

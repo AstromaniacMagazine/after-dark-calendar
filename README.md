@@ -8,6 +8,7 @@ This repository contains the production website files for **After Dark Calendar 
 - `assets/` - CSS, JavaScript, images
 - `data/` - month and shared data files
 - `scripts/validate-calendar.mjs` - release-time source and data integrity checks
+- `scripts/test-mobile-interactions.mjs` - real touch-event regression checks for embedded mobile scrolling, date swiping, Today and location layout
 - `SQUARESPACE_EMBED.md` - production iframe embed with automatic height and mobile sticky-day bridge
 - `*.zip`, `archive/`, `July 26/` - local archives (not required at runtime and excluded from Git)
 
@@ -21,7 +22,7 @@ For each version:
 
 1. Create a release branch from the latest `origin/main`.
 2. Edit the production files directly in this repository root.
-3. Run `node scripts/validate-calendar.mjs` and complete responsive browser checks.
+3. Run `node scripts/validate-calendar.mjs`, `node scripts/test-mobile-interactions.mjs --modules <node_modules>` and complete responsive browser checks.
 4. Save four standard high-resolution full-page release snapshots in `G:\My Drive\After Dark Calendar\Snapshots`:
    - `ADC_LIGHT_<VERSION>.png`
    - `ADC_DARK_<VERSION>.png`
