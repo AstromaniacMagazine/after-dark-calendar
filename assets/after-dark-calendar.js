@@ -179,6 +179,7 @@
   boot();
 
   async function boot() {
+    if (isEmbeddedFrame()) root.classList.add("is-legacy-parent");
     const savedTheme = safeStorageGet(themeKey);
     setTheme(themeOrder.includes(savedTheme) ? savedTheme : "light");
     bindEvents();
