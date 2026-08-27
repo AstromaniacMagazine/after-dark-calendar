@@ -436,6 +436,11 @@ body.amc-standalone-body {
   width: 16px;
 }
 
+.amc-location-button .amc-location-dot {
+  fill: currentColor;
+  stroke: none;
+}
+
 .amc-location-status {
   align-items: center;
   border: 1px solid var(--line);
@@ -903,10 +908,10 @@ body.amc-standalone-body {
   border: 0;
   border-radius: 50%;
   display: block;
-  height: 112%;
+  height: 120%;
   object-fit: cover;
-  transform: translate(-5.35%, -5.35%);
-  width: 112%;
+  transform: translate(-8.333%, -8.333%);
+  width: 120%;
 }
 
 .amc-weekdays span {
@@ -1016,9 +1021,9 @@ body.amc-standalone-body {
   border: 1px solid var(--line);
   border-radius: var(--radius-inner);
   display: grid;
-  gap: 4px;
+  gap: 0;
   min-width: 0;
-  padding: 4px 5px;
+  padding: 5px;
 }
 
 .amc-expanded-observing-title {
@@ -1094,12 +1099,22 @@ body.amc-standalone-body {
   min-width: 0;
 }
 
-.amc-expanded-identity img {
+.amc-expanded-moon-visual {
   aspect-ratio: 1;
   border-radius: 50%;
+  display: block;
   height: 44px;
-  object-fit: cover;
+  overflow: hidden;
   width: 44px;
+}
+
+.amc-expanded-moon-visual img {
+  border: 0;
+  display: block;
+  height: 120%;
+  object-fit: cover;
+  transform: translate(-8.333%, -8.333%);
+  width: 120%;
 }
 
 .amc-expanded-identity strong {
@@ -2062,7 +2077,7 @@ body.amc-standalone-body {
     grid-template-columns: 34px minmax(0, 1fr);
   }
 
-  .amc-expanded-identity img {
+  .amc-expanded-moon-visual {
     height: 34px;
     width: 34px;
   }
@@ -2290,8 +2305,8 @@ body.amc-standalone-body {
   }
 
   .amc-moon-img {
-    height: 38px;
-    width: 38px;
+    height: 120%;
+    width: 120%;
   }
 
   .amc-empty {
@@ -2353,7 +2368,7 @@ body.amc-standalone-body {
     grid-template-columns: 44px minmax(0, 1fr);
   }
 
-  .amc-expanded-identity img {
+  .amc-expanded-moon-visual {
     height: 44px;
     width: 44px;
   }
@@ -2501,8 +2516,8 @@ body.amc-standalone-body {
   }
 
   .amc-moon-img {
-    height: 38px;
-    width: 38px;
+    height: 120%;
+    width: 120%;
   }
 
   .amc-weather-row {
@@ -2946,7 +2961,7 @@ body.amc-standalone-body {
     grid-template-columns: 48px minmax(0, 1fr);
   }
 
-  .amc-expanded-identity img {
+  .amc-expanded-moon-visual {
     height: 48px;
     width: 48px;
   }
@@ -3038,8 +3053,8 @@ body.amc-standalone-body {
   }
 
   .amc-moon-visual .amc-moon-img {
-    height: 112%;
-    width: 112%;
+    height: 120%;
+    width: 120%;
   }
 }
 
@@ -3237,6 +3252,163 @@ body.amc-standalone-body {
   .amc-day.is-mobile-active {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+/* Beta0.9.4 release polish */
+.amc-day.is-today,
+.amc-day.is-today.is-major-event {
+  background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 19%, var(--panel)), color-mix(in srgb, var(--accent) 8%, var(--panel)));
+  border-color: var(--accent);
+  border-width: 3px;
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 30%, transparent), 0 16px 36px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.amc-today-pill {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--panel) 55%, transparent), 0 5px 14px color-mix(in srgb, var(--accent) 42%, transparent);
+}
+
+.amc-back-to-top {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .amc-top,
+  .amc-month-strip {
+    border: 0 !important;
+    box-shadow: none;
+  }
+
+  .amc-top::before,
+  .amc-top::after,
+  .amc-month-strip::before,
+  .amc-month-strip::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  #amc-use-location,
+  .amc-sky-calendar.has-location .amc-location-status,
+  .amc-location-input,
+  .amc-manual-location .amc-button {
+    box-sizing: border-box;
+    height: 34px;
+    min-height: 34px;
+  }
+
+  #amc-use-location {
+    width: 34px;
+  }
+
+  .amc-location-input {
+    line-height: 32px;
+    padding-block: 0;
+  }
+
+  .amc-month-strip > .amc-today-button,
+  .amc-month-button {
+    height: 32px;
+    min-height: 32px;
+  }
+
+  .amc-mobile-day-nav {
+    isolation: isolate;
+    overflow: hidden;
+    position: sticky;
+  }
+
+  .amc-mobile-day-nav::after {
+    background: color-mix(in srgb, var(--accent) 13%, var(--panel));
+    border: 2px solid color-mix(in srgb, var(--accent) 72%, var(--line));
+    border-radius: 10px;
+    box-shadow: 0 5px 16px color-mix(in srgb, var(--accent) 19%, transparent);
+    content: "";
+    height: 50px;
+    left: 50%;
+    pointer-events: none;
+    position: absolute;
+    top: 4px;
+    transform: translateX(-50%);
+    width: 64px;
+    z-index: 0;
+  }
+
+  .amc-mobile-day-rail {
+    padding-inline: calc(50% - 29px);
+    position: relative;
+    scroll-padding-inline: calc(50% - 29px);
+    z-index: 1;
+  }
+
+  .amc-mobile-day-chip,
+  .amc-mobile-day-chip.is-active {
+    background: transparent;
+    border-color: transparent;
+    flex-basis: 58px;
+    height: 46px;
+    opacity: .52;
+    transform: none;
+  }
+
+  .amc-mobile-day-chip.is-active {
+    color: var(--muted);
+  }
+
+  .amc-mobile-day-chip.is-rail-focus,
+  .amc-mobile-day-chip.is-active.is-rail-focus {
+    color: var(--text);
+    opacity: 1;
+  }
+
+  .amc-mobile-day-chip.is-rail-focus small,
+  .amc-mobile-day-chip.is-rail-focus b {
+    font-weight: 700;
+  }
+
+  .amc-sky-calendar[data-inline="true"] .amc-mobile-recommendations .amc-target-list {
+    touch-action: pan-y pinch-zoom;
+  }
+
+  .amc-mobile-recommendations .amc-target-card {
+    flex-basis: calc(86% - 8px);
+  }
+
+  .amc-back-to-top {
+    align-items: center;
+    appearance: none;
+    background: color-mix(in srgb, var(--accent) 18%, var(--panel));
+    border: 1px solid color-mix(in srgb, var(--accent) 68%, var(--line));
+    border-radius: 50%;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    box-shadow: 0 8px 22px color-mix(in srgb, var(--shadow) 28%, transparent);
+    color: var(--text);
+    display: flex;
+    height: 42px;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    position: fixed;
+    right: 14px;
+    transform: translateY(12px);
+    transition: opacity .18s ease, transform .18s ease;
+    width: 42px;
+    z-index: 90;
+  }
+
+  .amc-back-to-top.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .amc-back-to-top svg {
+    fill: none;
+    height: 22px;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2.2;
+    width: 22px;
   }
 }
 

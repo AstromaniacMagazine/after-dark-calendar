@@ -235,10 +235,9 @@ if (!new RegExp(`data-asset-version="${declaredVersion.replace(/[.*+?^${}()|[\]\
 const metaDescription = html.match(/<meta name="description" content="([^"]+)">/)?.[1] || "";
 if (metaDescription.length < 120 || metaDescription.length > 400) fail(`Meta description should be 120-400 characters; found ${metaDescription.length}.`);
 if (/3-night/i.test(metaDescription)) fail("Meta description still claims a 3-night forecast.");
-const defaultMonth = (manifest || []).find(entry => entry.default);
-if (defaultMonth && !new RegExp(`<script src="${defaultMonth.path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:\\?[^"]*)?"></script>`).test(html)) {
-  fail(`The default month ${defaultMonth.id} is not preloaded in index.html.`);
-}
+const preloadedMonthPath = html.match(/<script[^>]+src="(data\/2026-\d{2}\.js)(?:\?[^\"]*)?"/i)?.[1];
+const defaultMonth = manifest.find(entry => entry.path === preloadedMonthPath);
+if (!defaultMonth) fail("index.html does not preload a supported calendar month.");
 if (!html.includes('<link rel="canonical" href="https://www.astromaniacmagazine.com/after-dark-calendar">')) fail("index.html canonical URL is missing or incorrect.");
 if (!html.includes("assets/after-dark-calendar-social.png")) fail("index.html does not reference the social-sharing image.");
 if (!fs.existsSync(path.join(rootDir, "assets", "after-dark-calendar-social.png"))) fail("The social-sharing image is missing.");
@@ -251,6 +250,9 @@ const squarespaceInstall = read("SQUARESPACE_EMBED.md");
 if (!calendarScript.includes('scroll-snap') && !calendarCss.includes("scroll-snap-type: x mandatory")) fail("The mobile day carousel is missing mandatory scroll snapping.");
 if (!calendarScript.includes("activateMobileDay")) fail("The mobile day activation controller is missing.");
 if (!html.includes("Sources and logs")) fail("The sources section title has not been updated.");
+if (!html.includes('id="amc-back-to-top"')) fail("The mobile back-to-top control is missing.");
+if (calendarScript.includes('amc-expanded-observing-title">Observing conditions')) fail("The redundant expanded observing summary is still rendered.");
+if (!read("data/common.js").includes("seestar-s50-pro-smart-telescope-review")) fail("The Seestar S50 Pro review is missing from related articles.");
 if (!inlineLoader.includes('id="amc-after-dark-calendar"') || !inlineLoader.includes(`data-version="${declaredVersion}"`)) fail("The Squarespace inline loader is missing or has the wrong version.");
 if (!inlineLoader.includes(`const build = "${declaredVersion}-`)) fail("The Squarespace inline loader cache key does not match the calendar version.");
 if (!squarespaceInstall.includes("adc-inline-calendar") || !squarespaceInstall.includes("assets/squarespace-inline.js")) fail("The current Squarespace installation does not use the inline loader.");

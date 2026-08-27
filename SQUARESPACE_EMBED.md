@@ -6,7 +6,7 @@ Replace the entire existing iframe Code Block with:
 
 ```html
 <div id="adc-inline-calendar" aria-live="polite"></div>
-<script src="https://astromaniacmagazine.github.io/after-dark-calendar/assets/squarespace-inline.js?v=Beta0.9.3-20260823c"></script>
+<script src="https://astromaniacmagazine.github.io/after-dark-calendar/assets/squarespace-inline.js?v=Beta0.9.4-20260827a"></script>
 <noscript><p><a href="https://astromaniacmagazine.github.io/after-dark-calendar/">Open After Dark Calendar</a></p></noscript>
 ```
 
@@ -205,7 +205,7 @@ Replace the existing calendar iframe Code Block with this snippet:
   window.addEventListener('resize', updateStickyRail, { passive: true });
   mobile.addEventListener?.('change', updateStickyRail);
 
-  const announceParent = () => frame.contentWindow.postMessage({ type: 'amc:embed-ready', wrapperVersion: 'Beta0.9.3' }, allowedOrigin);
+  const announceParent = () => frame.contentWindow.postMessage({ type: 'amc:embed-ready', wrapperVersion: 'Beta0.9.4' }, allowedOrigin);
   frame.addEventListener('load', announceParent);
   announceParent();
 })();

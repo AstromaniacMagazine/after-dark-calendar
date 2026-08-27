@@ -6,17 +6,11 @@
   if (!script || !host || host.dataset.amcLoaded === "true") return;
 
   const base = new URL("../", script.src).href;
-  const build = "Beta0.9.3-20260823c";
+  const build = "Beta0.9.4-20260827a";
   host.dataset.amcLoaded = "true";
   host.classList.add("amc-inline-host");
 
   if (!document.querySelector("link[data-amc-calendar-styles]")) {
-    const font = document.createElement("link");
-    font.rel = "stylesheet";
-    font.href = "https://fonts.googleapis.com/css2?family=Manrope:wght@400;600&display=swap";
-    font.dataset.amcCalendarStyles = "font";
-    document.head.appendChild(font);
-
     const styles = document.createElement("link");
     styles.rel = "stylesheet";
     styles.href = `${base}assets/after-dark-calendar.css?v=${build}`;
@@ -25,7 +19,7 @@
   }
 
   host.innerHTML = `
-    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="Beta0.9.3" data-asset-version="${build}" data-asset-base="${base}" data-inline="true" aria-labelledby="amc-title">
+    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="Beta0.9.4" data-asset-version="${build}" data-asset-base="${base}" data-inline="true" aria-labelledby="amc-title">
       <div class="amc-print-brand" aria-hidden="true">
         <img class="amc-print-logo" src="${base}assets/astromaniac-logo.webp" alt="">
         <div><strong>After Dark Calendar</strong><span>by Astromaniac Magazine</span></div>
@@ -35,7 +29,7 @@
       <header class="amc-top">
         <div class="amc-brand-lockup">
           <img class="amc-brand-logo" src="${base}assets/astromaniac-logo.webp" alt="" width="56" height="56" loading="eager" decoding="async">
-          <h1 class="amc-title" id="amc-title"><span class="amc-title-line"><span>After Dark Calendar</span><small class="amc-version-badge" aria-label="Current version Beta0.9.3">Beta0.9.3</small></span><span class="amc-byline">by Astromaniac Magazine</span></h1>
+          <h1 class="amc-title" id="amc-title"><span class="amc-title-line"><span>After Dark Calendar</span><small class="amc-version-badge" aria-label="Current version Beta0.9.4">Beta0.9.4</small></span><span class="amc-byline">by Astromaniac Magazine</span></h1>
         </div>
 
         <div class="amc-month-strip">
@@ -49,7 +43,7 @@
 
         <div class="amc-actions">
           <div class="amc-location-controls">
-            <button class="amc-button amc-location-button" type="button" id="amc-use-location" aria-label="Use current location" title="Use your device's current location"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg><span class="amc-use-location-text">Use Current Location</span></button>
+            <button class="amc-button amc-location-button" type="button" id="amc-use-location" aria-label="Use current location" title="Use your device's current location"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6"/><circle class="amc-location-dot" cx="12" cy="12" r="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span class="amc-use-location-text">Use Current Location</span></button>
             <span class="amc-location-status" id="amc-location-label" aria-live="polite">Location not set</span>
           </div>
           <button class="amc-button secondary amc-icon-button" type="button" id="amc-theme-toggle" aria-label="Switch calendar theme" title="Switch calendar theme"></button>
@@ -85,11 +79,11 @@
           <summary><span>Sources and logs</span><a class="amc-feedback-link" href="https://www.astromaniacmagazine.com/contact" target="_blank" rel="noopener">Suggestions or feedback?</a></summary>
           <ul class="amc-source-list" id="amc-source-list"></ul>
           <div class="amc-version-panel">
-            <h3>Current version: Beta0.9.3</h3>
+            <h3>Current version: Beta0.9.4</h3>
             <ul class="amc-version-list">
+              <li><b>Beta0.9.4:</b> accelerates first load, strengthens Today, streamlines observing details and polishes mobile date, location, target and return-to-top navigation.</li>
               <li><b>Beta0.9.3:</b> restores native one-finger mobile scrolling, simplifies the date strip and keeps location, city and date context ready across visits.</li>
               <li><b>Beta0.9.2:</b> delivers smoother embedded mobile scrolling, a theme-aware tap-and-swipe date rail, 30-day location memory, corrected target imagery and a final September event audit.</li>
-              <li><b>Beta0.9.1:</b> introduces a fluid swipeable date rail, restores complete forecast cards, expands intelligent deep-sky guidance and refreshes relevant Astromaniac articles and reviews.</li>
             </ul>
             <section class="amc-about" aria-labelledby="amc-about-title">
               <h2 id="amc-about-title">2026 night-sky calendar and astrophotography planner</h2>
@@ -99,13 +93,15 @@
         </details>
       </div>
       <span class="amc-weather-tooltip" id="amc-weather-tooltip" role="status" aria-live="polite"></span>
+      <button class="amc-back-to-top" id="amc-back-to-top" type="button" aria-label="Back to top" title="Back to top"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 14 6-6 6 6"/></svg></button>
     </section>`;
 
+  const initialMonth = `2026-${String(Math.min(12, Math.max(7, new Date().getMonth() + 1))).padStart(2, "0")}`;
   const sources = [
     "assets/astronomy.browser.js",
     "data/common.js",
     "data/month-manifest.js",
-    "data/2026-07.js",
+    `data/${initialMonth}.js`,
     "assets/after-dark-calendar.js"
   ];
 
@@ -120,7 +116,7 @@
 
   (async () => {
     try {
-      for (const source of sources) await load(source);
+      await Promise.all(sources.map(load));
     } catch (error) {
       console.error("After Dark Calendar failed to initialise", error);
       host.innerHTML = `<p role="alert">After Dark Calendar could not load. <a href="https://astromaniacmagazine.github.io/after-dark-calendar/">Open the calendar directly</a>.</p>`;

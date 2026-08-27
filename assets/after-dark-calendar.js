@@ -23,7 +23,8 @@
     tooltip: root.querySelector("#amc-weather-tooltip"),
     mobileDayNav: root.querySelector("#amc-mobile-day-nav"),
     mobileDayRail: root.querySelector("#amc-mobile-day-rail"),
-    feedbackLink: root.querySelector(".amc-feedback-link")
+    feedbackLink: root.querySelector(".amc-feedback-link"),
+    backToTop: root.querySelector("#amc-back-to-top")
   };
 
   const shared = window.AMC_SHARED || {};
@@ -113,7 +114,9 @@
     mobileRailFrame: null,
     mobileRailTimer: null,
     mobileRailSyncing: false,
+    mobileRailIgnoreUntil: 0,
     mobileRailMonthId: "",
+    mobileRailFocusKey: "",
     lastHapticKey: "",
     parentManagedEmbed: false,
     embedTouch: null,
@@ -122,6 +125,7 @@
     embedScrollFrame: null,
     embedMomentumFrame: null,
     inlineScrollHoldFrame: null,
+    backTopFrame: null,
     resizeTimer: null,
     embedResizeTimer: null,
     embedResizeObserver: null,
@@ -200,6 +204,8 @@
     await showMonth(defaultMonthId());
     if (savedLocation) finishSavedLocationRestore();
     scheduleNowRefresh();
+    root.dataset.ready = "true";
+    root.dispatchEvent(new CustomEvent("amc:ready", { bubbles: true, detail: { version: root.dataset.version } }));
   }
 
   function bindEvents() {
@@ -212,16 +218,15 @@
     els.previousMonth?.addEventListener("click", () => goToAdjacentMonth(-1));
     els.nextMonth?.addEventListener("click", () => goToAdjacentMonth(1));
     els.today?.addEventListener("click", goToToday);
+    els.backToTop?.addEventListener("click", scrollCalendarToTop);
     if (els.mobileDayRail) {
       els.mobileDayRail.addEventListener("scroll", handleMobileRailScroll, { passive: true });
       els.mobileDayRail.addEventListener("click", handleMobileRailClick);
     }
-    [els.mobileDayRail, els.grid].filter(Boolean).forEach(scroller => {
-      scroller.addEventListener("touchstart", handleInlineHorizontalTouchStart, { passive: true });
-      scroller.addEventListener("touchmove", handleInlineHorizontalTouchMove, { passive: false });
-      scroller.addEventListener("touchend", handleInlineHorizontalTouchEnd, { passive: true });
-      scroller.addEventListener("touchcancel", handleInlineHorizontalTouchEnd, { passive: true });
-    });
+    root.addEventListener("touchstart", handleInlineHorizontalTouchStart, { passive: true, capture: true });
+    root.addEventListener("touchmove", handleInlineHorizontalTouchMove, { passive: false, capture: true });
+    root.addEventListener("touchend", handleInlineHorizontalTouchEnd, { passive: true, capture: true });
+    root.addEventListener("touchcancel", handleInlineHorizontalTouchEnd, { passive: true, capture: true });
     els.feedbackLink?.addEventListener("click", event => event.stopPropagation());
     root.addEventListener("pointerover", handleWeatherTipIn);
     root.addEventListener("pointerout", handleWeatherTipOut);
@@ -231,11 +236,13 @@
     document.addEventListener("visibilitychange", refreshWeatherWhenVisible);
     window.addEventListener("pageshow", restoreTodayOnPageShow);
     window.addEventListener("resize", handleResponsiveLayout, { passive: true });
+    window.addEventListener("scroll", handleBackTopVisibility, { passive: true });
     window.addEventListener("message", handleEmbedMessage);
     document.addEventListener("touchstart", handleEmbedTouchStart, { passive: true, capture: true });
     document.addEventListener("touchmove", handleEmbedTouchMove, { passive: false, capture: true });
     document.addEventListener("touchend", handleEmbedTouchEnd, { passive: true, capture: true });
     document.addEventListener("touchcancel", handleEmbedTouchCancel, { passive: true, capture: true });
+    handleBackTopVisibility();
   }
 
   async function showMonth(monthId, options = {}) {
@@ -463,12 +470,14 @@
     else els.grid.removeAttribute("aria-roledescription");
     if (mobileCarousel) {
       hydrateMobileMoonImages(state.selectedDay);
-      updateMobileDayNavigation();
+      updateMobileDayNavigation(false);
       preloadAdjacentMonths();
       window.requestAnimationFrame(() => {
+        state.mobileNavigationTarget = state.selectedDay;
         centreMobileDay(state.selectedDay, false);
         syncMobileDayHeight(els.grid.querySelector(`.amc-day[data-day="${state.selectedDay}"]`));
         scheduleEmbedResize();
+        window.setTimeout(() => clearMobileNavigation(state.selectedDay), 180);
       });
     }
   }
@@ -538,7 +547,7 @@
 
   function settleMobileDayScroll() {
     state.mobileSnapTimer = null;
-    if (!isMobileCarousel() || state.mobileMonthTransition) return;
+    if (!isMobileCarousel() || state.mobileMonthTransition || state.mobileNavigationTarget) return;
     const closest = closestMobileSlide();
     if (!closest) return;
     if (closest.slide.classList.contains("amc-month-edge")) {
@@ -569,7 +578,7 @@
     els.grid.querySelector(`.amc-day[data-day="${candidate}"]`)?.focus({ preventScroll: true });
   }
 
-  function activateMobileDay(day) {
+  function activateMobileDay(day, railSmooth = true) {
     if (!isMobileCarousel() || !validDay(day)) return;
     const previous = els.grid.querySelector(".amc-day.is-mobile-active");
     const next = els.grid.querySelector(`.amc-day[data-day="${day}"]`);
@@ -591,7 +600,7 @@
     next.setAttribute("aria-expanded", "true");
     next.setAttribute("tabindex", "0");
     syncMobileDayHeight(next);
-    updateMobileDayNavigation();
+    updateMobileDayNavigation(railSmooth);
     updateTodayButton();
     restoreVerticalScroll(verticalScroll);
     window.requestAnimationFrame(() => {
@@ -648,7 +657,7 @@
     beginMobileNavigation(day, true);
   }
 
-  function updateMobileDayNavigation() {
+  function updateMobileDayNavigation(smooth = true) {
     if (!state.month || !validDay(state.selectedDay)) return;
     const date = new Date(Date.UTC(state.month.year, state.month.monthIndex, state.selectedDay, 12));
     const weekday = new Intl.DateTimeFormat("en-GB", { weekday: "long", timeZone: "UTC" }).format(date);
@@ -657,7 +666,7 @@
       els.mobileDayNav.classList.toggle("is-today", isTodayDay(state.selectedDay));
     }
     renderMobileDayRail();
-    syncMobileDayRail(state.selectedDay, true);
+    syncMobileDayRail(state.selectedDay, smooth);
     const dayRail = mobileDayRailEntries().map(entry => ({
       monthId: entry.monthId,
       day: entry.day,
@@ -728,12 +737,27 @@
       chip.setAttribute("aria-selected", String(selected));
     });
     if (!active) return;
+    if (state.mobileRailTimer) window.clearTimeout(state.mobileRailTimer);
     state.mobileRailSyncing = true;
+    state.mobileRailIgnoreUntil = performance.now() + (smooth ? 440 : 160);
     const left = Math.max(0, Math.min(active.offsetLeft + active.offsetWidth / 2 - els.mobileDayRail.clientWidth / 2, els.mobileDayRail.scrollWidth - els.mobileDayRail.clientWidth));
     els.mobileDayRail.scrollTo({ left, behavior: smooth && !window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "smooth" : "auto" });
     window.setTimeout(() => {
-      state.mobileRailSyncing = false;
-    }, smooth ? 260 : 32);
+      centreMobileRailChip(active);
+      window.requestAnimationFrame(() => {
+        state.mobileRailSyncing = false;
+        if (state.mobileRailTimer) window.clearTimeout(state.mobileRailTimer);
+        updateMobileRailFocus(false);
+      });
+    }, smooth ? 320 : 80);
+  }
+
+  function centreMobileRailChip(chip) {
+    if (!chip || !els.mobileDayRail) return;
+    const railRect = els.mobileDayRail.getBoundingClientRect();
+    const chipRect = chip.getBoundingClientRect();
+    const delta = (chipRect.left + chipRect.width / 2) - (railRect.left + railRect.width / 2);
+    if (Math.abs(delta) > .5) els.mobileDayRail.scrollLeft += delta;
   }
 
   function handleMobileRailScroll() {
@@ -741,7 +765,12 @@
     if (state.mobileRailFrame) window.cancelAnimationFrame(state.mobileRailFrame);
     state.mobileRailFrame = window.requestAnimationFrame(() => {
       state.mobileRailFrame = null;
-      if (state.mobileRailSyncing) return;
+      const ignoreProgrammaticScroll = state.mobileRailSyncing || performance.now() < state.mobileRailIgnoreUntil;
+      updateMobileRailFocus(!ignoreProgrammaticScroll);
+      if (ignoreProgrammaticScroll) {
+        if (state.mobileRailTimer) window.clearTimeout(state.mobileRailTimer);
+        return;
+      }
       if (state.mobileRailTimer) window.clearTimeout(state.mobileRailTimer);
       state.mobileRailTimer = window.setTimeout(settleMobileRail, 140);
     });
@@ -760,10 +789,23 @@
     return closest?.chip || null;
   }
 
+  function updateMobileRailFocus(userDriven = false) {
+    const focused = closestMobileRailChip();
+    if (!focused) return null;
+    els.mobileDayRail.querySelectorAll(".amc-mobile-day-chip.is-rail-focus").forEach(chip => chip.classList.toggle("is-rail-focus", chip === focused));
+    focused.classList.add("is-rail-focus");
+    if (userDriven) {
+      const key = `${focused.dataset.monthId}:${focused.dataset.day}`;
+      if (key !== state.mobileRailFocusKey) hapticDateTick(key);
+      state.mobileRailFocusKey = key;
+    }
+    return focused;
+  }
+
   function settleMobileRail() {
     state.mobileRailTimer = null;
     if (!els.mobileDayRail || state.mobileRailSyncing || state.mobileMonthTransition) return;
-    const chip = closestMobileRailChip();
+    const chip = updateMobileRailFocus(false);
     if (!chip) return;
     navigateMobileRailTarget(chip.dataset.monthId, Number(chip.dataset.day));
   }
@@ -872,10 +914,10 @@
       if (changed && smooth && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
         state.mobileActivationTimer = window.setTimeout(() => {
           state.mobileActivationTimer = null;
-          if (state.mobileNavigationTarget === day) activateMobileDay(day);
+          if (state.mobileNavigationTarget === day) activateMobileDay(day, smooth);
         }, 270);
       } else {
-        activateMobileDay(day);
+        activateMobileDay(day, smooth);
       }
     }
     state.mobileNavigationTimer = window.setTimeout(() => clearMobileNavigation(day), smooth ? 420 : 40);
@@ -966,7 +1008,7 @@
     if (event.source !== window.parent || !embedParentOrigins.has(event.origin)) return;
     if (event.data?.type === "amc:embed-ready") {
       state.parentManagedEmbed = true;
-      root.classList.toggle("is-legacy-parent", event.data.wrapperVersion !== "Beta0.9.3");
+      root.classList.toggle("is-legacy-parent", event.data.wrapperVersion !== root.dataset.version);
       scheduleEmbedResize();
       updateMobileDayNavigation();
       return;
@@ -1063,11 +1105,17 @@
 
   function handleInlineHorizontalTouchStart(event) {
     if (root.dataset.inline !== "true" || !isMobileCarousel() || event.touches.length !== 1) return;
+    const scroller = event.target instanceof Element
+      ? event.target.closest(".amc-target-list, .amc-mobile-day-rail, .amc-grid")
+      : null;
+    if (!scroller || scroller.scrollWidth <= scroller.clientWidth + 1) return;
     state.inlineHorizontalTouch = {
-      scroller: event.currentTarget,
+      scroller,
       x: event.touches[0].clientX,
       y: event.touches[0].clientY,
-      scrollLeft: event.currentTarget.scrollLeft,
+      lastX: event.touches[0].clientX,
+      lastY: event.touches[0].clientY,
+      scrollLeft: scroller.scrollLeft,
       scrollTop: document.scrollingElement?.scrollTop || window.scrollY || 0,
       axis: ""
     };
@@ -1075,7 +1123,7 @@
 
   function handleInlineHorizontalTouchMove(event) {
     const gesture = state.inlineHorizontalTouch;
-    if (!gesture || gesture.scroller !== event.currentTarget || event.touches.length !== 1) return;
+    if (!gesture || event.touches.length !== 1) return;
     const dx = event.touches[0].clientX - gesture.x;
     const dy = event.touches[0].clientY - gesture.y;
     if (!gesture.axis && Math.max(Math.abs(dx), Math.abs(dy)) > 4) {
@@ -1083,16 +1131,25 @@
     }
     if (gesture.axis !== "x") return;
     if (event.cancelable) event.preventDefault();
+    gesture.lastX = event.touches[0].clientX;
+    gesture.lastY = event.touches[0].clientY;
     gesture.scroller.scrollLeft = gesture.scrollLeft - dx;
   }
 
   function handleInlineHorizontalTouchEnd(event) {
     const gesture = state.inlineHorizontalTouch;
-    if (!gesture || gesture.scroller !== event.currentTarget) return;
+    if (!gesture) return;
     state.inlineHorizontalTouch = null;
     if (gesture.axis === "x") {
-      holdVerticalScroll(gesture.scrollTop);
-      settleHorizontalScroller(gesture.scroller);
+      const horizontalDistance = gesture.lastX - gesture.x;
+      if (gesture.scroller === els.grid) {
+        holdVerticalScroll(gesture.scrollTop);
+        if (Math.abs(horizontalDistance) > 48) moveMobileDay(horizontalDistance < 0 ? 1 : -1);
+        else settleHorizontalScroller(gesture.scroller);
+      } else if (gesture.scroller === els.mobileDayRail) {
+        holdVerticalScroll(gesture.scrollTop, 420);
+        settleHorizontalScroller(gesture.scroller);
+      }
     }
   }
 
@@ -1148,7 +1205,7 @@
     return `
       <span class="amc-expanded-top">
         <span class="amc-expanded-identity">
-          <img src="${moonImage(day, 216)}" alt="" loading="lazy" decoding="async" width="42" height="42">
+          <span class="amc-expanded-moon-visual"><img src="${moonImage(day, 216)}" alt="" loading="lazy" decoding="async" width="42" height="42"></span>
           <span>
             <strong>${isTodayDay(day) ? "Today, " : ""}${weekday} ${day} ${monthName()} ${state.month.year}</strong>
             <span class="amc-expanded-stat">${escapeHtml(moon.name)}, ${moon.phase}% illuminated</span>
@@ -1191,7 +1248,6 @@
   function expandedObservingPanel(weather) {
     if (!weather?.segments?.length) return "";
     return `<span class="amc-expanded-observing" aria-label="Quarter-by-quarter observing conditions">
-      <span class="amc-expanded-observing-title">Observing conditions <b>${escapeHtml(weather.observingLabel)}</b></span>
       <span class="amc-expanded-observing-slots">${weather.segments.map(segment => {
         const rating = observingRating(segment.observingScore);
         return `<span><i style="background:${observingColour(rating.key)}"></i><small>${segment.label}</small><b>${rating.label}</b></span>`;
@@ -1424,16 +1480,16 @@
       reviews = [state.articles.sqmReview, state.articles.monitorReview, state.articles.powerReview, state.articles.zwoReview];
     } else if (typeSet.has("telescope")) {
       editorial = [state.articles.telescope, state.articles.rubin, state.articles.jamesWebb, state.articles.deepSky];
-      reviews = [state.articles.askar103Review, state.articles.ts130Review, state.articles.askar80Review, state.articles.sqa55Review, state.articles.zwoReview];
+      reviews = [state.articles.seestarS50ProReview, state.articles.askar103Review, state.articles.ts130Review, state.articles.askar80Review, state.articles.sqa55Review, state.articles.zwoReview];
     } else if (typeSet.has("opposition")) {
       editorial = [state.articles.planetary, state.articles.planetNine, state.articles.marsLife, state.articles.earthLike];
       reviews = [state.articles.asi6200Review, state.articles.atr2600Review, state.articles.ts130Review, state.articles.falconReview];
     } else if (moon.phase < 35) {
       editorial = [state.articles.deepSky, state.articles.rubin, state.articles.earliestGalaxies, state.articles.darkStars, state.articles.darkEnergy, state.articles.wormholes, state.articles.numbers];
-      reviews = [state.articles.asi6200Review, state.articles.atr2600Review, state.articles.sqa55Review, state.articles.askar80Review, state.articles.askar103Review, state.articles.ts130Review, state.articles.falconReview, state.articles.flatPanelReview];
+      reviews = [state.articles.seestarS50ProReview, state.articles.asi6200Review, state.articles.atr2600Review, state.articles.sqa55Review, state.articles.askar80Review, state.articles.askar103Review, state.articles.ts130Review, state.articles.falconReview, state.articles.flatPanelReview];
     } else {
       editorial = [state.articles.numbers, state.articles.deepSky, state.articles.accessories, state.articles.lightPollution, state.articles.earthLike, state.articles.darkEnergy];
-      reviews = [state.articles.powerReview, state.articles.monitorReview, state.articles.flatPanelReview, state.articles.falconReview, state.articles.zwoReview, state.articles.sqmReview];
+      reviews = [state.articles.seestarS50ProReview, state.articles.powerReview, state.articles.monitorReview, state.articles.flatPanelReview, state.articles.falconReview, state.articles.zwoReview, state.articles.sqmReview];
     }
 
     const editorialPool = uniqueArticles(editorial);
@@ -2165,6 +2221,19 @@
     els.useLocation.title = state.hasLocation
       ? `Using ${locationDisplay()}. Tap to refresh your current location.`
       : "Use your device's current location";
+  }
+
+  function handleBackTopVisibility() {
+    if (!els.backToTop || state.backTopFrame) return;
+    state.backTopFrame = window.requestAnimationFrame(() => {
+      state.backTopFrame = null;
+      const calendarTop = root.getBoundingClientRect().top;
+      els.backToTop.classList.toggle("is-visible", isMobileCarousel() && calendarTop < -520);
+    });
+  }
+
+  function scrollCalendarToTop() {
+    window.scrollTo({ top: Math.max(0, window.scrollY + root.getBoundingClientRect().top), behavior: "auto" });
   }
 
   function setLocationActionText(text) {

@@ -13,7 +13,7 @@ function argument(name, fallback = "") {
 
 const url = argument("url", "http://127.0.0.1:4173/");
 const outputDir = path.resolve(rootDir, argument("output", ".release-snapshots"));
-const version = argument("version", "Beta0.9.3");
+const version = argument("version", "Beta0.9.4");
 const selectedDay = Number(argument("day", "12"));
 const chromePath = argument("chrome", "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
 const modulesPath = argument("modules", process.env.AMC_NODE_MODULES || "");
@@ -24,7 +24,6 @@ if (!modulesPath) {
 
 const runtimeRequire = createRequire(path.join(path.resolve(modulesPath), "package.json"));
 const { chromium } = runtimeRequire("playwright");
-const sharp = runtimeRequire("sharp");
 
 const location = {
   lat: 51.50853,
@@ -120,17 +119,19 @@ try {
     });
 
     const file = await fs.readFile(outputPath);
-    const metadata = await sharp(file).metadata();
     const signature = file.subarray(0, 8).toString("hex");
-    if (signature !== "89504e470d0a1a0a" || metadata.format !== "png") {
+    const ihdr = file.subarray(12, 16).toString("ascii");
+    const width = file.readUInt32BE(16);
+    const height = file.readUInt32BE(20);
+    if (signature !== "89504e470d0a1a0a" || ihdr !== "IHDR" || width < 1 || height < 1) {
       throw new Error(`${filename} is not a valid PNG.`);
     }
     results.push({
       filename,
       bytes: file.length,
-      width: metadata.width,
-      height: metadata.height,
-      format: metadata.format,
+      width,
+      height,
+      format: "png",
       pageErrors
     });
   }

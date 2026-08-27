@@ -98,10 +98,8 @@
     6: [
       event("sky", "Moon and Mars", "The Moon passes close to Mars.", "Moon-planet pairing.", ["inSky"], media.planets)
     ],
-    7: [
-      event("sky", "Moon near the Beehive Cluster", "The waning crescent Moon passes close to Messier 44, the Beehive Cluster, before dawn.", "Moon-cluster close approach.", ["inSky"], media.cluster)
-    ],
     8: [
+      event("sky", "Moon near the Beehive Cluster", "The waning crescent Moon passes close to Messier 44, the Beehive Cluster, before dawn.", "Moon-cluster close approach.", ["inSky"], media.cluster),
       event("occultation", "Lunar occultation of Jupiter", "The Moon occults Jupiter for observers inside a limited visibility path; elsewhere the pair makes a close pre-dawn approach.", "Location-dependent occultation and close approach.", ["inSky"], media.planets)
     ],
     9: [
@@ -122,9 +120,6 @@
     ],
     14: [
       event("occultation", "Lunar occultation of Venus", "The Moon occults Venus along a limited geographic path; elsewhere a slim crescent Moon and Venus form a close evening-twilight pairing.", "Location-dependent occultation and close approach.", ["inSky"], media.venus)
-    ],
-    16: [
-      event("sky", "Mercury high in the evening sky", "Mercury reaches its highest evening altitude for the current apparition from many mid-northern locations; exact visibility depends strongly on latitude.", "Use a clear western horizon and never sweep near the Sun with optics.", ["inSky"], media.planets)
     ],
     17: [
       event("occultation", "Moon occults Antares", "The Moon passes in front of Antares for observers inside a limited visibility path; elsewhere it is a close conjunction.", "Location-dependent occultation.", ["inSky"], media.planets)

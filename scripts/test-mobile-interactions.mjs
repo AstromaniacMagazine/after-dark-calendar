@@ -96,9 +96,13 @@ try {
   });
   const page = await context.newPage();
   page.on("pageerror", error => failures.push(error.message));
+  const loadStarted = Date.now();
   await page.goto("http://127.0.0.1:4174/", { waitUntil: "domcontentloaded" });
   await page.locator("#amc-after-dark-calendar").waitFor();
   await page.locator(".amc-day.is-mobile-active").waitFor();
+  await page.waitForFunction(() => document.querySelector("#amc-after-dark-calendar")?.dataset.ready === "true");
+  const readyMs = Date.now() - loadStarted;
+  assert(readyMs < 1800, `Inline calendar took too long to become ready locally: ${readyMs}ms`);
   await page.waitForTimeout(500);
 
   const today = new Date().getDate();
@@ -110,6 +114,9 @@ try {
   assert.equal(new Set(rowTops).size, 1, "Mobile location controls are not on one row");
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), 0, "Calendar has horizontal page overflow");
   assert.equal(await page.locator("iframe").count(), 0, "The inline installation unexpectedly contains an iframe");
+  assert.equal(await page.locator(".amc-expanded-observing-title").count(), 0, "The redundant observing summary is still visible");
+  const todayStyle = await page.locator(".amc-day.is-today").evaluate(element => ({ border: getComputedStyle(element).borderTopWidth, shadow: getComputedStyle(element).boxShadow }));
+  assert(Number.parseFloat(todayStyle.border) >= 3 && todayStyle.shadow !== "none", "Today is not visibly highlighted");
 
   const cdp = await context.newCDPSession(page);
   for (const selector of [
@@ -138,6 +145,17 @@ try {
     assert(Math.abs(after - before) > 100, `Vertical touch scrolling failed over ${selector}: ${before} -> ${after}`);
   }
 
+  const targetList = page.locator(".amc-day.is-mobile-active .amc-target-list");
+  const targetListTop = await targetList.evaluate(element => element.getBoundingClientRect().top + scrollY);
+  await page.evaluate(scrollTop => scrollTo(0, scrollTop), Math.max(0, targetListTop - 360));
+  await page.waitForTimeout(60);
+  const targetListBox = await targetList.boundingBox();
+  const targetScrollBefore = await targetList.evaluate(element => element.scrollLeft);
+  await touchDrag(cdp, { x: targetListBox.x + targetListBox.width * .78, y: targetListBox.y + 90 }, { x: targetListBox.x + targetListBox.width * .18, y: targetListBox.y + 94 }, 12);
+  await page.waitForTimeout(180);
+  const targetScrollAfter = await targetList.evaluate(element => element.scrollLeft);
+  assert(targetScrollAfter - targetScrollBefore > 80, `Suggested targets did not scroll horizontally: ${targetScrollBefore} -> ${targetScrollAfter}; box=${JSON.stringify(targetListBox)}`);
+
   const gridTop = await page.locator("#amc-grid").evaluate(element => element.getBoundingClientRect().top + scrollY);
   await page.evaluate(scrollTop => scrollTo(0, scrollTop), Math.max(0, gridTop - 180));
   await page.waitForTimeout(60);
@@ -155,7 +173,7 @@ try {
   const dayAfter = Number(await page.locator(".amc-day.is-mobile-active").getAttribute("data-day"));
   const parentAfter = await page.evaluate(() => scrollY);
   const touchStartY = await page.evaluate(() => window.__amcTestTouchStartY);
-  assert(dayAfter > dayBefore, `Horizontal day swipe did not advance: ${dayBefore} -> ${dayAfter}`);
+  assert(dayAfter > dayBefore, `Horizontal day swipe did not advance: ${dayBefore} -> ${dayAfter}; box=${JSON.stringify(gridBox)}`);
   assert(Math.abs(parentAfter - touchStartY) < 12, `Horizontal day swipe moved the page after touch start: ${touchStartY} -> ${parentAfter} (pre-touch momentum was ${parentBefore})`);
 
   const transitionDay = dayAfter < 31 ? dayAfter + 1 : dayAfter - 1;
@@ -172,8 +190,8 @@ try {
   await page.locator(`.amc-mobile-day-chip[data-month-id="2026-08"][data-day="${transitionDay}"]`).click();
   await page.waitForTimeout(70);
   const middleScroll = await page.locator("#amc-grid").evaluate(element => element.scrollLeft);
-  assert(Math.abs(middleScroll - transitionMetrics.start) > 1, "Date transition did not begin smoothly");
-  assert(Math.abs(middleScroll - transitionMetrics.target) > 1, "Date transition jumped straight to its final position");
+  assert(Math.abs(middleScroll - transitionMetrics.start) > 1, `Date transition did not begin smoothly: ${JSON.stringify({ middleScroll, ...transitionMetrics })}`);
+  assert(Math.abs(middleScroll - transitionMetrics.target) > 1, `Date transition jumped straight to its final position: ${JSON.stringify({ middleScroll, ...transitionMetrics })}`);
   await page.waitForTimeout(340);
   const finalScroll = await page.locator("#amc-grid").evaluate(element => element.scrollLeft);
   assert(Math.abs(finalScroll - transitionMetrics.target) < 2, "Date transition did not finish centred");
@@ -183,7 +201,19 @@ try {
   await page.waitForTimeout(120);
   assert.equal(Number(await page.locator(".amc-day.is-mobile-active").getAttribute("data-day")), today, "Restored page did not reset to Today");
   const activeChipWidth = await page.locator(".amc-mobile-day-chip.is-active").evaluate(element => Math.round(element.getBoundingClientRect().width));
-  assert(activeChipWidth >= 62 && activeChipWidth <= 66, `The simple active date chip has an unexpected width: ${activeChipWidth}px`);
+  assert(activeChipWidth >= 57 && activeChipWidth <= 59, `The fixed-width active date chip has an unexpected width: ${activeChipWidth}px`);
+  const railAlignment = await page.evaluate(() => {
+    const rail = document.querySelector("#amc-mobile-day-rail").getBoundingClientRect();
+    const focus = document.querySelector(".amc-mobile-day-chip.is-rail-focus").getBoundingClientRect();
+    return Math.abs((rail.left + rail.width / 2) - (focus.left + focus.width / 2));
+  });
+  assert(railAlignment < 2, `The focused date is not inside the fixed centre highlight: ${railAlignment}px`);
+  await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight - innerHeight));
+  await page.waitForTimeout(120);
+  assert.equal(await page.locator("#amc-back-to-top").evaluate(element => element.classList.contains("is-visible")), true, "Back-to-top control did not appear");
+  await page.locator("#amc-back-to-top").click();
+  await page.waitForTimeout(650);
+  assert(Math.abs(await page.locator("#amc-after-dark-calendar").evaluate(element => element.getBoundingClientRect().top)) < 3, "Back-to-top did not return to the calendar top");
   for (const width of [320, 430]) {
     await page.setViewportSize({ width, height: 844 });
     await page.waitForTimeout(180);
@@ -192,7 +222,7 @@ try {
     assert.equal(new Set(tops).size, 1, `Location controls do not stay on one row at ${width}px`);
   }
   assert.deepEqual(failures, [], `Page errors: ${failures.join(" | ")}`);
-  console.log(JSON.stringify({ ok: true, today, nativeInlineScroll: true, verticalTargets: 4, horizontalSwipe: [dayBefore, dayAfter], locationRow: true }, null, 2));
+  console.log(JSON.stringify({ ok: true, readyMs, today, nativeInlineScroll: true, verticalTargets: 4, horizontalSwipe: [dayBefore, dayAfter], targetCarousel: true, fixedDateFocus: true, backToTop: true, locationRow: true }, null, 2));
   await context.close();
 } finally {
   await browser.close();

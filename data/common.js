@@ -261,6 +261,12 @@
       image: "https://images.squarespace-cdn.com/content/v1/6707b4b3f2000e3c80442056/807dd1bd-d4dd-4e3d-8c84-6d9549430fbb/Astromaniac+Magazine+review+-+ZWO+ASI6200MC+Pro.jpg?format=750w",
       kind: "Review"
     },
+    seestarS50ProReview: {
+      title: "Seestar S50 Pro Smart Telescope: Let’s Get Serious.",
+      url: "https://www.astromaniacmagazine.com/reviews/seestar-s50-pro-smart-telescope-review",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/6a901d9e40bc2c3e1eb1ac20/1787829662772/Seestar+S50+Pro+Review+by+Astromaniac+Magazine.jpg?format=750w",
+      kind: "Review"
+    },
     atr2600Review: {
       title: "ToupTek ATR2600C: A Serious Challenger to APS-C DSO Cameras",
       url: "https://www.astromaniacmagazine.com/reviews/touptek-atr2600c-astronomy-cooled-camera",
