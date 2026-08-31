@@ -333,14 +333,14 @@
   function animateMonthChange(direction) {
     if (!direction) return;
     if (state.monthTransitionTimer) window.clearTimeout(state.monthTransitionTimer);
-    root.style.setProperty("--month-shift", `${direction < 0 ? "-" : ""}14px`);
+    root.style.setProperty("--month-shift", `${direction < 0 ? "-" : ""}8px`);
     root.classList.remove("is-month-entering");
     void root.offsetWidth;
     root.classList.add("is-month-entering");
     state.monthTransitionTimer = window.setTimeout(() => {
       root.classList.remove("is-month-entering");
       state.monthTransitionTimer = null;
-    }, 560);
+    }, 500);
   }
 
   function renderMonthHeader() {
@@ -1214,7 +1214,7 @@
           <span class="amc-minimise" aria-hidden="true">-</span>
         </span>
       </span>
-      ${expandedObservingPanel(weatherForCalendarDay(day))}
+      ${expandedObservingPanel(day, weatherForCalendarDay(day))}
       <span class="amc-mini-grid">
         ${zodiacCard(day)}
         ${eventDataCard(primary)}
@@ -1228,8 +1228,8 @@
       <span class="amc-cell-mobile-extra">
         ${events.length ? `<span class="amc-expanded-event-list">${events.map(expandedEventItem).join("")}</span>` : ""}
         ${moonChart(skyInfo, nightInfo, true)}
-        ${cellWeatherPanel()}
         ${includeRecommendations ? `<span class="amc-mobile-recommendations">${recommendationsMarkup(day)}</span>` : ""}
+        ${cellWeatherPanel()}
       </span>
     `;
   }
@@ -1245,8 +1245,13 @@
     return `<span class="amc-day-observing" aria-hidden="true" title="Observing conditions: ${escapeHtml(summary)}">${weather.segments.map(segment => `<i style="background:${segmentColour(segment, "observing")}"></i>`).join("")}</span>`;
   }
 
-  function expandedObservingPanel(weather) {
-    if (!weather?.segments?.length) return "";
+  function expandedObservingPanel(day, weather) {
+    if (!weather?.segments?.length) {
+      if (state.hasLocation && state.weatherState === "ready" && state.weather.length) {
+        return `<span class="amc-forecast-window-note">Outside the 7-day forecast window</span>`;
+      }
+      return "";
+    }
     return `<span class="amc-expanded-observing" aria-label="Quarter-by-quarter observing conditions">
       <span class="amc-expanded-observing-slots">${weather.segments.map(segment => {
         const rating = observingRating(segment.observingScore);
@@ -1443,9 +1448,34 @@
       image: targetThumbnail(name, day),
       best: observing.best,
       altitude: observing.altitude,
-      moon: `${moon.phase}% lit`,
+      constellation: targetConstellation(meta, name, day),
       size: meta?.size || "varies"
     };
+  }
+
+  function targetConstellation(meta, name, day) {
+    const Astronomy = window.Astronomy;
+    try {
+      if (Astronomy?.Constellation && Number.isFinite(meta?.ra) && Number.isFinite(meta?.dec)) {
+        return Astronomy.Constellation(meta.ra, meta.dec).name;
+      }
+      if (Astronomy?.Constellation && meta?.body && Astronomy.Body?.[meta.body]) {
+        const observer = new Astronomy.Observer(state.hasLocation ? state.lat : 0, state.hasLocation ? state.lon : 0, 0);
+        const sample = zonedDate(state.month.year, state.month.monthIndex, day, 22, 0, 0);
+        const equator = Astronomy.Equator(Astronomy.Body[meta.body], sample, observer, true, true);
+        return Astronomy.Constellation(equator.ra, equator.dec).name;
+      }
+    } catch {
+      // A short, honest fallback is preferable to hiding the field entirely.
+    }
+    const text = String(name).toLowerCase();
+    if (/aurigid/.test(text)) return "Auriga";
+    if (/epsilon perseid/.test(text)) return "Perseus";
+    if (/lyncid/.test(text)) return "Lynx";
+    if (/milky way/.test(text)) return "Sagittarius";
+    if (/meteor/.test(text)) return "Radiant varies";
+    if (/asteroid|comet/.test(text)) return "Check finder chart";
+    return "Varies by date";
   }
 
   function targetCard(target, index = 0) {
@@ -1458,7 +1488,7 @@
       <span class="amc-target-facts">
         <span><em>Highest point</em><strong>${escapeHtml(target.best)}</strong></span>
         <span><em>Max altitude</em><strong>${escapeHtml(target.altitude)}</strong></span>
-        <span><em>Moon brightness</em><strong>${escapeHtml(target.moon)}</strong></span>
+        <span><em>Constellation</em><strong>${escapeHtml(target.constellation)}</strong></span>
         <span><em>Apparent size</em><strong>${escapeHtml(target.size)}</strong></span>
       </span>
     </li>`;
@@ -1584,18 +1614,15 @@
       .filter(Boolean)
       .map(path => `<path d="${path}" fill="none" stroke="#d08a13" stroke-width="${compact ? 3 : 3.2}" stroke-linecap="round"/>`)
       .join("");
-    const markers = timeline.markers.map(marker => {
-      const point = chartPoint({ hour: marker.hour, altitude: 0 }, chart, maxAltitude);
-      return `<g><circle cx="${point.x}" cy="${point.y}" r="${compact ? 3.2 : 4}" fill="#d08a13"/><text x="${point.x}" y="${point.y - 19}" text-anchor="middle" fill="#8b5f12" font-size="${compact ? 8 : 8.8}" font-weight="600">${marker.label}</text><text x="${point.x}" y="${point.y - 7}" text-anchor="middle" fill="currentColor" font-size="${compact ? 7.4 : 8.2}" font-weight="600">${marker.time}</text></g>`;
-    }).join("");
     const now = chartNowMarker(timeline.startMs, timeline.endMs);
     const nowX = chart.x + ((now?.hour || 0) / chartDurationHours) * chart.width;
+    const nowAnchor = !now || now.hour < 2.5 ? "start" : now.hour > chartDurationHours - 2.5 ? "end" : "middle";
     const nowStyle = now ? "" : " style=\"display:none\"";
     const nowMarker = `<g class="amc-now-marker" data-now-marker${nowStyle}>
-      <title data-now-title>${now ? `Current local time ${now.time}` : "Current time is outside this chart window"}</title>
+      <title data-now-title>${now ? `Now: ${now.detail}` : "Current time is outside this chart window"}</title>
       <line data-now-line x1="${nowX}" x2="${nowX}" y1="${chart.y}" y2="${chart.y + chart.height}" stroke="var(--accent)" stroke-width="1.15" stroke-dasharray="4 3"/>
-      <text data-now-label x="${nowX}" y="${chart.y + 11}" text-anchor="middle" fill="var(--accent)" font-size="${compact ? 7.2 : 8.2}" font-weight="600">NOW</text>
-      <text data-now-time x="${nowX}" y="${chart.y + chart.height - 7}" text-anchor="middle" fill="var(--accent)" font-size="${compact ? 6.8 : 7.8}" font-weight="600">${now?.time || ""}</text>
+      <text data-now-label x="${nowX}" y="${chart.y + 12}" text-anchor="${nowAnchor}" fill="var(--accent)" font-size="${compact ? 9.2 : 10.4}" font-weight="700">NOW</text>
+      <text data-now-detail x="${nowX}" y="${chart.y + chart.height - 7}" text-anchor="${nowAnchor}" fill="var(--accent)" font-size="${compact ? 8.2 : 9.4}" font-weight="700">${now?.detail || ""}</text>
     </g>`;
     return `<svg class="amc-alt-svg" data-now-chart data-chart-start="${timeline.startMs}" data-chart-end="${timeline.endMs}" data-chart-x="${chart.x}" data-chart-width="${chart.width}" viewBox="0 0 ${viewWidth} ${viewHeight}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Moon altitude from 16:00 to 08:00, scaled from 0 to 75 degrees">
       <g style="color: var(--text)">
@@ -1603,7 +1630,7 @@
         <line x1="${chart.x}" x2="${chart.x + chart.width}" y1="${chart.y + chart.height}" y2="${chart.y + chart.height}" stroke="rgba(22,25,29,.42)" stroke-width="1.2"/>
         <line x1="${chart.x}" x2="${chart.x}" y1="${chart.y}" y2="${chart.y + chart.height}" stroke="rgba(22,25,29,.36)" stroke-width="1.2"/>
         <text x="${chart.x + chart.width / 2}" y="${chart.y + chart.height + (compact ? 31 : 34)}" text-anchor="middle" fill="currentColor" font-size="${compact ? 11.2 : 12.6}" font-weight="400">TIME</text>
-        ${paths}${markers}${nowMarker}
+        ${paths}${nowMarker}
       </g>
     </svg>`;
   }
@@ -1934,14 +1961,11 @@
       darknessStates.push(darknessState(bodyAltitude(Astronomy.Body.Sun, sample, observer)));
     }
     moonSamples.push({ hour: chartDurationHours, altitude: bodyAltitude(Astronomy.Body.Moon, end, observer) });
-    const rise = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, +1, start, .75);
-    const set = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, -1, start, .75);
     return {
       startMs: start.getTime(),
       endMs: end.getTime(),
       bands: compressBands(darknessStates),
-      moonSegments: moonVisibleSegments(moonSamples),
-      markers: [chartMarker(rise, start, end, "Rise"), chartMarker(set, start, end, "Set")].filter(Boolean)
+      moonSegments: moonVisibleSegments(moonSamples)
     };
   }
 
@@ -2287,11 +2311,14 @@
       marker.querySelector("[data-now-line]")?.setAttribute("x1", x);
       marker.querySelector("[data-now-line]")?.setAttribute("x2", x);
       marker.querySelector("[data-now-label]")?.setAttribute("x", x);
-      marker.querySelector("[data-now-time]")?.setAttribute("x", x);
-      const time = marker.querySelector("[data-now-time]");
+      marker.querySelector("[data-now-detail]")?.setAttribute("x", x);
+      const anchor = now.hour < 2.5 ? "start" : now.hour > chartDurationHours - 2.5 ? "end" : "middle";
+      marker.querySelector("[data-now-label]")?.setAttribute("text-anchor", anchor);
+      marker.querySelector("[data-now-detail]")?.setAttribute("text-anchor", anchor);
+      const detail = marker.querySelector("[data-now-detail]");
       const title = marker.querySelector("[data-now-title]");
-      if (time) time.textContent = now.time;
-      if (title) title.textContent = `Current local time ${now.time}`;
+      if (detail) detail.textContent = now.detail;
+      if (title) title.textContent = `Now: ${now.detail}`;
     });
   }
 
@@ -2624,9 +2651,22 @@
   function chartNowMarker(startMs, endMs) {
     const now = Date.now();
     if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || now < startMs || now > endMs) return null;
+    const date = new Date(now);
+    const parts = zonedDateParts(date);
+    let altitude = "N/A";
+    try {
+      const Astronomy = window.Astronomy;
+      const observer = new Astronomy.Observer(state.lat, state.lon, 0);
+      altitude = `${Math.round(bodyAltitude(Astronomy.Body.Moon, date, observer))}°`;
+    } catch {}
+    const time = `${parts.hour}:${parts.minute}`;
+    const dateLabel = `${Number(parts.day)} ${monthShort[Number(parts.month) - 1]}`;
     return {
       hour: chartDurationHours * (now - startMs) / Math.max(1, endMs - startMs),
-      time: formatTime(new Date(now))
+      time,
+      date: dateLabel,
+      altitude,
+      detail: `${time} · ${dateLabel} · ${altitude}`
     };
   }
 

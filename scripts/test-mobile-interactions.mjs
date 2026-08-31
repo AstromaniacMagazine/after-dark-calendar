@@ -58,6 +58,7 @@ async function touchDrag(cdp, from, to, steps = 8) {
       type: "touchMove",
       touchPoints: [{ x: from.x + (to.x - from.x) * ratio, y: from.y + (to.y - from.y) * ratio }]
     });
+    await new Promise(resolve => setTimeout(resolve, 12));
   }
   await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
 }
@@ -115,6 +116,15 @@ try {
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), 0, "Calendar has horizontal page overflow");
   assert.equal(await page.locator("iframe").count(), 0, "The inline installation unexpectedly contains an iframe");
   assert.equal(await page.locator(".amc-expanded-observing-title").count(), 0, "The redundant observing summary is still visible");
+  assert.equal(await page.getByText("Moon brightness", { exact: true }).count(), 0, "Target cards still display Moon brightness");
+  assert.equal(await page.locator(".amc-day.is-mobile-active .amc-target-facts em", { hasText: "Constellation" }).count(), 4, "All four targets should display a constellation");
+  assert.equal(await page.evaluate(() => {
+    const active = document.querySelector(".amc-day.is-mobile-active");
+    const recommendations = active?.querySelector(".amc-mobile-recommendations");
+    const forecast = active?.querySelector(".amc-cell-weather-list");
+    return Boolean(recommendations && forecast && (recommendations.compareDocumentPosition(forecast) & Node.DOCUMENT_POSITION_FOLLOWING));
+  }), true, "The mobile forecast is not below targets and related articles");
+  assert.equal(await page.locator(".amc-day.is-mobile-active [data-now-detail]").count(), 1, "Moon chart is missing its live time/date/altitude label");
   const todayStyle = await page.locator(".amc-day.is-today").evaluate(element => ({ border: getComputedStyle(element).borderTopWidth, shadow: getComputedStyle(element).boxShadow }));
   assert(Number.parseFloat(todayStyle.border) >= 3 && todayStyle.shadow !== "none", "Today is not visibly highlighted");
 
@@ -151,10 +161,11 @@ try {
   await page.waitForTimeout(60);
   const targetListBox = await targetList.boundingBox();
   const targetScrollBefore = await targetList.evaluate(element => element.scrollLeft);
-  await touchDrag(cdp, { x: targetListBox.x + targetListBox.width * .78, y: targetListBox.y + 90 }, { x: targetListBox.x + targetListBox.width * .18, y: targetListBox.y + 94 }, 12);
+  const targetMetrics = await targetList.evaluate(element => ({ scrollWidth: element.scrollWidth, clientWidth: element.clientWidth, overflowX: getComputedStyle(element).overflowX, touchAction: getComputedStyle(element).touchAction }));
+  await touchDrag(cdp, { x: targetListBox.x + targetListBox.width * .78, y: targetListBox.y + targetListBox.height * .5 }, { x: targetListBox.x + targetListBox.width * .18, y: targetListBox.y + targetListBox.height * .5 + 3 }, 16);
   await page.waitForTimeout(180);
   const targetScrollAfter = await targetList.evaluate(element => element.scrollLeft);
-  assert(targetScrollAfter - targetScrollBefore > 80, `Suggested targets did not scroll horizontally: ${targetScrollBefore} -> ${targetScrollAfter}; box=${JSON.stringify(targetListBox)}`);
+  assert(targetScrollAfter - targetScrollBefore > 80, `Suggested targets did not scroll horizontally: ${targetScrollBefore} -> ${targetScrollAfter}; box=${JSON.stringify(targetListBox)}; metrics=${JSON.stringify(targetMetrics)}`);
 
   const gridTop = await page.locator("#amc-grid").evaluate(element => element.getBoundingClientRect().top + scrollY);
   await page.evaluate(scrollTop => scrollTo(0, scrollTop), Math.max(0, gridTop - 180));
@@ -166,14 +177,16 @@ try {
   const parentBefore = await page.evaluate(() => scrollY);
   await page.evaluate(() => document.querySelector("#amc-grid").addEventListener("touchstart", () => { window.__amcTestTouchStartY = scrollY; }, { once: true, capture: true }));
   const dayBefore = Number(await page.locator(".amc-day.is-mobile-active").getAttribute("data-day"));
+  const monthBefore = await page.locator(".amc-mobile-day-chip.is-active").getAttribute("data-month-id");
   const x = gridBox.x + gridBox.width * .7;
   const y = gridBox.y + 120;
   await touchDrag(cdp, { x, y }, { x: x - 260, y: y + 6 }, 12);
   await page.waitForTimeout(520);
   const dayAfter = Number(await page.locator(".amc-day.is-mobile-active").getAttribute("data-day"));
+  const monthAfter = await page.locator(".amc-mobile-day-chip.is-active").getAttribute("data-month-id");
   const parentAfter = await page.evaluate(() => scrollY);
   const touchStartY = await page.evaluate(() => window.__amcTestTouchStartY);
-  assert(dayAfter > dayBefore, `Horizontal day swipe did not advance: ${dayBefore} -> ${dayAfter}; box=${JSON.stringify(gridBox)}`);
+  assert(monthAfter > monthBefore || (monthAfter === monthBefore && dayAfter > dayBefore), `Horizontal day swipe did not advance: ${monthBefore}-${dayBefore} -> ${monthAfter}-${dayAfter}; box=${JSON.stringify(gridBox)}`);
   assert(Math.abs(parentAfter - touchStartY) < 12, `Horizontal day swipe moved the page after touch start: ${touchStartY} -> ${parentAfter} (pre-touch momentum was ${parentBefore})`);
 
   const transitionDay = dayAfter < 31 ? dayAfter + 1 : dayAfter - 1;
@@ -187,7 +200,7 @@ try {
       target: Math.max(0, Math.min(grid.scrollLeft + cardRect.left + cardRect.width / 2 - gridRect.left - gridRect.width / 2, grid.scrollWidth - grid.clientWidth))
     };
   }, transitionDay);
-  await page.locator(`.amc-mobile-day-chip[data-month-id="2026-08"][data-day="${transitionDay}"]`).click();
+  await page.locator(`.amc-mobile-day-chip[data-month-id="${monthAfter}"][data-day="${transitionDay}"]`).click();
   await page.waitForTimeout(70);
   const middleScroll = await page.locator("#amc-grid").evaluate(element => element.scrollLeft);
   assert(Math.abs(middleScroll - transitionMetrics.start) > 1, `Date transition did not begin smoothly: ${JSON.stringify({ middleScroll, ...transitionMetrics })}`);
@@ -220,7 +233,29 @@ try {
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), 0, `Inline calendar overflows at ${width}px`);
     const tops = await page.locator("#amc-use-location, #amc-location-label, #amc-location-input, #amc-manual-location button").evaluateAll(elements => elements.map(element => Math.round(element.getBoundingClientRect().top)));
     assert.equal(new Set(tops).size, 1, `Location controls do not stay on one row at ${width}px`);
+    const radii = await page.locator("#amc-use-location, #amc-location-label, #amc-location-input, #amc-manual-location button").evaluateAll(elements => elements.map(element => getComputedStyle(element).borderTopLeftRadius));
+    assert.equal(new Set(radii).size, 1, `Location controls do not share one corner radius at ${width}px`);
   }
+  await page.setViewportSize({ width: 390, height: 844 });
+  const suggestionSizing = await page.evaluate(() => {
+    const result = document.querySelector("#amc-location-results");
+    const option = document.createElement("button");
+    option.className = "amc-location-option";
+    option.innerHTML = "<b>London</b><span>United Kingdom</span>";
+    result.hidden = false;
+    result.append(option);
+    const sizes = { input: parseFloat(getComputedStyle(document.querySelector("#amc-location-input")).fontSize), option: parseFloat(getComputedStyle(option).fontSize) };
+    option.remove();
+    result.hidden = true;
+    return sizes;
+  });
+  assert(suggestionSizing.option <= 8.5, `City suggestion text was not reduced by 25% from its former 11.2px size: ${JSON.stringify(suggestionSizing)}`);
+  await page.locator('.amc-mobile-day-chip[data-month-id="2026-08"][data-day="15"]').click();
+  await page.waitForTimeout(520);
+  assert.equal(await page.locator(".amc-day.is-mobile-active .amc-forecast-window-note").innerText(), "Outside the 7-day forecast window", "An out-of-range day does not explain forecast availability");
+  await page.locator("#amc-today-button").click();
+  await page.waitForTimeout(420);
+  assert.equal(Number(await page.locator(".amc-day.is-mobile-active").getAttribute("data-day")), today, "Today did not restore after the out-of-range forecast test");
   assert.deepEqual(failures, [], `Page errors: ${failures.join(" | ")}`);
   console.log(JSON.stringify({ ok: true, readyMs, today, nativeInlineScroll: true, verticalTargets: 4, horizontalSwipe: [dayBefore, dayAfter], targetCarousel: true, fixedDateFocus: true, backToTop: true, locationRow: true }, null, 2));
   await context.close();

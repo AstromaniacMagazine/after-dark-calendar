@@ -252,6 +252,14 @@ if (!calendarScript.includes("activateMobileDay")) fail("The mobile day activati
 if (!html.includes("Sources and logs")) fail("The sources section title has not been updated.");
 if (!html.includes('id="amc-back-to-top"')) fail("The mobile back-to-top control is missing.");
 if (calendarScript.includes('amc-expanded-observing-title">Observing conditions')) fail("The redundant expanded observing summary is still rendered.");
+if (calendarScript.includes("Moon brightness")) fail("Target cards still show Moon brightness instead of constellation.");
+if (!calendarScript.includes("targetConstellation") || !calendarScript.includes("<em>Constellation</em>")) fail("Target-card constellation calculation is missing.");
+if (calendarScript.includes("data-now-time")) fail("The Moon chart still uses the old time-only NOW label.");
+if (!calendarScript.includes("data-now-detail") || !calendarScript.includes("dateLabel") || !calendarScript.includes("altitude")) fail("The Moon chart NOW marker is missing time, date or altitude context.");
+if (calendarScript.includes('chartMarker(rise') || calendarScript.includes('chartMarker(set')) fail("Rise/set markers are still added to the Moon chart.");
+if (!calendarScript.includes("Outside the 7-day forecast window")) fail("Days beyond the weather horizon do not explain forecast availability.");
+if (!calendarCss.includes("grid-template-columns: repeat(3, minmax(0, 1fr))")) fail("Sources and logs are not arranged in three compact columns.");
+if (!calendarCss.includes(".amc-version-panel h3") || !calendarCss.includes("color: var(--accent)")) fail("The current-version heading is not theme adaptive.");
 if (!read("data/common.js").includes("seestar-s50-pro-smart-telescope-review")) fail("The Seestar S50 Pro review is missing from related articles.");
 if (!inlineLoader.includes('id="amc-after-dark-calendar"') || !inlineLoader.includes(`data-version="${declaredVersion}"`)) fail("The Squarespace inline loader is missing or has the wrong version.");
 if (!inlineLoader.includes(`const build = "${declaredVersion}-`)) fail("The Squarespace inline loader cache key does not match the calendar version.");
