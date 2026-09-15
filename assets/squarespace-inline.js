@@ -6,9 +6,30 @@
   if (!script || !host || host.dataset.amcLoaded === "true") return;
 
   const base = new URL("../", script.src).href;
-  const build = "Beta0.9.5-20260831a";
+  const build = "Beta0.9.6-20260915a";
   host.dataset.amcLoaded = "true";
   host.classList.add("amc-inline-host");
+
+  if (!document.querySelector('script[data-amc-calendar-schema]')) {
+    const schema = document.createElement("script");
+    schema.type = "application/ld+json";
+    schema.dataset.amcCalendarSchema = "calendar";
+    schema.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "@id": "https://www.astromaniacmagazine.com/after-dark-calendar#calendar",
+      name: "After Dark Calendar",
+      url: "https://www.astromaniacmagazine.com/after-dark-calendar",
+      applicationCategory: "AstronomyApplication",
+      operatingSystem: "Any",
+      softwareVersion: build.split("-")[0],
+      isAccessibleForFree: true,
+      inLanguage: "en-GB",
+      publisher: { "@type": "Organization", name: "Astromaniac Magazine", url: "https://www.astromaniacmagazine.com/" },
+      description: "A location-aware 2026 night-sky calendar with Moon phases, celestial events, astronomical darkness, target altitude and a seven-night observing forecast."
+    });
+    document.head.appendChild(schema);
+  }
 
   if (!document.querySelector("link[data-amc-calendar-styles]")) {
     const styles = document.createElement("link");
@@ -19,7 +40,7 @@
   }
 
   host.innerHTML = `
-    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="Beta0.9.5" data-asset-version="${build}" data-asset-base="${base}" data-inline="true" aria-labelledby="amc-title">
+    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="Beta0.9.6" data-asset-version="${build}" data-asset-base="${base}" data-inline="true" aria-labelledby="amc-title">
       <div class="amc-print-brand" aria-hidden="true">
         <img class="amc-print-logo" src="${base}assets/astromaniac-logo.webp" alt="">
         <div><strong>After Dark Calendar</strong><span>by Astromaniac Magazine</span></div>
@@ -29,7 +50,7 @@
       <header class="amc-top">
         <div class="amc-brand-lockup">
           <img class="amc-brand-logo" src="${base}assets/astromaniac-logo.webp" alt="" width="56" height="56" loading="eager" decoding="async">
-          <h1 class="amc-title" id="amc-title"><span class="amc-title-line"><span>After Dark Calendar</span><small class="amc-version-badge" aria-label="Current version Beta0.9.5">Beta0.9.5</small></span><span class="amc-byline">by Astromaniac Magazine</span></h1>
+          <h1 class="amc-title" id="amc-title"><span class="amc-title-line"><span>After Dark Calendar</span><small class="amc-version-badge" aria-label="Current version Beta0.9.6">Beta0.9.6</small></span><span class="amc-byline">by Astromaniac Magazine</span></h1>
         </div>
 
         <div class="amc-month-strip">
@@ -79,11 +100,11 @@
           <summary><span>Sources and logs</span><a class="amc-feedback-link" href="https://www.astromaniacmagazine.com/contact" target="_blank" rel="noopener">Suggestions or feedback?</a></summary>
           <ul class="amc-source-list" id="amc-source-list"></ul>
           <div class="amc-version-panel">
-            <h3>Current version: Beta0.9.5</h3>
+            <h3>Current version: Beta0.9.6</h3>
             <ul class="amc-version-list">
+              <li><b>Beta0.9.6:</b> corrects October UTC event dates and NGC 55 identification, restores mobile page fit and adds inline calendar structured data.</li>
               <li><b>Beta0.9.5:</b> sharpens live Moon-chart context, adds target constellations and forecast-window clarity, and refines compact references, mobile swiping, responsive fit and month transitions.</li>
               <li><b>Beta0.9.4:</b> accelerates first load, strengthens Today, streamlines observing details and polishes mobile date, location, target and return-to-top navigation.</li>
-              <li><b>Beta0.9.3:</b> restores native one-finger mobile scrolling, simplifies the date strip and keeps location, city and date context ready across visits.</li>
             </ul>
             <section class="amc-about" aria-labelledby="amc-about-title">
               <h2 id="amc-about-title">2026 night-sky calendar and astrophotography planner</h2>

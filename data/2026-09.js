@@ -37,10 +37,20 @@
       url: "https://aa.usno.navy.mil/calculated/seasons?year=2026&tz=0&dst=false",
       note: "Primary equinox timing in Universal Time."
     },
+    imo2026Author: {
+      label: "IMO 2026 meteor calendar — author copy",
+      url: "https://www.researchgate.net/publication/393092133_2026_IMO_Meteor_Shower_Calendar",
+      note: "Primary calendar uploaded by editor Juergen Rendtel. Verified 15 September 2026 while the IMO website is temporarily offline."
+    },
     imo2026: {
       label: "International Meteor Organization 2026 shower calendar",
       url: "https://imo.net/files/meteor-shower/cal2026.pdf",
       note: "Primary 2026 meteor-shower activity periods, maxima and observing circumstances."
+    },
+    nasaNgc55: {
+      label: "NASA Hubble Caldwell 72 (NGC 55)",
+      url: "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-caldwell-catalog/caldwell-72/",
+      note: "Identifies NGC 55 as a Magellanic-type galaxy in Sculptor, distinct from NGC 253."
     }
   };
 
@@ -85,7 +95,7 @@
 
   const eventData = {
     1: [
-      event("meteor", "Aurigids meteor shower", "The Aurigids reach maximum on 1 September, but the bright waning Moon strongly interferes with this normally minor shower.", "Meteor shower peak; typical ZHR around 6.", ["imo2026", "inSky"], media.meteor)
+      event("meteor", "Aurigids meteor shower", "The Aurigids reach maximum on 1 September, but the bright waning Moon strongly interferes with this normally minor shower.", "Meteor shower peak; typical ZHR around 6.", ["imo2026Author", "imo2026", "inSky"], media.meteor)
     ],
     3: [
       event("sky", "Moon near the Pleiades", "The Moon passes near the Pleiades cluster.", "Moon-cluster pairing.", ["inSky"], media.pleiades)
@@ -103,8 +113,8 @@
       event("occultation", "Lunar occultation of Jupiter", "The Moon occults Jupiter for observers inside a limited visibility path; elsewhere the pair makes a close pre-dawn approach.", "Location-dependent occultation and close approach.", ["inSky"], media.planets)
     ],
     9: [
-      event("meteor", "September Epsilon Perseid meteor shower", "This minor shower peaks on 9/10 September under favourable dark skies near New Moon.", "Meteor shower peak; typical ZHR around 8.", ["imo2026", "inSky"], media.meteor),
-      event("meteor", "Possible weak Chi Capricornid activity", "Models suggest Earth may encounter a dust trail from comet 45P at about 22:17 UTC, although visible rates may be very low or zero.", "Uncertain predicted activity; treat as an observing watch, not a guaranteed shower.", ["imo2026"], media.meteor)
+      event("meteor", "September Epsilon Perseid meteor shower", "This minor shower peaks on 9/10 September under favourable dark skies near New Moon.", "Meteor shower peak; typical ZHR around 8.", ["imo2026Author", "imo2026", "inSky"], media.meteor),
+      event("meteor", "Possible weak Chi Capricornid activity", "Models suggest Earth may encounter a dust trail from comet 45P at about 22:17 UTC, although visible rates may be very low or zero.", "Uncertain predicted activity; treat as an observing watch, not a guaranteed shower.", ["imo2026Author", "imo2026"], media.meteor)
     ],
     10: [
       event("sky", "Uranus enters retrograde motion", "Uranus appears to begin moving westward against the background stars as Earth and Uranus change relative orbital position.", "Apparent planetary motion milestone.", ["inSky"], media.planets)
@@ -116,7 +126,7 @@
       event("sky", "Moon and Mercury", "A slim crescent Moon passes Mercury in evening twilight; visibility depends on latitude and a clear western horizon.", "Twilight planet pairing.", ["inSky"], media.planets)
     ],
     13: [
-      event("meteor", "September Lyncids meteor shower", "The weak September Lyncids reach maximum, with a dark evening sky and only a slim Moon.", "Minor shower; typical ZHR around 3.", ["imo2026"], media.meteor)
+      event("meteor", "September Lyncids meteor shower", "The weak September Lyncids reach maximum, with a dark evening sky and only a slim Moon.", "Minor shower; typical ZHR around 3.", ["imo2026Author", "imo2026"], media.meteor)
     ],
     14: [
       event("occultation", "Lunar occultation of Venus", "The Moon occults Venus along a limited geographic path; elsewhere a slim crescent Moon and Venus form a close evening-twilight pairing.", "Location-dependent occultation and close approach.", ["inSky"], media.venus)
@@ -137,7 +147,7 @@
       event("sky", "September equinox", "The Sun crosses the celestial equator at 00:05 UTC, marking the September equinox.", "Season marker.", ["usnoSeasons", "inSky", "rmg2026"], media.sun)
     ],
     25: [
-      event("telescope", "NGC 55 well placed", "The Sculptor Galaxy is well placed for southern observers.", "Southern deep-sky target.", ["inSky"], media.cluster)
+      event("telescope", "NGC 55 well placed", "NGC 55, a Magellanic-type galaxy in Sculptor, is well placed for southern observers. It is distinct from NGC 253, the Sculptor Galaxy.", "Southern deep-sky target.", ["inSky", "nasaNgc55"], media.cluster)
     ],
     26: [
       event("opposition", "Neptune at opposition", "Neptune reaches opposition at 01:28 UTC, but the Full Moon makes contrast difficult.", "Advanced telescope target.", ["inSky"], media.planets),
