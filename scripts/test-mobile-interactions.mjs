@@ -189,7 +189,9 @@ try {
   assert(monthAfter > monthBefore || (monthAfter === monthBefore && dayAfter > dayBefore), `Horizontal day swipe did not advance: ${monthBefore}-${dayBefore} -> ${monthAfter}-${dayAfter}; box=${JSON.stringify(gridBox)}`);
   assert(Math.abs(parentAfter - touchStartY) < 12, `Horizontal day swipe moved the page after touch start: ${touchStartY} -> ${parentAfter} (pre-touch momentum was ${parentBefore})`);
 
-  const transitionDay = dayAfter < 31 ? dayAfter + 1 : dayAfter - 1;
+  const [transitionYear, transitionMonth] = monthAfter.split("-").map(Number);
+  const daysInTransitionMonth = new Date(transitionYear, transitionMonth, 0).getDate();
+  const transitionDay = dayAfter < daysInTransitionMonth ? dayAfter + 1 : dayAfter - 1;
   const transitionMetrics = await page.evaluate(day => {
     const grid = document.querySelector("#amc-grid");
     const card = grid.querySelector(`.amc-day[data-day="${day}"]`);
@@ -250,7 +252,10 @@ try {
     return sizes;
   });
   assert(suggestionSizing.option <= 8.5, `City suggestion text was not reduced by 25% from its former 11.2px size: ${JSON.stringify(suggestionSizing)}`);
-  await page.locator('.amc-mobile-day-chip[data-month-id="2026-08"][data-day="15"]').click();
+  const outsideForecastDay = today > 1 ? today - 1 : 8;
+  const outsideForecastMonth = await page.locator(".amc-mobile-day-chip.is-active").getAttribute("data-month-id");
+  const outsideForecastChip = page.locator(`.amc-mobile-day-chip[data-month-id="${outsideForecastMonth}"][data-day="${outsideForecastDay}"]`);
+  await outsideForecastChip.click();
   await page.waitForTimeout(520);
   assert.equal(await page.locator(".amc-day.is-mobile-active .amc-forecast-window-note").innerText(), "Outside the 7-day forecast window", "An out-of-range day does not explain forecast availability");
   await page.locator("#amc-today-button").click();

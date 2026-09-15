@@ -3547,3 +3547,15 @@ body.amc-standalone-body {
   }
 }
 
+/* Keep the Squarespace mobile logo inside the calendar page's viewport. */
+@media (max-width: 767px) {
+  body:has(.amc-inline-host) .header-display-mobile .header-title-nav-wrapper,
+  body:has(.amc-inline-host) .header-display-mobile .header-title {
+    min-width: 0;
+    flex-shrink: 1;
+  }
+  body:has(.amc-inline-host) .header-display-mobile .header-mobile-logo img {
+    max-width: 100%;
+    height: auto;
+  }
+}

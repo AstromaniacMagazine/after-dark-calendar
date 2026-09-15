@@ -207,6 +207,21 @@ if (december) {
   if (!eventTitles("2026-12", 21).includes("December solstice")) fail("The December solstice must be listed on 2026-12-21.");
 }
 
+// UTC dates from Fred Espenak's primary 2026 almanac, audited 2026-09-15.
+for (const [expectedDay, title] of [
+  [5, "Moon and Mars"],
+  [12, "Moon and Venus"],
+  [24, "Venus at inferior conjunction"],
+  [28, "Moon near the Pleiades"]
+]) {
+  const days = Object.entries(october?.eventData || {})
+    .filter(([, events]) => events.some(event => event.title === title))
+    .map(([day]) => Number(day));
+  if (days.length !== 1 || days[0] !== expectedDay) {
+    fail(`${title} must appear once on 2026-10-${expectedDay} UTC; found days ${days.join(", ")}.`);
+  }
+}
+
 const html = read("index.html");
 for (const match of html.matchAll(/(?:src|href)="((?:assets|data)\/[^"?#]+)[^\"]*"/g)) {
   if (!fs.existsSync(path.join(rootDir, match[1]))) fail(`index.html references missing local asset ${match[1]}.`);

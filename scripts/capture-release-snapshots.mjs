@@ -13,7 +13,7 @@ function argument(name, fallback = "") {
 
 const url = argument("url", "http://127.0.0.1:4173/");
 const outputDir = path.resolve(rootDir, argument("output", ".release-snapshots"));
-const version = argument("version", "Beta0.9.5");
+const version = argument("version", "Beta0.9.6");
 const selectedDay = Number(argument("day", "12"));
 const chromePath = argument("chrome", "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
 const modulesPath = argument("modules", process.env.AMC_NODE_MODULES || "");
@@ -100,7 +100,7 @@ try {
   }
   await settleImages(page);
 
-  for (const theme of ["light", "dark", "red", "teal"]) {
+  for (const theme of ["light", "dark", "red"]) {
     while (await page.locator("#amc-after-dark-calendar").getAttribute("data-theme") !== theme) {
       await page.locator("#amc-theme-toggle").click();
     }
