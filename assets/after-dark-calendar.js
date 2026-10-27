@@ -27,6 +27,8 @@
     backToTop: root.querySelector("#amc-back-to-top")
   };
 
+  const zonedFormatters = new Map();
+  const validTimeZones = new Map();
   const shared = window.AMC_SHARED || {};
   const manifest = Array.isArray(window.AMC_MONTH_MANIFEST) ? window.AMC_MONTH_MANIFEST : [];
   const assetVersion = root.dataset.assetVersion || root.dataset.version || "";
@@ -295,7 +297,7 @@
       script.src = assetVersion ? `${source}?v=${encodeURIComponent(assetVersion)}` : source;
       script.async = true;
       script.onload = () => registry[monthId] ? resolve(registry[monthId]) : reject(new Error(`Month data did not register: ${monthId}`));
-      script.onerror = () => reject(new Error(`Could not load month data: ${monthId}`));
+      script.onerror = () => { delete state.monthPromises[monthId]; script.remove(); reject(new Error(`Could not load month data: ${monthId}`)); };
       document.head.appendChild(script);
     });
     return state.monthPromises[monthId];
@@ -1381,6 +1383,10 @@
 
   function seasonalTargetPool(moon) {
     const deepSkyByMonth = {
+      0: ["Orion Nebula (M42)", "Rosette Nebula (NGC 2237)", "Pleiades (M45)"],
+      1: ["Rosette Nebula (NGC 2237)", "Orion Nebula (M42)", "Pleiades (M45)"],
+      2: ["Pinwheel Galaxy (M101)", "Whirlpool Galaxy (M51)", "Pleiades (M45)"],
+      3: ["Whirlpool Galaxy (M51)", "Pinwheel Galaxy (M101)", "Hercules Cluster (M13)"],
       4: ["Whirlpool Galaxy (M51)", "Hercules Cluster (M13)", "Ring Nebula (M57)", "Centaurus A (NGC 5128)", "Omega Centauri (NGC 5139)"],
       5: ["Dumbbell Nebula (M27)", "Whirlpool Galaxy (M51)", "Hercules Cluster (M13)", "Lagoon Nebula (M8)", "Centaurus A (NGC 5128)"],
       6: ["Dumbbell Nebula (M27)", "Cygnus Loop (Veil Nebula)", "Sadr Region (IC 1318)", "Pinwheel Galaxy (M101)", "Lagoon Nebula (M8)", "Hercules Cluster (M13)", "Omega Nebula (M17)"],
@@ -1499,14 +1505,17 @@
     const seed = day + (state.month.monthIndex + 1) * 37;
     let editorial;
     let reviews;
-    if (typeSet.has("launch")) {
+    if (typeSet.has("eclipse")) {
+      editorial = [state.articles.moon, state.articles.artemis];
+      reviews = [state.articles.sqmReview, state.articles.askar80Review];
+    } else if (typeSet.has("launch")) {
       editorial = [state.articles.launch, state.articles.artemis, state.articles.spaceDebris, state.articles.jamesWebb];
       reviews = [state.articles.powerReview, state.articles.zwoReview, state.articles.falconReview];
     } else if (typeSet.has("meteor")) {
       editorial = [state.articles.deepSky, state.articles.lightPollution, state.articles.numbers, state.articles.accessories];
       reviews = [state.articles.sqmReview, state.articles.askar80Review, state.articles.sqa55Review, state.articles.atr2600Review];
     } else if (typeSet.has("moon") || moon.phase >= 70) {
-      editorial = [state.articles.moon, state.articles.lunarClock, state.articles.lunarLife, state.articles.lightPollution];
+      editorial = [state.articles.moon, state.articles.artemis, state.articles.lunarLife, state.articles.lunarClock];
       reviews = [state.articles.sqmReview, state.articles.monitorReview, state.articles.powerReview, state.articles.zwoReview];
     } else if (typeSet.has("telescope")) {
       editorial = [state.articles.telescope, state.articles.rubin, state.articles.jamesWebb, state.articles.deepSky];
@@ -1515,11 +1524,11 @@
       editorial = [state.articles.planetary, state.articles.planetNine, state.articles.marsLife, state.articles.earthLike];
       reviews = [state.articles.asi6200Review, state.articles.atr2600Review, state.articles.ts130Review, state.articles.falconReview];
     } else if (moon.phase < 35) {
-      editorial = [state.articles.deepSky, state.articles.rubin, state.articles.earliestGalaxies, state.articles.darkStars, state.articles.darkEnergy, state.articles.wormholes, state.articles.numbers];
+      editorial = [state.articles.deepSky, state.articles.remoteHosting, state.articles.jamesWebb, state.articles.pixInsight, state.articles.numbers];
       reviews = [state.articles.seestarS50ProReview, state.articles.asi6200Review, state.articles.atr2600Review, state.articles.sqa55Review, state.articles.askar80Review, state.articles.askar103Review, state.articles.ts130Review, state.articles.falconReview, state.articles.flatPanelReview];
     } else {
-      editorial = [state.articles.numbers, state.articles.deepSky, state.articles.accessories, state.articles.lightPollution, state.articles.earthLike, state.articles.darkEnergy];
-      reviews = [state.articles.seestarS50ProReview, state.articles.powerReview, state.articles.monitorReview, state.articles.flatPanelReview, state.articles.falconReview, state.articles.zwoReview, state.articles.sqmReview];
+      editorial = [state.articles.numbers, state.articles.deepSky, state.articles.pixInsight, state.articles.accessories, state.articles.remoteHosting];
+      reviews = [state.articles.seestarS50ProReview, state.articles.wandererBoxReview, state.articles.powerReview, state.articles.flatPanelReview, state.articles.falconReview, state.articles.zwoReview, state.articles.sqmReview];
     }
 
     const editorialPool = uniqueArticles(editorial);
@@ -1651,6 +1660,7 @@
   }
 
   function weatherCard(day, compact = false) {
+    const hasForecast = Number.isFinite(day.observingScore);
     const cardClass = compact ? "amc-cell-weather-row" : "amc-weather-card";
     return `<span class="${cardClass}">
       <span class="amc-weather-card-head">
@@ -1658,12 +1668,12 @@
         <span class="amc-weather-icons">${day.icons.map(weatherIcon).join("")}</span>
       </span>
       <span class="amc-weather-metrics">
-        ${weatherMetric("Sky", day.observingLabel, day.segments.map(segment => weatherSegment(segment, "observing")), "amc-observing-segments")}
-        ${weatherMetric("Cloud", `${Math.round(day.cloud)}%`, day.segments.map(segment => weatherSegment(segment, "cloud")))}
-        ${weatherMetric("Temp", `${Math.round(day.temperature)}°C`, day.segments.map(segment => weatherSegment(segment, "temperature")))}
+        ${weatherMetric("Overall", day.observingLabel, day.segments.map(segment => weatherSegment(segment, "observing")), "amc-observing-segments")}
+        ${weatherMetric("Cloud", hasForecast ? `${Math.round(day.cloud)}%` : "Unavailable", day.segments.map(segment => weatherSegment(segment, "cloud")))}
+        ${weatherMetric("Temp", hasForecast ? `${Math.round(day.temperature)}°C` : "Unavailable", day.segments.map(segment => weatherSegment(segment, "temperature")))}
         ${weatherMetric("Trans.", day.transparencyLabel, day.segments.map(segment => weatherSegment(segment, "transparency")))}
         ${weatherMetric("Seeing", day.seeingLabel, day.segments.map(segment => weatherSegment(segment, "seeing")))}
-        ${weatherMetric("Wind", `${Math.round(day.wind)} km/h`, day.segments.map(segment => weatherSegment(segment, "wind")))}
+        ${weatherMetric("Wind", hasForecast ? `${Math.round(day.wind)} km/h` : "Unavailable", day.segments.map(segment => weatherSegment(segment, "wind")))}
       </span>
     </span>`;
   }
@@ -1860,9 +1870,11 @@
       const cloud = avg(slots.map(slot => slot.cloud));
       const temperature = avg(slots.map(slot => slot.temperature));
       const wind = avg(slots.map(slot => slot.wind));
-      const transparency = avg(slots.map(slot => slot.transparency));
-      const seeing = avg(slots.map(slot => slot.seeing));
-      const observingScore = avg(slots.map(slot => slot.observingScore));
+      const transparency = slots.every(slot => Number.isFinite(slot.observingScore)) ? avg(slots.map(slot => slot.transparency)) : null;
+      const seeing = slots.every(slot => Number.isFinite(slot.observingScore)) ? avg(slots.map(slot => slot.seeing)) : null;
+      const weakestScore = Math.min(...slots.map(slot => slot.observingScore));
+      const observingScore = slots.every(slot => Number.isFinite(slot.observingScore))
+        ? Math.min(avg(slots.map(slot => slot.observingScore)), weakestScore + 15, weakestScore < 90 ? 89 : 100) : null;
       const observing = observingRating(observingScore);
       const kind = weatherKind(representativeWeatherCode(slots.map(slot => slot.code)), cloud);
       return {
@@ -1876,7 +1888,7 @@
         observingLabel: observing.label,
         transparencyLabel: transparencyLabel(transparency),
         seeingLabel: seeingLabel(seeing),
-        icons: weatherIconKinds(slots, kind),
+        icons: Number.isFinite(observingScore) ? weatherIconKinds(slots, kind) : [],
         segments: slots
       };
     });
@@ -1900,7 +1912,18 @@
     const visibilityPenalty = Math.max(0, 12000 - visibility) / 12000 * 18;
     const transparency = clamp(100 - cloud * .62 - humidity * .11 - precipitation * .15 - visibilityPenalty + Math.min(8, dewPointSpread), 0, 100);
     const seeing = clamp(100 - wind * 1.65 - gusts * .55 - temperatureRange * 4.5 - Math.min(18, cape / 70) - cloud * .05, 0, 100);
-    const observingScore = clamp(transparency * .68 + seeing * .22 + (100 - precipitation) * .1 - Math.max(0, weatherCodeSeverity(code) - 2) * 3, 0, 100);
+    // Missing hours must not be interpreted as clear, dry weather.
+    const complete = samples.length === hours.length && samples.every(sample =>
+      [sample.cloud, sample.temperature, sample.humidity, sample.dewPoint, sample.precipitation,
+       sample.wind, sample.gusts, sample.visibility, sample.cape, sample.code].every(Number.isFinite));
+    let observingScore = complete ? clamp(transparency * .68 + seeing * .22 + (100 - precipitation) * .1 - Math.max(0, weatherCodeSeverity(code) - 2) * 3, 0, 100) : null;
+    // Hard limits prevent favourable averages hiding cloud, rain, fog or strong wind.
+    if (complete) {
+      if (cloud > 70 || precipitation >= 60 || wind >= 40 || gusts >= 60 || visibility < 1000 || code >= 45) observingScore = Math.min(observingScore, 44);
+      else if (cloud > 40 || precipitation >= 30 || wind >= 25 || gusts >= 40 || visibility < 5000) observingScore = Math.min(observingScore, 63);
+      else if (cloud > 20 || precipitation >= 15 || wind >= 15 || gusts >= 25 || humidity >= 90) observingScore = Math.min(observingScore, 77);
+      else if (cloud > 10 || precipitation > 5 || humidity > 80 || visibility < 15000) observingScore = Math.min(observingScore, 89);
+    }
     return { label, cloud, temperature, humidity, dewPoint, precipitation, wind, gusts, visibility, cape, code, transparency, seeing, observingScore, kind: weatherKind(code, cloud) };
   }
 
@@ -2436,6 +2459,7 @@
   }
 
   function moonImage(day, size) {
+    if (state.month.year !== 2026) return shared.phaseDiagram(state.moonData[day]?.age || 0);
     const frame = state.moonData[day]?.frame || 13;
     const folder = size === 730 ? "730x730_1x1_30p" : "216x216_1x1_30p";
     return `https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005587/frames/${folder}/moon.${frame}.jpg`;
@@ -2766,8 +2790,11 @@
   }
 
   function zonedDateParts(date, timeZone = state.timeZone) {
-    const formatter = new Intl.DateTimeFormat("en-GB", {
-      timeZone: cleanTimeZone(timeZone) || "UTC",
+    const zone = cleanTimeZone(timeZone) || "UTC";
+    let formatter = zonedFormatters.get(zone);
+    if (!formatter) {
+      formatter = new Intl.DateTimeFormat("en-GB", {
+      timeZone: zone,
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
@@ -2776,6 +2803,8 @@
       second: "2-digit",
       hourCycle: "h23"
     });
+      zonedFormatters.set(zone, formatter);
+    }
     return Object.fromEntries(formatter.formatToParts(date).filter(part => part.type !== "literal").map(part => [part.type, part.value]));
   }
 
@@ -2850,11 +2879,14 @@
   function shortWeatherDate(dateKey, index) {
     const [year, month, day] = dateKey.split("-").map(Number);
     const date = new Date(Date.UTC(year, month - 1, day, 12));
-    return index === 0 ? `Tonight, ${date.getUTCDate()} ${monthShort[date.getUTCMonth()]}` : `${date.getUTCDate()} ${monthShort[date.getUTCMonth()]}`;
+    const weekday = new Intl.DateTimeFormat("en-GB", { weekday: "long", timeZone: "UTC" }).format(date);
+    return `${weekday}, ${day} ${monthShort[month - 1]}`;
   }
 
   function numberAt(items, index) {
-    const value = Number(items?.[index]);
+    const raw = items?.[index];
+    if (raw === null || raw === undefined || raw === "") return null;
+    const value = Number(raw);
     return Number.isFinite(value) ? value : null;
   }
 
@@ -2863,24 +2895,16 @@
     return safe.length ? safe.reduce((sum, value) => sum + value, 0) / safe.length : 0;
   }
 
-  function transparencyLabel(score) {
-    if (score >= 75) return "Excellent";
-    if (score >= 58) return "Fair";
-    if (score >= 38) return "Average";
-    return "Poor";
-  }
+  function transparencyLabel(score) { return observingRating(score).label; }
 
-  function seeingLabel(score) {
-    if (score >= 78) return "Excellent";
-    if (score >= 58) return "Good";
-    if (score >= 38) return "Average";
-    return "Poor";
-  }
+  function seeingLabel(score) { return observingRating(score).label; }
 
   function observingRating(score) {
-    if (score >= 72) return { key: "excellent", label: "Excellent" };
-    if (score >= 56) return { key: "fair", label: "Fair" };
-    if (score >= 36) return { key: "amber", label: "Amber" };
+    if (!Number.isFinite(score)) return { key: "unavailable", label: "Unavailable" };
+    if (score >= 90) return { key: "excellent", label: "Excellent" };
+    if (score >= 78) return { key: "good", label: "Good" };
+    if (score >= 64) return { key: "fair", label: "Fair" };
+    if (score >= 45) return { key: "average", label: "Average" };
     return { key: "poor", label: "Poor" };
   }
 
@@ -2889,6 +2913,7 @@
   }
 
   function segmentColour(segment, metric) {
+    if (!Number.isFinite(segment.observingScore)) return observingColour("unavailable");
     if (metric === "observing") return observingColour(observingRating(segment.observingScore).key);
     if (metric === "cloud") return cloudColour(segment.cloud);
     if (metric === "temperature") return temperatureColour(segment.temperature);
@@ -2899,6 +2924,7 @@
   }
 
   function segmentTooltip(segment, metric) {
+    if (!Number.isFinite(segment.observingScore)) return "Forecast unavailable for this interval";
     if (metric === "observing") return `Conditions: ${observingRating(segment.observingScore).label}`;
     if (metric === "cloud") return `Cloud: ${Math.round(segment.cloud)}%`;
     if (metric === "temperature") return `Temperature: ${Math.round(segment.temperature)}°C`;
@@ -3034,10 +3060,13 @@
   function cleanTimeZone(value) {
     const text = cleanName(value);
     if (!text) return "";
+    if (validTimeZones.has(text)) return validTimeZones.get(text);
     try {
       new Intl.DateTimeFormat("en-GB", { timeZone: text }).format(new Date());
+      validTimeZones.set(text, text);
       return text;
     } catch {
+      validTimeZones.set(text, "");
       return "";
     }
   }

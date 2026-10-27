@@ -28,7 +28,7 @@
   }
 
   function moonFrame(year, monthIndex, day) {
-    const start = Date.UTC(2026, 0, 1, 12);
+    const start = Date.UTC(year, 0, 1, 12);
     const sample = Date.UTC(year, monthIndex, day, 12);
     return 13 + Math.round((sample - start) / 86400000) * 24;
   }
@@ -62,11 +62,21 @@
     return Math.round(384400 + 22000 * Math.sin((age / synodicMonth) * Math.PI * 2));
   }
 
+  function phaseDiagram(age) {
+    const angle = age / synodicMonth * Math.PI * 2;
+    const waxing = angle < Math.PI;
+    const x = Math.abs(Math.cos(angle)) * 48;
+    const crescent = Math.cos(angle) >= 0;
+    const side = waxing ? 1 : 0;
+    const d = `M50 2 A48 48 0 0 ${side} 50 98 A${Math.max(.01, x)} 48 0 0 ${crescent ? 1-side : side} 50 2`;
+    return "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><title>Illustrative lunar phase</title><circle cx="50" cy="50" r="48" fill="#1b2028"/><path d="${d}" fill="#e0dfda"/></svg>`);
+  }
+
   const sources = {
     nasaSvs: {
       label: "NASA SVS 2026 Moon Phase and Libration",
       url: "https://svs.gsfc.nasa.gov/5587/",
-      note: "Daily Moon images use NASA's LRO-based 2026 visualisation frames, sampled at 12:00 UT."
+      note: "2026 daily Moon images use NASA's LRO-based 2026 visualisation frames, sampled at 12:00 UT."
     },
     astronomyEngine: {
       label: "Astronomy Engine",
@@ -76,7 +86,7 @@
     openMeteo: {
       label: "Open-Meteo Forecast API",
       url: "https://open-meteo.com/en/docs",
-      note: "The local 7-night forecast uses Open-Meteo hourly cloud cover, humidity, temperature, dew point, precipitation probability, wind speed and gusts, visibility, CAPE, WMO weather codes and location timezone. Transparency and seeing are planning estimates derived from these inputs, not dedicated astronomy forecast models."
+      note: "The local 7-night forecast uses Open-Meteo hourly cloud cover, humidity, temperature, dew point, precipitation probability, wind speed and gusts, visibility, CAPE, WMO weather codes and location timezone. Transparency and seeing are planning estimates derived from these inputs, not dedicated astronomy forecast models. Overall uses Poor (<45), Average (45–63), Fair (64–77), Good (78–89), Excellent (90+), with additional cloud, precipitation, fog and wind limits. Excellent overall requires all four intervals to qualify. Missing data is neutral/unavailable. Calendar blocks use exactly the same interval ratings."
     },
     openMeteoGeo: {
       label: "Open-Meteo Geocoding API",
@@ -103,6 +113,11 @@
       url: "https://simbad.cds.unistra.fr/simbad/",
       note: "Deep-sky target coordinates and catalogue identities are cross-checked against the SIMBAD database operated by CDS, Strasbourg."
     },
+    astromaniacReviews: {
+      label: "Astromaniac Magazine reviews",
+      url: "https://www.astromaniacmagazine.com/reviews",
+      note: "Article and review indexes, Artemis II and Webb mission features reviewed 27 October 2026. Two contextual links per night keep recommendations focused; no live scraping or extra runtime requests."
+    },
     astromaniacArticles: {
       label: "Astromaniac Magazine articles",
       url: "https://www.astromaniacmagazine.com/articles",
@@ -111,6 +126,9 @@
   };
 
   const articleData = {
+    "pixInsight": {"title": "PixInsight Through the Years: How the Astrophotography Landscape Is Changing", "url": "https://www.astromaniacmagazine.com/articles/pixinsight-through-the-years-how-the-astrophotography-landscape-is-changing", "image": "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/6ac28688c5665f2e714f205a/1791133320521/PixInsight+Article+Poster.jpg?format=750w", "kind": "Article"},
+    "remoteHosting": {"title": "Remote Telescope Hosting: Why Astrophotographers Are Moving to Darker Skies", "url": "https://www.astromaniacmagazine.com/articles/remote-telescope-hosting-why-astrophotographers-are-moving-to-darker-skies", "image": "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/6aa2df946099b129b01bbe62/1789058964502/Remote+Hosting+Observatories+-+Astromaniac+Magazine.jpg?format=750w", "kind": "Article"},
+    "wandererBoxReview": {"title": "WandererBox PLUS V3: A 150g Powerhouse", "url": "https://www.astromaniacmagazine.com/reviews/wandererbox-plus-v3-a-power-house-in-a-150g-box", "image": "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/6a974662c90e0742ca2cbf8e/1788298850793/Wanderer+Vixen+Dovetail+Bracket+Kit+For+WandererBox+-+Astromaniac+Magazine.jpg?format=750w", "kind": "Review"},
     deepSky: {
       title: "Astrophotography Anywhere: Best Deep-Sky Targets for Light-Polluted and Dark-Sky Locations",
       url: "https://www.astromaniacmagazine.com/articles/astrophotography-anywhere-best-deep-sky-targets-for-light-polluted-and-dark-sky-locations",
@@ -180,13 +198,13 @@
     artemis: {
       title: "Artemis II Mission Report",
       url: "https://www.astromaniacmagazine.com/artemis-ii-mission-report",
-      image: "",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/69f5d439ea3120577a2c7a59/1790608785392/Artemis+II+Affiche+V2.jpg?format=750w",
       kind: "Mission Report"
     },
     jamesWebb: {
       title: "James Webb: Inside the Mission",
       url: "https://www.astromaniacmagazine.com/james-webb-space-telescope-inside-the-mission",
-      image: "",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/6a21a0959d129d02efd4a563/1780588693283/NASA%E2%80%99s+Webb+Delivers+Deepest+Infrared+Image+of+Universe+Yet.jpg?format=750w",
       kind: "Mission Guide"
     },
     darkStars: {
@@ -340,6 +358,7 @@
 
   window.AMC_SHARED = {
     articleData,
+    phaseDiagram,
     buildMoonData,
     event,
     media,

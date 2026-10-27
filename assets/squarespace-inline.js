@@ -6,7 +6,7 @@
   if (!script || !host || host.dataset.amcLoaded === "true") return;
 
   const base = new URL("../", script.src).href;
-  const build = "Beta0.9.6-20260915a";
+  const build = "Beta0.9.7-20261027a";
   host.dataset.amcLoaded = "true";
   host.classList.add("amc-inline-host");
 
@@ -26,7 +26,7 @@
       isAccessibleForFree: true,
       inLanguage: "en-GB",
       publisher: { "@type": "Organization", name: "Astromaniac Magazine", url: "https://www.astromaniacmagazine.com/" },
-      description: "A location-aware 2026 night-sky calendar with Moon phases, celestial events, astronomical darkness, target altitude and a seven-night observing forecast."
+      description: "A location-aware 2026–2027 night-sky calendar with Moon phases, celestial events, astronomical darkness, target altitude and a seven-night observing forecast."
     });
     document.head.appendChild(schema);
   }
@@ -40,7 +40,7 @@
   }
 
   host.innerHTML = `
-    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="Beta0.9.6" data-asset-version="${build}" data-asset-base="${base}" data-inline="true" aria-labelledby="amc-title">
+    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="Beta0.9.7" data-asset-version="${build}" data-asset-base="${base}" data-inline="true" aria-labelledby="amc-title">
       <div class="amc-print-brand" aria-hidden="true">
         <img class="amc-print-logo" src="${base}assets/astromaniac-logo.webp" alt="">
         <div><strong>After Dark Calendar</strong><span>by Astromaniac Magazine</span></div>
@@ -50,7 +50,7 @@
       <header class="amc-top">
         <div class="amc-brand-lockup">
           <img class="amc-brand-logo" src="${base}assets/astromaniac-logo.webp" alt="" width="56" height="56" loading="eager" decoding="async">
-          <h1 class="amc-title" id="amc-title"><span class="amc-title-line"><span>After Dark Calendar</span><small class="amc-version-badge" aria-label="Current version Beta0.9.6">Beta0.9.6</small></span><span class="amc-byline">by Astromaniac Magazine</span></h1>
+          <h1 class="amc-title" id="amc-title"><span class="amc-title-line"><span>After Dark Calendar</span><small class="amc-version-badge" aria-label="Current version Beta0.9.7">Beta0.9.7</small></span><span class="amc-byline">by Astromaniac Magazine</span></h1>
         </div>
 
         <div class="amc-month-strip">
@@ -100,14 +100,14 @@
           <summary><span>Sources and logs</span><a class="amc-feedback-link" href="https://www.astromaniacmagazine.com/contact" target="_blank" rel="noopener">Suggestions or feedback?</a></summary>
           <ul class="amc-source-list" id="amc-source-list"></ul>
           <div class="amc-version-panel">
-            <h3>Current version: Beta0.9.6</h3>
+            <h3>Current version: Beta0.9.7</h3>
             <ul class="amc-version-list">
+              <li><b>Beta0.9.7:</b> adds all twelve months of 2027, audits November and December, tightens five-level forecast ratings, improves date navigation and expanded-day borders, and refreshes relevant reading.</li>
               <li><b>Beta0.9.6:</b> corrects October UTC event dates and NGC 55 identification, restores mobile page fit and adds inline calendar structured data.</li>
-              <li><b>Beta0.9.5:</b> sharpens live Moon-chart context, adds target constellations and forecast-window clarity, and refines compact references, mobile swiping, responsive fit and month transitions.</li>
-              <li><b>Beta0.9.4:</b> accelerates first load, strengthens Today, streamlines observing details and polishes mobile date, location, target and return-to-top navigation.</li>
+              <li><b>Beta0.9.5:</b> adds target constellations and forecast-window clarity, and refines mobile swiping and month transitions.</li>
             </ul>
             <section class="amc-about" aria-labelledby="amc-about-title">
-              <h2 id="amc-about-title">2026 night-sky calendar and astrophotography planner</h2>
+              <h2 id="amc-about-title">2026–2027 night-sky calendar and astrophotography planner</h2>
               <p>Explore deep-sky objects, Moon phases, meteor showers, eclipses and planetary events month by month. Add your city for local Moon and Sun timings, astronomical darkness, target altitude guidance and a live seven-night observing forecast.<br><b>Disclaimer and copyright:</b> © 2026 Astromaniac Magazine. After Dark Calendar's original text, design and compiled content are protected by copyright; unauthorised copying, redistribution, adaptation or commercial reuse is prohibited except where permitted by law. Where limited use is legally permitted, give clear credit and link to this page. Third-party imagery and data remain subject to their owners' terms. Astronomy, weather and launch information can change, so verify critical plans with the cited sources.</p>
             </section>
           </div>
@@ -117,7 +117,11 @@
       <button class="amc-back-to-top" id="amc-back-to-top" type="button" aria-label="Back to top" title="Back to top"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 14 6-6 6 6"/></svg></button>
     </section>`;
 
-  const initialMonth = `2026-${String(Math.min(12, Math.max(7, new Date().getMonth() + 1))).padStart(2, "0")}`;
+  const now = new Date();
+  const initialMonth = now.getFullYear() === 2027
+    ? `2027-${String(now.getMonth() + 1).padStart(2, "0")}`
+    : now.getFullYear() === 2026 && now.getMonth() >= 4
+      ? `2026-${String(now.getMonth() + 1).padStart(2, "0")}` : "2026-10";
   const sources = [
     "assets/astronomy.browser.js",
     "data/common.js",
