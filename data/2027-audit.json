@@ -1,0 +1,702 @@
+{
+  "checked": "2026-10-27",
+  "phases": [
+    {
+      "day": 7,
+      "month": 1,
+      "phase": "New Moon",
+      "time": "20:24",
+      "year": 2027
+    },
+    {
+      "day": 15,
+      "month": 1,
+      "phase": "First Quarter",
+      "time": "20:34",
+      "year": 2027
+    },
+    {
+      "day": 22,
+      "month": 1,
+      "phase": "Full Moon",
+      "time": "12:17",
+      "year": 2027
+    },
+    {
+      "day": 29,
+      "month": 1,
+      "phase": "Last Quarter",
+      "time": "10:55",
+      "year": 2027
+    },
+    {
+      "day": 6,
+      "month": 2,
+      "phase": "New Moon",
+      "time": "15:56",
+      "year": 2027
+    },
+    {
+      "day": 14,
+      "month": 2,
+      "phase": "First Quarter",
+      "time": "07:58",
+      "year": 2027
+    },
+    {
+      "day": 20,
+      "month": 2,
+      "phase": "Full Moon",
+      "time": "23:23",
+      "year": 2027
+    },
+    {
+      "day": 28,
+      "month": 2,
+      "phase": "Last Quarter",
+      "time": "05:16",
+      "year": 2027
+    },
+    {
+      "day": 8,
+      "month": 3,
+      "phase": "New Moon",
+      "time": "09:29",
+      "year": 2027
+    },
+    {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "16:25",
+      "year": 2027
+    },
+    {
+      "day": 22,
+      "month": 3,
+      "phase": "Full Moon",
+      "time": "10:44",
+      "year": 2027
+    },
+    {
+      "day": 30,
+      "month": 3,
+      "phase": "Last Quarter",
+      "time": "00:54",
+      "year": 2027
+    },
+    {
+      "day": 6,
+      "month": 4,
+      "phase": "New Moon",
+      "time": "23:51",
+      "year": 2027
+    },
+    {
+      "day": 13,
+      "month": 4,
+      "phase": "First Quarter",
+      "time": "22:56",
+      "year": 2027
+    },
+    {
+      "day": 20,
+      "month": 4,
+      "phase": "Full Moon",
+      "time": "22:27",
+      "year": 2027
+    },
+    {
+      "day": 28,
+      "month": 4,
+      "phase": "Last Quarter",
+      "time": "20:18",
+      "year": 2027
+    },
+    {
+      "day": 6,
+      "month": 5,
+      "phase": "New Moon",
+      "time": "10:58",
+      "year": 2027
+    },
+    {
+      "day": 13,
+      "month": 5,
+      "phase": "First Quarter",
+      "time": "04:44",
+      "year": 2027
+    },
+    {
+      "day": 20,
+      "month": 5,
+      "phase": "Full Moon",
+      "time": "10:59",
+      "year": 2027
+    },
+    {
+      "day": 28,
+      "month": 5,
+      "phase": "Last Quarter",
+      "time": "13:58",
+      "year": 2027
+    },
+    {
+      "day": 4,
+      "month": 6,
+      "phase": "New Moon",
+      "time": "19:40",
+      "year": 2027
+    },
+    {
+      "day": 11,
+      "month": 6,
+      "phase": "First Quarter",
+      "time": "10:56",
+      "year": 2027
+    },
+    {
+      "day": 19,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "00:44",
+      "year": 2027
+    },
+    {
+      "day": 27,
+      "month": 6,
+      "phase": "Last Quarter",
+      "time": "04:54",
+      "year": 2027
+    },
+    {
+      "day": 4,
+      "month": 7,
+      "phase": "New Moon",
+      "time": "03:02",
+      "year": 2027
+    },
+    {
+      "day": 10,
+      "month": 7,
+      "phase": "First Quarter",
+      "time": "18:39",
+      "year": 2027
+    },
+    {
+      "day": 18,
+      "month": 7,
+      "phase": "Full Moon",
+      "time": "15:45",
+      "year": 2027
+    },
+    {
+      "day": 26,
+      "month": 7,
+      "phase": "Last Quarter",
+      "time": "16:55",
+      "year": 2027
+    },
+    {
+      "day": 2,
+      "month": 8,
+      "phase": "New Moon",
+      "time": "10:05",
+      "year": 2027
+    },
+    {
+      "day": 9,
+      "month": 8,
+      "phase": "First Quarter",
+      "time": "04:54",
+      "year": 2027
+    },
+    {
+      "day": 17,
+      "month": 8,
+      "phase": "Full Moon",
+      "time": "07:29",
+      "year": 2027
+    },
+    {
+      "day": 25,
+      "month": 8,
+      "phase": "Last Quarter",
+      "time": "02:27",
+      "year": 2027
+    },
+    {
+      "day": 31,
+      "month": 8,
+      "phase": "New Moon",
+      "time": "17:41",
+      "year": 2027
+    },
+    {
+      "day": 7,
+      "month": 9,
+      "phase": "First Quarter",
+      "time": "18:31",
+      "year": 2027
+    },
+    {
+      "day": 15,
+      "month": 9,
+      "phase": "Full Moon",
+      "time": "23:03",
+      "year": 2027
+    },
+    {
+      "day": 23,
+      "month": 9,
+      "phase": "Last Quarter",
+      "time": "10:20",
+      "year": 2027
+    },
+    {
+      "day": 30,
+      "month": 9,
+      "phase": "New Moon",
+      "time": "02:36",
+      "year": 2027
+    },
+    {
+      "day": 7,
+      "month": 10,
+      "phase": "First Quarter",
+      "time": "11:47",
+      "year": 2027
+    },
+    {
+      "day": 15,
+      "month": 10,
+      "phase": "Full Moon",
+      "time": "13:47",
+      "year": 2027
+    },
+    {
+      "day": 22,
+      "month": 10,
+      "phase": "Last Quarter",
+      "time": "17:29",
+      "year": 2027
+    },
+    {
+      "day": 29,
+      "month": 10,
+      "phase": "New Moon",
+      "time": "13:36",
+      "year": 2027
+    },
+    {
+      "day": 6,
+      "month": 11,
+      "phase": "First Quarter",
+      "time": "08:00",
+      "year": 2027
+    },
+    {
+      "day": 14,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "03:26",
+      "year": 2027
+    },
+    {
+      "day": 21,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "00:48",
+      "year": 2027
+    },
+    {
+      "day": 28,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "03:24",
+      "year": 2027
+    },
+    {
+      "day": 6,
+      "month": 12,
+      "phase": "First Quarter",
+      "time": "05:22",
+      "year": 2027
+    },
+    {
+      "day": 13,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "16:09",
+      "year": 2027
+    },
+    {
+      "day": 20,
+      "month": 12,
+      "phase": "Last Quarter",
+      "time": "09:11",
+      "year": 2027
+    },
+    {
+      "day": 27,
+      "month": 12,
+      "phase": "New Moon",
+      "time": "20:12",
+      "year": 2027
+    }
+  ],
+  "almanacEvents": [
+    {
+      "month": 1,
+      "day": 3,
+      "time": "02",
+      "raw": "Earth at Perihelion: 0.98333 AU"
+    },
+    {
+      "month": 1,
+      "day": 3,
+      "time": "19",
+      "raw": "Venus at Greatest Elong: 47.0Â°W"
+    },
+    {
+      "month": 2,
+      "day": 3,
+      "time": "06",
+      "raw": "Mercury at Greatest Elong: 18.3Â°E"
+    },
+    {
+      "month": 2,
+      "day": 6,
+      "time": "16:00",
+      "raw": "Annular Solar Eclipse; mag=0.928"
+    },
+    {
+      "month": 2,
+      "day": 11,
+      "time": "00",
+      "raw": "Jupiter at Opposition"
+    },
+    {
+      "month": 2,
+      "day": 19,
+      "time": "15",
+      "raw": "Mars at Opposition"
+    },
+    {
+      "month": 2,
+      "day": 20,
+      "time": "23:13",
+      "raw": "Pen. Lunar Eclipse; mag=0.927"
+    },
+    {
+      "month": 3,
+      "day": 17,
+      "time": "07",
+      "raw": "Mercury at Greatest Elong: 27.6Â°W"
+    },
+    {
+      "month": 3,
+      "day": 20,
+      "time": "20:25",
+      "raw": "Vernal Equinox"
+    },
+    {
+      "month": 5,
+      "day": 28,
+      "time": "10",
+      "raw": "Mercury at Greatest Elong: 22.9Â°E"
+    },
+    {
+      "month": 6,
+      "day": 21,
+      "time": "14:11",
+      "raw": "Summer Solstice"
+    },
+    {
+      "month": 7,
+      "day": 5,
+      "time": "06",
+      "raw": "Earth at Aphelion: 1.01673 AU"
+    },
+    {
+      "month": 7,
+      "day": 15,
+      "time": "19",
+      "raw": "Mercury at Greatest Elong: 20.7Â°W"
+    },
+    {
+      "month": 7,
+      "day": 18,
+      "time": "16:03",
+      "raw": "Pen. Lunar Eclipse; mag=0.002"
+    },
+    {
+      "month": 8,
+      "day": 2,
+      "time": "10:07",
+      "raw": "Total Solar Eclipse; mag=1.079"
+    },
+    {
+      "month": 8,
+      "day": 17,
+      "time": "07:14",
+      "raw": "Pen. Lunar Eclipse; mag=0.546"
+    },
+    {
+      "month": 9,
+      "day": 23,
+      "time": "06:02",
+      "raw": "Autumnal Equinox"
+    },
+    {
+      "month": 9,
+      "day": 24,
+      "time": "22",
+      "raw": "Mercury at Greatest Elong: 26.3Â°E"
+    },
+    {
+      "month": 9,
+      "day": 28,
+      "time": "13",
+      "raw": "Neptune at Opposition"
+    },
+    {
+      "month": 10,
+      "day": 18,
+      "time": "00",
+      "raw": "Saturn at Opposition"
+    },
+    {
+      "month": 11,
+      "day": 4,
+      "time": "09",
+      "raw": "Mercury at Greatest Elong: 18.8Â°W"
+    },
+    {
+      "month": 11,
+      "day": 30,
+      "time": "10",
+      "raw": "Uranus at Opposition"
+    },
+    {
+      "month": 12,
+      "day": 22,
+      "time": "02:43",
+      "raw": "Winter Solstice"
+    }
+  ],
+  "meteorPredictions": [
+    [
+      1,
+      4,
+      "Quadrantids",
+      "03:25",
+      80,
+      "Little lunar interference near New Moon."
+    ],
+    [
+      2,
+      8,
+      "Alpha Centaurids",
+      null,
+      6,
+      "Best suited to southern latitudes; rates are variable."
+    ],
+    [
+      4,
+      23,
+      "Lyrids",
+      "01:40",
+      18,
+      "Bright waning moonlight strongly reduces faint-meteor visibility."
+    ],
+    [
+      5,
+      6,
+      "Eta Aquariids",
+      "09:00",
+      50,
+      "Near New Moon; southern and tropical locations are favoured before dawn."
+    ],
+    [
+      6,
+      22,
+      "June Bootids",
+      null,
+      null,
+      "Activity is uncertain and bright waning moonlight interferes."
+    ],
+    [
+      7,
+      31,
+      "Alpha Capricornids",
+      null,
+      5,
+      "Low rates, sometimes bright meteors; Moon near New Moon."
+    ],
+    [
+      7,
+      31,
+      "Southern Delta Aquariids",
+      null,
+      25,
+      "Moon near New Moon; best from southern and tropical latitudes."
+    ],
+    [
+      8,
+      13,
+      "Perseids",
+      "08:00â€“10:00",
+      110,
+      "The waxing gibbous Moon interferes until moonset; favour the later dark hours."
+    ],
+    [
+      8,
+      17,
+      "Kappa Cygnids",
+      null,
+      3,
+      "Full Moon strongly reduces visibility."
+    ],
+    [
+      9,
+      1,
+      "Aurigids",
+      "15:30",
+      6,
+      "Near New Moon; best from northern latitudes."
+    ],
+    [
+      10,
+      9,
+      "Draconids",
+      "07:00",
+      5,
+      "Waxing gibbous moonlight interferes; no storm is promised."
+    ],
+    [
+      10,
+      22,
+      "Orionids",
+      null,
+      20,
+      "Waning gibbous moonlight interferes."
+    ],
+    [
+      11,
+      6,
+      "Southern Taurids",
+      null,
+      7,
+      "Low rates with possible bright meteors; first-quarter Moon."
+    ],
+    [
+      11,
+      13,
+      "Northern Taurids",
+      null,
+      5,
+      "Almost Full Moon reduces faint-meteor visibility."
+    ],
+    [
+      11,
+      18,
+      "Leonids",
+      "06:00",
+      15,
+      "Waning gibbous moonlight interferes; watch after the radiant rises."
+    ],
+    [
+      12,
+      14,
+      "Geminids",
+      null,
+      150,
+      "Almost Full Moon severely reduces faint-meteor visibility."
+    ],
+    [
+      12,
+      23,
+      "Ursids",
+      "04:00",
+      10,
+      "Waning crescent; favour hours before moonrise from northern latitudes."
+    ]
+  ],
+  "sources": {
+    "usnoPhases2027": {
+      "label": "US Naval Observatory 2027 Moon phases",
+      "url": "https://aa.usno.navy.mil/calculated/moon/phases?year=2027",
+      "note": "Primary phase instants in Universal Time, checked 27 October 2026. Local dates may differ."
+    },
+    "almanac2027": {
+      "label": "Fred Espenak: 2027 Sky Event Almanac (GMT)",
+      "url": "https://astropixels.com/almanac/almanac21/almanac2027gmt.html",
+      "note": "Primary planetary and seasonal calculations. Hour-only entries are approximate; phase times use USNO. Checked 27 October 2026."
+    },
+    "imo2027": {
+      "label": "International Meteor Organization 2027 Meteor Shower Calendar",
+      "url": "https://www.imo.net/files/meteor-shower/cal2027.pdf",
+      "note": "2027 maxima and lunar conditions, including Table 5. Predictions can change. ZHR is an idealised rate, not a guaranteed visible count."
+    },
+    "nasaEclipses2027": {
+      "label": "NASA eclipse catalogues: 2027",
+      "url": "https://eclipse.gsfc.nasa.gov/",
+      "note": "Two solar and three catalogued penumbral lunar eclipses in 2027. The July graze is marginal and effectively unobservable; visibility is location dependent."
+    },
+    "phaseDiagrams": {
+      "label": "Astronomy Engine lunar calculations",
+      "url": "https://github.com/cosinekitty/astronomy",
+      "note": "2027 thumbnails are illustrative phase diagrams rather than dated NASA photographs. Illumination, lunar distance and local positions are calculated with Astronomy Engine."
+    },
+    "usnoSeasons2027": {
+      "label": "US Naval Observatory 2027 seasons and apsides",
+      "url": "https://aa.usno.navy.mil/calculated/seasons?year=2027&tz=0&dst=false",
+      "note": "Exact UT season and Earth apsis times, checked 27 October 2026. Takes precedence over the older rounded almanac."
+    }
+  },
+  "seasons": [
+    {
+      "day": 3,
+      "month": 1,
+      "phenom": "Perihelion",
+      "time": "02:33",
+      "year": 2027
+    },
+    {
+      "day": 20,
+      "month": 3,
+      "phenom": "Equinox",
+      "time": "20:25",
+      "year": 2027
+    },
+    {
+      "day": 21,
+      "month": 6,
+      "phenom": "Solstice",
+      "time": "14:11",
+      "year": 2027
+    },
+    {
+      "day": 5,
+      "month": 7,
+      "phenom": "Aphelion",
+      "time": "05:06",
+      "year": 2027
+    },
+    {
+      "day": 23,
+      "month": 9,
+      "phenom": "Equinox",
+      "time": "06:02",
+      "year": 2027
+    },
+    {
+      "day": 22,
+      "month": 12,
+      "phenom": "Solstice",
+      "time": "02:42",
+      "year": 2027
+    }
+  ]
+}

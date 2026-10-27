@@ -3559,3 +3559,26 @@ body.amc-standalone-body {
     height: auto;
   }
 }
+
+/* Beta0.9.7: shared forecast palette and unmistakable desktop expansion. */
+.amc-sky-calendar {
+  --observing-average: #c77a12;
+  --observing-good: #247b65;
+  --observing-unavailable: #92979f;
+}
+@media (min-width: 761px) {
+  .amc-day[aria-expanded="true"] {
+    border: 4px solid var(--accent);
+    outline: 2px solid var(--panel);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 25%, transparent), 0 12px 30px #0003;
+  }
+  .amc-day[aria-expanded="true"] .amc-expanded { border: 2px solid var(--accent); }
+}
+@media (max-width: 760px) {
+  .amc-grid { -webkit-overflow-scrolling: touch; }
+  .amc-weather-card-date { min-width: 0; overflow-wrap: anywhere; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .amc-sky-calendar *, .amc-sky-calendar *::before, .amc-sky-calendar *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}

@@ -13,6 +13,7 @@
 
   const sources = {
     ...shared.sources,
+    auditedAlmanac: { label: "Fred Espenak 2026 Sky Event Almanac", url: "https://astropixels.com/almanac/almanac21/almanac2026gmt.html", note: "November and December audited 27 October 2026; USNO phase times take precedence, IMO supplies meteor predictions. Removed the unsupported 1 December Venus elongation." },
     usnoPhases: {
       label: "US Naval Observatory 2026 Moon phases",
       url: "https://aa.usno.navy.mil/calculated/moon/phases?year=2026",
@@ -48,16 +49,16 @@
   }
 
   const exactMoon = {
-    1: "Last Quarter",
-    9: "New Moon",
-    17: "First Quarter",
-    24: "Cold Moon (Full Moon)",
-    30: "Last Quarter"
+    "1": "Last Quarter 06:08 UTC",
+    "9": "New Moon 00:52 UTC",
+    "17": "First Quarter 05:42 UTC",
+    "24": "Cold Moon (Full Moon) 01:28 UTC",
+    "30": "Last Quarter 18:59 UTC"
   };
 
   const monthIntel = [
     { day: 9, title: "New Moon", text: "9 Dec. Dark skies favour Orion, Rosette and faint winter nebulae.", image: moonImage(9, 216), alt: "New Moon" },
-    { day: 14, title: "Geminids", text: "14 Dec. A strong, Moon-free maximum with rates near 150 per hour under ideal skies.", image: media.meteor.src, alt: "Geminid meteor" },
+    { day: 14, title: "Geminids", text: "14 Dec. Strong shower; the waxing crescent sets during the evening. Ideal ZHR about 150; actual counts are lower.", image: media.meteor.src, alt: "Geminid meteor" },
     { day: 21, title: "December solstice", text: "21 Dec. The solstice occurs at 20:50 UTC.", image: media.sun.src, alt: "Sun" },
     { day: 24, title: "Cold Moon", text: "24 Dec. Full Moon at 01:28 UTC.", image: moonImage(24, 216), alt: "Full Moon" }
   ];
@@ -78,8 +79,7 @@
 
   const eventData = {
     1: [
-      event("moon", "Last Quarter Moon", "Last Quarter occurs at 06:08 UTC, leaving increasingly dark evenings for winter deep-sky imaging.", "Moon phase marker.", ["usnoPhases", "nasaSkyCal", "nasaSvs", "astronomyEngine"]),
-      event("sky", "Venus at greatest western elongation", "Venus reaches a morning elongation of about 41 degrees west of the Sun.", "Morning planet highlight; visibility depends on latitude.", ["nasaSkyCal", "inSky"], media.venus)
+      event("moon", "Last Quarter Moon", "Last Quarter occurs at 06:08 UTC, leaving increasingly dark evenings for winter deep-sky imaging.", "Moon phase marker.", ["usnoPhases", "nasaSkyCal", "nasaSvs", "astronomyEngine"])
     ],
     4: [
       event("telescope", "Orion and Horsehead nebulae", "Orion's nebula complex is prominent during northern winter nights. Combine short exposures for M42's core with longer integrations for faint dust and hydrogen-alpha structures.", "Deep-sky imaging highlight.", ["inSky"], media.milkyWay)
@@ -88,18 +88,18 @@
       event("moon", "New Moon", "New Moon occurs at 00:52 UTC, providing December's best lunar-darkness window for faint winter nebulae and galaxies.", "Moon phase marker.", ["usnoPhases", "nasaSkyCal", "nasaSvs", "astronomyEngine"])
     ],
     12: [
-      event("sky", "Jupiter near Regulus", "Jupiter passes near Regulus at 17:41 UTC. Their apparent altitude and best imaging time depend on location.", "Planet-star pairing.", ["nasaSkyCal", "inSky"], media.planets),
+      event("sky", "Jupiter near Regulus", "Jupiter passes near Regulus on this UTC date. Their apparent altitude and best imaging time depend on location.", "Planet-star pairing.", ["auditedAlmanac", "inSky"], media.planets),
       event("telescope", "Rosette Nebula imaging window", "The Rosette Nebula is well placed during the night and rewards wide-field hydrogen-alpha and narrowband imaging.", "Large emission-nebula target.", ["inSky"], media.milkyWay)
     ],
     14: [
-      event("meteor", "Geminid meteor shower peak", "The Geminids reach their predicted maximum near 14:00 UTC. A broad, Moon-free peak runs from roughly 21:00 UTC on 13 December to 18:00 UTC on the 14th, with a typical zenithal hourly rate near 150 under ideal skies.", "One of the year's strongest meteor showers.", ["imo2026", "nasaSkyCal"], media.meteor)
+      event("meteor", "Geminid meteor shower peak", "The Geminids reach their predicted maximum near 14:00 UTC. The predicted broad peak runs from roughly 21:00 UTC on 13 December to 18:00 UTC on the 14th, with a typical zenithal hourly rate near 150 under ideal skies, not an expected observed count. The waxing crescent sets during the evening.", "One of the year's strongest meteor showers.", ["imo2026", "nasaSkyCal"], media.meteor)
     ],
     17: [
       event("moon", "First Quarter Moon", "First Quarter occurs at 05:42 UTC; the evening terminator is favourable for high-resolution lunar imaging.", "Moon phase marker.", ["usnoPhases", "nasaSkyCal", "nasaSvs", "astronomyEngine"])
     ],
     21: [
       event("sky", "December solstice", "The December solstice occurs at 20:50 UTC, marking winter in the Northern Hemisphere and summer in the Southern Hemisphere.", "Seasonal marker.", ["usnoSeasons", "nasaSkyCal"], media.sun),
-      event("sky", "Moon near the Pleiades", "The waxing Moon passes near the Pleiades late in the day UTC, creating a bright wide-field pairing.", "Moon-cluster pairing.", ["nasaSkyCal", "inSky"], media.pleiades)
+      event("sky", "Moon near the Pleiades", "The waxing Moon passes near the Pleiades late in the day UTC, creating a bright wide-field pairing.", "Moon-cluster pairing.", ["auditedAlmanac", "inSky"], media.pleiades)
     ],
     22: [
       event("meteor", "Ursid meteor shower peak", "The Ursids peak near 22:00 UTC with a typical zenithal hourly rate around 10. A roughly 96%-illuminated Moon severely reduces faint-meteor visibility in 2026.", "Best from northern latitudes despite strong moonlight.", ["imo2026", "nasaSkyCal"], media.meteor)
@@ -108,7 +108,7 @@
       event("moon", "Cold Moon (Full Moon)", "Full Moon occurs at 01:28 UTC. December's popular traditional name is the Cold Moon; bright moonlight limits faint deep-sky imaging.", "Moon phase marker.", ["usnoPhases", "nasaSkyCal", "nasaSvs", "astronomyEngine", "fullMoonNames"])
     ],
     27: [
-      event("sky", "Moon and Jupiter", "The waning Moon passes Jupiter at 17:32 UTC. Local rise times determine the best viewing and imaging window.", "Moon-planet pairing.", ["nasaSkyCal", "inSky"], media.planets)
+      event("sky", "Moon and Jupiter", "The waning Moon passes Jupiter at 17:32 UTC. Local rise times determine the best viewing and imaging window.", "Moon-planet pairing.", ["auditedAlmanac", "inSky"], media.planets)
     ],
     30: [
       event("moon", "Last Quarter Moon", "Last Quarter occurs at 18:59 UTC, returning darker evening skies for Orion, Horsehead and Rosette imaging.", "Moon phase marker.", ["usnoPhases", "nasaSkyCal", "nasaSvs", "astronomyEngine"])

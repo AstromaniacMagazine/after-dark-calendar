@@ -13,6 +13,7 @@
 
   const sources = {
     ...shared.sources,
+    auditedAlmanac: { label: "Fred Espenak 2026 Sky Event Almanac", url: "https://astropixels.com/almanac/almanac21/almanac2026gmt.html", note: "November and December audited 27 October 2026; USNO phase times take precedence, IMO supplies meteor predictions. Removed the unsupported 1 December Venus elongation." },
     usnoPhases: {
       label: "US Naval Observatory 2026 Moon phases",
       url: "https://aa.usno.navy.mil/calculated/moon/phases?year=2026",
@@ -43,16 +44,16 @@
   }
 
   const exactMoon = {
-    1: "Last Quarter",
-    9: "New Moon",
-    17: "First Quarter",
-    24: "Beaver Moon (Full Moon)"
+    "1": "Last Quarter 20:28 UTC",
+    "9": "New Moon 07:02 UTC",
+    "17": "First Quarter 11:48 UTC",
+    "24": "Beaver Moon (Full Moon) 14:53 UTC"
   };
 
   const monthIntel = [
     { day: 5, title: "Southern Taurids", text: "5 Nov. Slow, bright meteors peak without Moon interference.", image: media.meteor.src, alt: "Meteor shower" },
     { day: 9, title: "New Moon", text: "9 Nov. Prime dark-sky window for galaxies and nebulae.", image: moonImage(9, 216), alt: "New Moon" },
-    { day: 17, title: "Leonids", text: "17 Nov. The shower peaks near 23:45 UTC under a dark sky.", image: media.meteor.src, alt: "Leonid meteor" },
+    { day: 17, title: "Leonids", text: "17 Nov. The shower peaks near 23:45 UTC with the first-quarter Moon affecting the evening.", image: media.meteor.src, alt: "Leonid meteor" },
     { day: 25, title: "Uranus opposition", text: "25 Nov. Uranus is visible throughout the night.", image: media.planets.src, alt: "Uranus" }
   ];
 
@@ -75,7 +76,7 @@
       event("moon", "Last Quarter Moon", "Last Quarter occurs at 20:28 UTC, opening progressively darker evenings for deep-sky imaging.", "Moon phase marker.", ["usnoPhases", "nasaSkyCal", "nasaSvs", "astronomyEngine"])
     ],
     2: [
-      event("sky", "Moon, Mars and Jupiter", "The waning Moon passes Mars and Jupiter during the day in UTC; the grouping is best judged for the user's local horizon and twilight.", "Wide-field planetary grouping.", ["nasaSkyCal", "inSky"], media.planets)
+      event("sky", "Moon, Mars and Jupiter", "The waning Moon passes Mars and Jupiter during the day in UTC; the grouping is best judged for the user's local horizon and twilight.", "Wide-field planetary grouping.", ["auditedAlmanac", "inSky"], media.planets)
     ],
     5: [
       event("meteor", "Southern Taurid meteor shower", "The Southern Taurids reach maximum around 18:45 UTC. Rates are modest, but the stream is noted for slow, bright meteors and 2026 is Moon-free near maximum.", "Allow a wide field of view and watch for fireballs.", ["imo2026", "nasaSkyCal"], media.meteor)
@@ -93,21 +94,21 @@
       event("telescope", "Orion Nebula imaging season", "M42 is returning to convenient late-evening and overnight hours, with bright core detail and extensive faint nebulosity suitable for bracketed exposures.", "Iconic deep-sky target.", ["inSky"], media.milkyWay)
     ],
     16: [
-      event("sky", "Mars-Jupiter conjunction", "Mars passes close to Jupiter at 04:22 UTC. Visibility, altitude and the best imaging time depend on location.", "Planetary conjunction.", ["nasaSkyCal", "inSky"], media.planets)
+      event("sky", "Mars-Jupiter conjunction", "Mars passes close to Jupiter at 04:22 UTC. Visibility, altitude and the best imaging time depend on location.", "Planetary conjunction.", ["auditedAlmanac", "inSky"], media.planets)
     ],
     17: [
-      event("meteor", "Leonid meteor shower peak", "The Leonids reach their predicted maximum near 23:45 UTC with a typical zenithal hourly rate around 15 and no significant moonlight disturbance.", "Best after the radiant rises; actual rates vary.", ["imo2026"], media.meteor),
+      event("meteor", "Leonid meteor shower peak", "The Leonids reach their predicted maximum near 23:45 UTC with a typical zenithal hourly rate around 15 and a first-quarter Moon affecting evening observing; conditions improve after moonset.", "Best after the radiant rises; actual rates vary.", ["imo2026"], media.meteor),
       event("moon", "First Quarter Moon", "First Quarter occurs at 11:48 UTC; the evening terminator is favourable for detailed lunar imaging.", "Moon phase marker.", ["usnoPhases", "nasaSkyCal", "nasaSvs", "astronomyEngine"])
     ],
     20: [
-      event("sky", "Mercury at greatest western elongation", "Mercury reaches its greatest morning separation from the Sun at 22:59 UTC. Visibility depends strongly on latitude and a clear eastern horizon.", "Morning planet opportunity.", ["nasaSkyCal", "inSky"], media.planets)
+      event("sky", "Mercury at greatest western elongation", "Mercury reaches its greatest morning separation from the Sun at 22:59 UTC. Visibility depends strongly on latitude and a clear eastern horizon.", "Morning planet opportunity.", ["auditedAlmanac", "inSky"], media.planets)
     ],
     24: [
       event("moon", "Beaver Moon (Full Moon)", "Full Moon occurs at 14:53 UTC. November's popular traditional name is the Beaver Moon; bright moonlight limits faint deep-sky work.", "Moon phase marker.", ["usnoPhases", "nasaSkyCal", "nasaSvs", "astronomyEngine", "fullMoonNames"]),
-      event("sky", "Moon near the Pleiades", "The Full Moon passes the Pleiades, producing a bright wide-field pairing but washing out the cluster's faint reflection nebulosity.", "Moon-cluster pairing.", ["nasaSkyCal", "inSky"], media.pleiades)
+      event("sky", "Moon near the Pleiades", "The Full Moon passes the Pleiades, producing a bright wide-field pairing but washing out the cluster's faint reflection nebulosity.", "Moon-cluster pairing.", ["auditedAlmanac", "inSky"], media.pleiades)
     ],
     25: [
-      event("opposition", "Uranus at opposition", "Uranus lies opposite the Sun at 22:47 UTC, remaining visible throughout the night and reaching its best annual observing geometry.", "A telescope and accurate chart are recommended.", ["nasaSkyCal", "inSky"], media.planets)
+      event("opposition", "Uranus at opposition", "Uranus lies opposite the Sun at 22:47 UTC, remaining visible throughout the night and reaching its best annual observing geometry.", "A telescope and accurate chart are recommended.", ["auditedAlmanac", "inSky"], media.planets)
     ]
   };
 

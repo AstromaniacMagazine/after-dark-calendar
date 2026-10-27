@@ -34,6 +34,7 @@ const sandbox = { console, Date, Math, URL };
 sandbox.window = sandbox;
 const context = vm.createContext(sandbox);
 
+run("assets/astronomy.browser.js", context);
 run("data/common.js", context);
 run("data/month-manifest.js", context);
 
@@ -191,7 +192,7 @@ const november = context.window.AMC_MONTH_DATA?.["2026-11"];
 if (november) {
   const expectedPhases = { 1: "Last Quarter", 9: "New Moon", 17: "First Quarter", 24: "Beaver Moon (Full Moon)" };
   for (const [day, label] of Object.entries(expectedPhases)) {
-    if (november.exactMoon?.[day] !== label) fail(`2026-11 day ${day} Moon phase should be "${label}".`);
+    if (!november.exactMoon?.[day]?.startsWith(label)) fail(`2026-11 day ${day} Moon phase should be "${label}".`);
   }
   if (!eventTitles("2026-11", 17).includes("Leonid meteor shower peak")) fail("The Leonid maximum must be listed on 2026-11-17.");
   if (!eventTitles("2026-11", 25).includes("Uranus at opposition")) fail("Uranus opposition must be listed on 2026-11-25.");
@@ -201,7 +202,7 @@ const december = context.window.AMC_MONTH_DATA?.["2026-12"];
 if (december) {
   const expectedPhases = { 1: "Last Quarter", 9: "New Moon", 17: "First Quarter", 24: "Cold Moon (Full Moon)", 30: "Last Quarter" };
   for (const [day, label] of Object.entries(expectedPhases)) {
-    if (december.exactMoon?.[day] !== label) fail(`2026-12 day ${day} Moon phase should be "${label}".`);
+    if (!december.exactMoon?.[day]?.startsWith(label)) fail(`2026-12 day ${day} Moon phase should be "${label}".`);
   }
   if (!eventTitles("2026-12", 14).includes("Geminid meteor shower peak")) fail("The Geminid maximum must be listed on 2026-12-14.");
   if (!eventTitles("2026-12", 21).includes("December solstice")) fail("The December solstice must be listed on 2026-12-21.");
@@ -250,7 +251,7 @@ if (!new RegExp(`data-asset-version="${declaredVersion.replace(/[.*+?^${}()|[\]\
 const metaDescription = html.match(/<meta name="description" content="([^"]+)">/)?.[1] || "";
 if (metaDescription.length < 120 || metaDescription.length > 400) fail(`Meta description should be 120-400 characters; found ${metaDescription.length}.`);
 if (/3-night/i.test(metaDescription)) fail("Meta description still claims a 3-night forecast.");
-const preloadedMonthPath = html.match(/<script[^>]+src="(data\/2026-\d{2}\.js)(?:\?[^\"]*)?"/i)?.[1];
+const preloadedMonthPath = html.match(/<script[^>]+src="(data\/\d{4}-\d{2}\.js)(?:\?[^\"]*)?"/i)?.[1];
 const defaultMonth = manifest.find(entry => entry.path === preloadedMonthPath);
 if (!defaultMonth) fail("index.html does not preload a supported calendar month.");
 if (!html.includes('<link rel="canonical" href="https://www.astromaniacmagazine.com/after-dark-calendar">')) fail("index.html canonical URL is missing or incorrect.");
@@ -281,6 +282,33 @@ if (!inlineLoader.includes(`const build = "${declaredVersion}-`)) fail("The Squa
 if (!squarespaceInstall.includes("adc-inline-calendar") || !squarespaceInstall.includes("assets/squarespace-inline.js")) fail("The current Squarespace installation does not use the inline loader.");
 const currentInstall = squarespaceInstall.split("## Legacy iframe installation")[0];
 if (/<iframe\b/i.test(currentInstall)) fail("The current Squarespace installation still contains an iframe.");
+
+const audit2027 = JSON.parse(read("data/2027-audit.json"));
+for (const season of audit2027.seasons) {
+  const data = context.window.AMC_MONTH_DATA[`2027-${String(season.month).padStart(2, "0")}`];
+  const event = data?.eventData[season.day]?.find(event => /equinox|solstice|Earth at (Perihelion|Aphelion)/i.test(event.title));
+  if (!event?.copy.includes(`${season.time} UTC`)) fail(`2027 ${season.phenom} differs from USNO on month ${season.month}`);
+}
+for (const [day, time] of [[1, "06:08"], [30, "18:59"]]) {
+  if (!december.eventData[day]?.some(event => event.type === "moon" && event.copy.includes(`${time} UTC`))) fail(`December ${day} last-quarter event must retain its own USNO time.`);
+}
+for (let month = 1; month <= 12; month++) {
+  const id = `2027-${String(month).padStart(2, "0")}`;
+  const data = context.window.AMC_MONTH_DATA?.[id];
+  if (!manifestIds.has(id) || !data) { fail(`Missing 2027 month: ${id}`); continue; }
+  for (const phase of audit2027.phases.filter(item => item.month === month)) {
+    if (!data.exactMoon[phase.day]?.endsWith(`${phase.time} UTC`)) fail(`${id} phase time differs from USNO on ${phase.day}`);
+    const target = { "New Moon": 0, "First Quarter": 90, "Full Moon": 180, "Last Quarter": 270 }[phase.phase];
+    const angle = context.Astronomy.MoonPhase(new Date(`${id}-${String(phase.day).padStart(2, "0")}T${phase.time}:00Z`));
+    const error = Math.abs(((angle-target+540)%360)-180);
+    if (error > .05) fail(`${id} phase does not independently agree with Astronomy Engine: ${error} degrees`);
+  }
+  for (const [mo, day, name] of audit2027.meteorPredictions.filter(item => item[0] === month)) {
+    if (!data.eventData[day]?.some(event => event.type === "meteor" && event.title.startsWith(name))) fail(`${id} missing IMO shower ${name}`);
+  }
+}
+const futureEvents = Object.values(context.window.AMC_MONTH_DATA).filter(data => data.MONTH.year === 2027).flatMap(data => Object.values(data.eventData).flat());
+if (futureEvents.filter(event => event.type === "eclipse").length !== 5) fail("2027 must contain five catalogued eclipses, including the marginal July graze.");
 
 if (failures.length) {
   console.error(`Calendar validation failed (${failures.length} issue${failures.length === 1 ? "" : "s"}):`);

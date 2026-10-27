@@ -36,6 +36,25 @@ For each version:
 
 ## Notes
 
+### Beta0.9.7 (27 October 2026)
+
+The calendar covers May 2026–December 2027. Month files remain lazy-loaded; there is no runtime article scraping or annual data bundle. `data/2027-audit.json` retains the checked USNO phase/season records, Espenak planetary almanac records and IMO 2027 meteor predictions. USNO takes precedence for lunar and seasonal instants; IMO takes precedence for shower maxima. Future launches are omitted unless a reliable dated schedule is available. Meteor maxima are predictions, ZHRs are idealised, and local visibility must be checked.
+
+2027 Moon thumbnails are illustrative phase diagrams computed from Astronomy Engine, avoiding unavailable annual NASA frames. Two contextual related links are selected from the magazine's articles, reviews and mission features checked on 27 October 2026.
+
+Forecast Overall ratings are Poor (<45), Average (45–63), Fair (64–77), Good (78–89) and Excellent (90+). Additional limits apply to cloud, precipitation, fog, visibility and wind; an incomplete interval is unavailable. A poor quarter limits the whole-night rating. Calendar blocks and forecast intervals share one rating/colour function. Seeing and transparency remain weather-derived planning estimates.
+
+Release checks:
+
+```text
+node scripts/validate-calendar.mjs
+node scripts/test-forecast.mjs
+node scripts/test-mobile-interactions.mjs --modules <node_modules>
+node scripts/test-release.mjs --modules <node_modules> --output <snapshot-directory>
+```
+
+The final browser suite checks all 14 newly added/refreshed months, expanded desktop borders, the inline 2027 loader, navigation across December/January and widths of 320, 390, 430, 600 and 768 pixels. It can save the three standard 2x desktop screenshots and a mobile screenshot.
+
 - Do not copy `.git` or local archive folders into a release.
 - ZIP archives and historical working folders are ignored to keep production commits clean.
 - Month data must cite its sources and pass the validation script before release.
