@@ -1,5 +1,12 @@
 {
   "checked": "2026-10-27",
+  "rechecked": {
+    "date": "2026-10-28",
+    "scope": "All 49 lunar phases and six seasons/apsides matched the live USNO APIs; November/December meteor predictions were compared with the IMO 2027 calendar, including uncertain Leonid and Andromedid enhancements.",
+    "usnoPhases": "https://aa.usno.navy.mil/api/moon/phases/year?year=2027",
+    "usnoSeasons": "https://aa.usno.navy.mil/api/seasons?year=2027",
+    "imo2027": "https://www.imo.net/files/meteor-shower/cal2027.pdf"
+  },
   "phases": [
     {
       "day": 7,
@@ -605,6 +612,22 @@
       "06:00",
       15,
       "Waning gibbous moonlight interferes; watch after the radiant rises."
+    ],
+    [
+      11,
+      20,
+      "Leonids",
+      "04:00",
+      40,
+      "Possible modelled dust-trail enhancement; unconfirmed, and bright moonlight reduces visible rates."
+    ],
+    [
+      12,
+      6,
+      "Andromedids",
+      null,
+      null,
+      "Possible 1649 dust-trail display with no reliable rate or hour; may not occur."
     ],
     [
       12,

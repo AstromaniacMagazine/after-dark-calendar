@@ -123,8 +123,8 @@ try {
     const active = document.querySelector(".amc-day.is-mobile-active");
     const recommendations = active?.querySelector(".amc-mobile-recommendations");
     const forecast = active?.querySelector(".amc-cell-weather-list");
-    return Boolean(recommendations && forecast && (recommendations.compareDocumentPosition(forecast) & Node.DOCUMENT_POSITION_FOLLOWING));
-  }), true, "The mobile forecast is not below targets and related articles");
+    return Boolean(recommendations && forecast && (forecast.compareDocumentPosition(recommendations) & Node.DOCUMENT_POSITION_FOLLOWING));
+  }), true, "The mobile forecast must appear before targets and related articles");
   assert.equal(await page.locator(".amc-day.is-mobile-active [data-now-detail]").count(), 1, "Moon chart is missing its live time/date/altitude label");
   const todayStyle = await page.locator(".amc-day.is-today").evaluate(element => ({ border: getComputedStyle(element).borderTopWidth, shadow: getComputedStyle(element).boxShadow }));
   assert(Number.parseFloat(todayStyle.border) >= 3 && todayStyle.shadow !== "none", "Today is not visibly highlighted");

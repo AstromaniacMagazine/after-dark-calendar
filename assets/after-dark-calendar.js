@@ -229,6 +229,9 @@
     els.manualInput.addEventListener("focus", showLocationHistory);
     els.manualInput.addEventListener("click", showLocationHistory);
     els.manualInput.addEventListener("keydown", handleLocationKeys);
+    root.addEventListener("click", event => {
+      if (event.target.closest(".amc-chart-location-action")) els.manualInput.focus();
+    });
     els.locationResults?.addEventListener("keydown", handleLocationKeys);
     els.rememberLocations?.addEventListener("change", () => setLocationMemory(els.rememberLocations.checked));
     els.rememberTheme?.addEventListener("change", () => {
@@ -1262,8 +1265,8 @@
       <span class="amc-cell-mobile-extra">
         ${events.length ? `<span class="amc-expanded-event-list">${events.map(expandedEventItem).join("")}</span>` : ""}
         ${moonChart(skyInfo, nightInfo, true)}
-        ${includeRecommendations ? `<span class="amc-mobile-recommendations">${recommendationsMarkup(day)}</span>` : ""}
         ${cellWeatherPanel()}
+        ${includeRecommendations ? `<span class="amc-mobile-recommendations">${recommendationsMarkup(day)}</span>` : ""}
       </span>
     `;
   }
@@ -1594,7 +1597,7 @@
 
   function moonChart(skyInfo, nightInfo, compact) {
     if (!state.hasLocation) {
-      return `<section class="amc-chart"><h3>Moon Altitude & Darkness</h3><span class="amc-chart-location-prompt"><b>Set your location to unlock this chart</b><span>Use Current Location or enter a city above to calculate Moon altitude and darkness for your night.</span></span></section>`;
+      return `<section class="amc-chart"><h3>Moon Altitude & Darkness</h3><span class="amc-chart-location-prompt"><button type="button" class="amc-chart-location-action">Set your location to unlock this chart</button><span>Use Current Location or enter a city above to calculate Moon altitude and darkness for your night.</span></span></section>`;
     }
     if (!skyInfo?.timeline) {
       return `<section class="amc-chart"><h3>Moon Altitude & Darkness</h3><span class="amc-weather-note">Chart unavailable for this location.</span></section>`;
@@ -1695,7 +1698,8 @@
   }
 
   function cellWeatherPanel() {
-    if (!state.hasLocation || !state.weather.length) return "";
+    if (!state.hasLocation) return `<span class="amc-weather"><b>7-Night Forecast</b><span class="amc-weather-note">Set your location to see the seven-night observing forecast.</span></span>`;
+    if (!state.weather.length) return `<span class="amc-weather"><b>7-Night Forecast</b><span class="amc-weather-note">${state.weatherState === "loading" ? "Loading local observing conditions." : "Weather forecast unavailable for this location."}</span></span>`;
     return `<span class="amc-weather"><span class="amc-weather-title"><b>7-Night Forecast</b>${weatherUpdatedLine()}</span><span class="amc-cell-weather-list">${state.weather.map(day => weatherCard(day, true)).join("")}</span></span>`;
   }
 
@@ -1705,7 +1709,7 @@
     return `<span class="${cardClass}">
       <span class="amc-weather-card-head">
         <span class="amc-weather-card-date"><b>${escapeHtml(day.label)}</b></span>
-        <span class="amc-weather-icons">${day.icons.map(weatherIcon).join("")}</span>
+        <span class="amc-weather-icons">${day.icons.map((kind, index) => `<span class="amc-weather-icon" title="${escapeHtml(day.segments[index]?.label || "")} · ${escapeHtml(kind)}">${weatherIcon(kind)}</span>`).join("")}</span>
       </span>
       <span class="amc-weather-metrics">
         ${weatherMetric("Overall", day.observingLabel, day.segments.map(segment => weatherSegment(segment, "observing")), "amc-observing-segments")}
@@ -3151,18 +3155,7 @@
   }
 
   function weatherIconKinds(segments, fallback) {
-    const kinds = segments.map(segment => weatherKind(segment.code, segment.cloud)).filter(Boolean);
-    if (!kinds.length) return [fallback, fallback, fallback];
-    if (kinds.every(kind => kind === "stars")) return ["stars", "stars", "stars"];
-    const runs = kinds.reduce((items, kind) => {
-      const last = items[items.length - 1];
-      if (last?.kind === kind) last.count += 1;
-      else items.push({ kind, count: 1 });
-      return items;
-    }, []);
-    if (runs.length === 1) return [runs[0].kind, runs[0].kind, runs[0].kind];
-    if (runs.length === 2) return runs[0].count >= runs[1].count ? [runs[0].kind, runs[0].kind, runs[1].kind] : [runs[0].kind, runs[1].kind, runs[1].kind];
-    return [kinds[0], kinds[Math.floor(kinds.length / 2)], kinds[kinds.length - 1]];
+    return segments.map(segment => weatherKind(segment.code, segment.cloud) || fallback);
   }
 
   function uniqueArticles(items) {

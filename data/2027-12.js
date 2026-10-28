@@ -1,4 +1,4 @@
-// Audited 2026-10-27. See 2027-audit.json for source records and prediction limits.
+// Rechecked 2026-10-28. See 2027-audit.json for source records and prediction limits.
 (() => {
   "use strict";
   const shared = window.AMC_SHARED;
@@ -26,6 +26,16 @@
           "usnoPhases2027"
         ],
         "mediaKey": null
+      },
+      {
+        "type": "meteor",
+        "title": "Andromedids possible enhancement",
+        "copy": "The IMO notes a possible Andromedid dust-trail display around 6 December, with no precise peak hour or reliable rate forecast. Look for slow meteors from a radiant near Cassiopeia; activity may remain weak or fail to appear.",
+        "fact": "Uncertain prediction; observe across neighbouring nights and check later IMO updates.",
+        "sourceIds": [
+          "imo2027"
+        ],
+        "mediaKey": "meteor"
       }
     ],
     "13": [
@@ -143,7 +153,7 @@
   "imo2027": {
     "label": "International Meteor Organization 2027 Meteor Shower Calendar",
     "url": "https://www.imo.net/files/meteor-shower/cal2027.pdf",
-    "note": "2027 maxima and lunar conditions, including Table 5. Predictions can change. ZHR is an idealised rate, not a guaranteed visible count."
+    "note": "2027 maxima, lunar conditions and possible Andromedid activity near 6 December. Predictions can change or fail to appear; ZHR is an idealised rate, not a guaranteed visible count."
   },
   "nasaEclipses2027": {
     "label": "NASA eclipse catalogues: 2027",

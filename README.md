@@ -36,6 +36,14 @@ For each version:
 
 ## Notes
 
+### Beta0.9.7c (28 October 2026)
+
+The desktop event summary now separates event headings from explanatory text while keeping the chart and forecast anchored. Forecast headers place the date and four icons on one row; each icon comes from the same four-hour interval as its colour bars. Unexpanded desktop date rows are shorter. Mobile shows the seven-night forecast before observing targets and related articles, uses two source columns, and offers an animated, keyboard-accessible location prompt for the Moon chart. Monthly highlight text is larger and clearer within the existing cards.
+
+November and December 2026 phase times were rechecked against the live USNO API, the December solstice against USNO, and meteor predictions against the IMO 2026 calendar. All 49 stored 2027 lunar phases and six seasons/apsides matched the live USNO API. The IMO 2027 calendar additionally describes possible, unconfirmed Leonid enhancements on 17–20 November and possible Andromedid activity around 6 December; those are labelled as uncertain predictions in the relevant date entries. `data/2027-audit.json` records the recheck scope and source URLs. No specific launch dates were added without a reliable dated schedule.
+
+`node scripts/test-polish.mjs --modules <node_modules> --output <snapshot-directory>` also checks four same-line weather icons, event heading/copy gaps, shorter date cards, mobile content order, location prompt focus, highlight size and two-column sources.
+
 ### Beta0.9.7b (27 October 2026)
 
 Desktop expansions use a measured two-column overlay with a raised border and dimmed background dates. The grid keeps fixed rows, and selected-day summary content has a reserved scrollable area, so changing events does not move the chart or forecast. Mobile retains native date swiping and uses compact data cards.

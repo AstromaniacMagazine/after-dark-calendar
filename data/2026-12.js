@@ -13,7 +13,7 @@
 
   const sources = {
     ...shared.sources,
-    auditedAlmanac: { label: "Fred Espenak 2026 Sky Event Almanac", url: "https://astropixels.com/almanac/almanac21/almanac2026gmt.html", note: "November and December audited 27 October 2026; USNO phase times take precedence, IMO supplies meteor predictions. Removed the unsupported 1 December Venus elongation." },
+    auditedAlmanac: { label: "Fred Espenak 2026 Sky Event Almanac", url: "https://astropixels.com/almanac/almanac21/almanac2026gmt.html", note: "November and December rechecked 28 October 2026 against USNO phases and seasons, IMO meteor predictions and the almanac. USNO phase times take precedence. Removed the unsupported 1 December Venus elongation." },
     usnoPhases: {
       label: "US Naval Observatory 2026 Moon phases",
       url: "https://aa.usno.navy.mil/calculated/moon/phases?year=2026",

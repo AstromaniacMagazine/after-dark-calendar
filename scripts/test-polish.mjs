@@ -18,14 +18,14 @@ const fixture=()=>{
  const time=Array.from({length:192},(_,i)=>new Date(Date.UTC(2026,9,27,i)).toISOString().slice(0,16));const v=n=>Array(time.length).fill(n);
  return {timezone:'Europe/London',hourly:{time,cloud_cover:v(22),temperature_2m:v(14),relative_humidity_2m:v(62),dew_point_2m:v(7),precipitation_probability:v(4),wind_speed_10m:v(8),wind_gusts_10m:v(13),visibility:v(28000),cape:v(20),weather_code:v(1)}};
 };
-async function setup(viewport,seed=false){
+async function setup(viewport,seed=false,month='2026-10'){
  const context=await browser.newContext({viewport,hasTouch:viewport.width<601,isMobile:viewport.width<601,deviceScaleFactor:2});
  const requests={weather:0};
  await context.route('**/api.open-meteo.com/v1/forecast?**',route=>{requests.weather++;return route.fulfill({json:fixture()});});
  await context.route('**/api.bigdatacloud.net/**',route=>route.fulfill({json:{city:'Selected place',timeZone:'Europe/London'}}));
  if(seed)await context.addInitScript(()=>{localStorage.setItem('amc-remember-locations','yes');localStorage.setItem('amc-sky-calendar-location',JSON.stringify({lat:51.50853,lon:-.12574,name:'London',timeZone:'Europe/London',savedAt:new Date().toISOString()}));});
  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
- await page.goto('http://127.0.0.1:4177/?snapshot=1&month=2026-10');
+ await page.goto(`http://127.0.0.1:4177/?snapshot=1&month=${month}`);
  await page.waitForFunction(()=>document.querySelector('#amc-after-dark-calendar')?.dataset.ready==='true');
  return {context,page,requests};
 }
@@ -58,15 +58,56 @@ try{
   }
   const headers=await page.locator('.amc-detail .amc-weather-card-date b').evaluateAll(els=>els.map(el=>{const range=document.createRange();range.selectNodeContents(el);return {lines:range.getClientRects().length,fits:el.scrollWidth<=el.clientWidth}}));
   assert(headers.every(h=>h.lines===1&&h.fits),`${width} forecast date wraps or clips: ${JSON.stringify(headers)}`);
+  const iconRows=await page.locator('.amc-detail .amc-weather-card').evaluateAll(cards=>cards.map(card=>{const head=card.querySelector('.amc-weather-card-head'),date=head.querySelector('.amc-weather-card-date').getBoundingClientRect(),icons=[...head.querySelectorAll('.amc-weather-icon')],slots=[...card.querySelectorAll('.amc-weather-row:first-child .amc-weather-segments i')];return {icons:icons.length,slots:slots.length,sameLine:icons.every(icon=>{const r=icon.getBoundingClientRect();return r.top<date.bottom&&r.bottom>date.top}),fits:head.scrollWidth<=head.clientWidth}}));
+  assert(iconRows.every(row=>row.icons===4&&row.slots===4&&row.sameLine&&row.fits),`${width} forecast icons do not share the date line or four intervals: ${JSON.stringify(iconRows)}`);
   assert(await page.locator('.amc-detail .amc-weather-card').evaluateAll(els=>els.every(el=>el.querySelector('.amc-weather-row:last-child').getBoundingClientRect().bottom<=el.getBoundingClientRect().bottom-3)),`${width} last forecast metric is clipped`);
+  assert.equal(await page.locator('.amc-day[data-day="12"]').evaluate(el=>Math.round(el.getBoundingClientRect().height)),120);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   if(output&&width===1920){await fs.mkdir(output,{recursive:true});await page.evaluate(()=>document.querySelector('.amc-day[data-day="27"]').click());for(const theme of ['light','dark','red','teal']){while(await page.locator('#amc-after-dark-calendar').getAttribute('data-theme')!==theme)await page.locator('#amc-theme-toggle').click();await page.screenshot({path:path.join(output,`POLISH_${theme.toUpperCase()}.png`),fullPage:true});}}
   await context.close();
  }
- results.stableAlignedOverlays={widths:[1920,1440,1300,1024,768],days:[1,4,7,27,31],tolerancePixels:.3};results.forecastDates='single line, no clipping';
+ results.stableAlignedOverlays={widths:[1920,1440,1300,1024,768],days:[1,4,7,27,31],tolerancePixels:.3};results.forecastDates='single line, four interval icons, no clipping';
+ for(const [month,day] of [['2026-11',17],['2026-12',12],['2027-11',18],['2027-12',6]]){
+  const {context,page}=await setup({width:1440,height:1000},false,month);
+  await page.locator(`.amc-day[data-day="${day}"]`).click();
+  const gaps=await page.locator('.amc-detail-summary').evaluate(el=>{const title=el.querySelector('.amc-detail-title').getBoundingClientRect(),list=el.querySelector('.amc-event-list').getBoundingClientRect();return {titleToList:list.top-title.bottom,items:[...el.querySelectorAll('.amc-event')].map(item=>{const heading=item.querySelector('h4').getBoundingClientRect(),copy=item.querySelector('p').getBoundingClientRect();return copy.top-heading.bottom})}});
+  assert(gaps.titleToList>=4&&gaps.items.every(gap=>gap>=2),`${month}-${day} event text overlaps: ${JSON.stringify(gaps)}`);
+  if(output&&month==='2026-11')await page.screenshot({path:path.join(output,'POLISH_EVENT_NOVEMBER.png'),fullPage:true});
+  await context.close();
+ }
+ results.eventSpacing='November/December 2026 and 2027 titles and copy do not overlap';
+ if(output){
+  const seeded=await setup({width:390,height:844},true);
+  await seeded.page.waitForFunction(()=>document.querySelectorAll('.amc-day.is-mobile-active .amc-cell-weather-row').length===7);
+  for(const width of [320,390,430]){
+   await seeded.page.setViewportSize({width,height:844});
+   const rows=await seeded.page.locator('.amc-day.is-mobile-active .amc-cell-weather-row .amc-weather-card-head').evaluateAll(heads=>heads.map(head=>{const date=head.querySelector('.amc-weather-card-date').getBoundingClientRect(),icons=[...head.querySelectorAll('.amc-weather-icon')];return {count:icons.length,fits:head.scrollWidth<=head.clientWidth,sameLine:icons.every(icon=>{const r=icon.getBoundingClientRect();return r.top<date.bottom&&r.bottom>date.top})}}));
+   assert(rows.every(row=>row.count===4&&row.fits&&row.sameLine),`${width}px mobile forecast header wraps or clips: ${JSON.stringify(rows)}`);
+  }
+  await seeded.page.setViewportSize({width:390,height:844});
+  await seeded.page.screenshot({path:path.join(output,'POLISH_MOBILE_FORECAST_ORDER.png'),fullPage:true});
+  await seeded.page.locator('.amc-sources > summary').click();
+  await seeded.page.screenshot({path:path.join(output,'POLISH_MOBILE_SOURCES.png'),fullPage:true});
+  await seeded.context.close();
+ }
  const {context,page,requests}=await setup({width:390,height:844});
  assert.equal(await page.evaluate(()=>localStorage.getItem('amc-sky-calendar-location')),null,'No location should be saved by default');
  assert.equal(requests.weather,0,'No location/weather request should occur before a location is chosen');
+ const mobileOrder=await page.locator('.amc-day.is-mobile-active .amc-cell-mobile-extra').evaluate(el=>[...el.children].map(child=>child.className));
+ assert(mobileOrder.indexOf('amc-weather')>=0&&mobileOrder.indexOf('amc-weather')<mobileOrder.indexOf('amc-mobile-recommendations'),`Mobile forecast must precede recommendations: ${mobileOrder}`);
+ await page.locator('.amc-day.is-mobile-active .amc-chart-location-action').click();
+ assert.equal(await page.locator('#amc-location-input').evaluate(el=>document.activeElement===el),true,'Chart prompt must focus the location search');
+ const highlight=await page.locator('.amc-intel-card').first().evaluate(el=>({height:el.getBoundingClientRect().height,bodySize:parseFloat(getComputedStyle(el.querySelector('.amc-intel-copy span')).fontSize)}));
+ assert(highlight.height<=72&&highlight.bodySize>=11.5,`Mobile highlight grew or stayed too small: ${JSON.stringify(highlight)}`);
+ await page.locator('.amc-sources > summary').click();
+ for(const width of [320,390,430]){
+  await page.setViewportSize({width,height:844});
+  const sourceLayout=await page.locator('.amc-source-list').evaluate(el=>({columns:getComputedStyle(el).gridTemplateColumns.split(' ').length,overflow:[...el.querySelectorAll('li')].filter(li=>li.scrollWidth>li.clientWidth+1).length}));
+  assert.equal(sourceLayout.columns,2,`${width}px mobile sources must use two columns`);
+  assert.equal(sourceLayout.overflow,0,`${width}px mobile source text overflows its column`);
+ }
+ await page.setViewportSize({width:390,height:844});
+ await page.locator('.amc-sources > summary').click();
  await page.locator('#amc-location-input').click();
  await page.locator('[data-enable-history]').click();
  for(let i=0;i<6;i++){
