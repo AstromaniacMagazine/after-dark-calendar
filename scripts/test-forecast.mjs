@@ -5,7 +5,7 @@ const script = fs.readFileSync(new URL('../assets/after-dark-calendar.js', impor
 const root = { querySelector: () => null, dataset: {} };
 const sandbox = { console, Date, Intl, URL, URLSearchParams, document: { getElementById: () => root }, matchMedia: () => ({ matches: false }) };
 sandbox.window = sandbox;
-vm.runInNewContext(script.replace('  boot();', '  window.testApi = { observingRating, summariseWeather, shortWeatherDate, segmentColour, dayObservingBar, numberAt, zonedDateParts };'), sandbox);
+vm.runInNewContext(script.replace('  boot();', '  window.testApi = { observingRating, summariseWeather, shortWeatherDate, segmentColour, dayObservingBar, numberAt, zonedDateParts, weatherKind };'), sandbox);
 const api = sandbox.testApi;
 const keys = [[0,'poor'],[44,'poor'],[45,'average'],[63,'average'],[64,'fair'],[77,'fair'],[78,'good'],[89,'good'],[90,'excellent'],[100,'excellent'],[null,'unavailable'],[NaN,'unavailable']];
 for (const [score, key] of keys) assert.equal(api.observingRating(score).key, key);
@@ -32,6 +32,10 @@ for (const [input, expected] of cases) {
   const night=nights[0];
   const bar=api.dayObservingBar(night);
   for(const segment of night.segments) assert(bar.includes(api.segmentColour(segment,'observing')),'Calendar and forecast colours diverge');
+  if(expected!=='unavailable') {
+    assert.equal(night.icons.length,4,'Every available night needs four weather icons');
+    night.segments.forEach((segment,index)=>assert.equal(night.icons[index],api.weatherKind(segment.code,segment.cloud),'Icon must match its four-hour interval'));
+  }
 }
 const truncated=fixture();
 for(const key of Object.keys(truncated)) truncated[key]=truncated[key].slice(0,25);
@@ -39,9 +43,10 @@ assert.equal(api.summariseWeather(truncated)[0].observingKey,'unavailable');
 const splitNight=fixture();
 for(let i=20;i<24;i++) splitNight.weather_code[i]=95;
 assert.notEqual(api.summariseWeather(splitNight)[0].observingKey,'excellent','One stormy quarter must block Excellent overall');
+assert.equal(api.summariseWeather(splitNight)[0].icons[1],api.weatherKind(95,0),'The second icon must reflect the stormy second interval');
 const cloudyQuarter=fixture();
 for(let i=20;i<24;i++) cloudyQuarter.cloud_cover[i]=22;
 assert.notEqual(api.summariseWeather(cloudyQuarter)[0].observingKey,'excellent','One cloudy quarter must block Excellent overall');
 assert.equal(api.zonedDateParts(new Date('2027-03-28T01:30:00Z'),'Europe/London').hour,'02');
 assert.equal(api.zonedDateParts(new Date('2027-10-31T01:30:00Z'),'Europe/London').hour,'01');
-console.log('Forecast regression passed: five levels, cloud/rain/fog/wind, null/truncated data, shared colours, weekday dates and UK DST.');
+console.log('Forecast regression passed: five levels, four interval icons, cloud/rain/fog/wind, null/truncated data, shared colours, weekday dates and UK DST.');

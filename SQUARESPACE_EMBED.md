@@ -6,7 +6,7 @@ Replace the entire existing iframe Code Block with:
 
 ```html
 <div id="adc-inline-calendar" aria-live="polite"></div>
-<script src="https://astromaniacmagazine.github.io/after-dark-calendar/assets/squarespace-inline.js?v=Beta0.9.7b-20261027a"></script>
+<script src="https://astromaniacmagazine.github.io/after-dark-calendar/assets/squarespace-inline.js?v=Beta0.9.7c-20261028a"></script>
 <noscript><p><a href="https://astromaniacmagazine.github.io/after-dark-calendar/">Open After Dark Calendar</a></p></noscript>
 ```
 

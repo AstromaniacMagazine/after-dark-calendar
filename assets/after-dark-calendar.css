@@ -3677,3 +3677,49 @@ body.amc-standalone-body {
   .amc-day.is-today { border-width: 4px; }
   .amc-day.is-new-moon { border-width: 3px; }
 }
+
+/* Beta0.9.7c: readable summaries and compact, interval-matched forecasts. */
+.amc-intel-card { gap: 5px; padding-block: 4px; }
+.amc-intel-copy { gap: 3px; }
+.amc-intel-copy b { font-size: .84rem; }
+.amc-intel-copy span { color: color-mix(in srgb, var(--text) 78%, var(--muted)); font-size: .74rem; line-height: 1.16; }
+.amc-chart-location-prompt { border-color: var(--accent); }
+.amc-chart-location-action {
+  animation: amc-location-glow 2.8s ease-in-out infinite;
+  background: color-mix(in srgb, var(--accent) 12%, var(--panel));
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: .86rem;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 8px 12px;
+}
+.amc-chart-location-action:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+@keyframes amc-location-glow {
+  0%, 100% { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 20%, transparent), 0 0 6px color-mix(in srgb, var(--accent) 25%, transparent); }
+  50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 24%, transparent), 0 0 20px color-mix(in srgb, var(--accent) 45%, transparent); }
+}
+.amc-weather-card-head { grid-template-columns: minmax(0, 1fr) auto; gap: 0; }
+.amc-weather-card-date b { white-space: nowrap; }
+.amc-weather-icons { display: grid; grid-template-columns: repeat(4, 22px); gap: 0; min-width: 0; }
+.amc-weather-icon { align-items: center; display: grid; height: 22px; justify-items: center; width: 22px; }
+.amc-weather-icon svg { height: 21px; width: 21px; }
+@media screen and (min-width: 601px) {
+  .amc-grid { grid-auto-rows: 120px; }
+  .amc-day:not([aria-expanded="true"]) { padding-bottom: 4px; }
+  .amc-detail-summary { align-content: start; display: grid; gap: 8px; }
+  .amc-detail .amc-detail-title + .amc-event-list { margin-top: 0; }
+  .amc-detail .amc-weather-card-head { grid-template-columns: minmax(0, 1fr) auto; gap: 0; }
+  .amc-detail .amc-weather-icons { grid-template-columns: repeat(4, 22px); min-width: 0; }
+  .amc-detail .amc-weather-icons svg { height: 21px; width: 21px; }
+}
+@media (max-width: 600px) {
+  .amc-source-list, .amc-expanded-top.amc-source-list { column-gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0 0 8px; row-gap: 8px; }
+  .amc-source-list li { border-left: 2px solid var(--line-strong); font-size: .67rem; line-height: 1.3; list-style: none; min-width: 0; overflow-wrap: anywhere; padding-left: 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .amc-chart-location-action { animation: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+}

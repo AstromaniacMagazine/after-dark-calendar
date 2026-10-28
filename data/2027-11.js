@@ -1,4 +1,4 @@
-// Audited 2026-10-27. See 2027-audit.json for source records and prediction limits.
+// Rechecked 2026-10-28. See 2027-audit.json for source records and prediction limits.
 (() => {
   "use strict";
   const shared = window.AMC_SHARED;
@@ -115,8 +115,20 @@
       {
         "type": "meteor",
         "title": "Leonids meteor shower peak",
-        "copy": "Predicted maximum near 06:00 UTC. Waning gibbous moonlight interferes; watch after the radiant rises. Ideal zenithal hourly rate about 15; actual observed counts are usually lower. Observe around the peak on adjacent nights; timing is a prediction.",
+        "copy": "The annual maximum is predicted near 06:00 UTC. The usual ideal ZHR is about 15, but models suggest possible extra activity from 17–20 November; those enhancements are unconfirmed. Waning gibbous moonlight interferes, and observed counts can be much lower.",
         "fact": "Times and dates are UTC; local visibility depends on your location.",
+        "sourceIds": [
+          "imo2027"
+        ],
+        "mediaKey": "meteor"
+      }
+    ],
+    "20": [
+      {
+        "type": "meteor",
+        "title": "Leonids possible trail enhancement",
+        "copy": "Models suggest a possible Leonid enhancement around 04:00 UTC on 20 November, with an ideal ZHR near 40–50 if the predicted dust trail is encountered. This is uncertain, and the waning Moon will reduce visibility of faint meteors.",
+        "fact": "Prediction only; watch neighbouring nights and check later IMO updates.",
         "sourceIds": [
           "imo2027"
         ],
@@ -140,7 +152,7 @@
     {
       "day": 18,
       "title": "Leonids meteor shower peak",
-      "text": "Predicted maximum near 06:00 UTC. Waning gibbous moonlight interferes; watch after the radiant rises. Ideal zenithal hourly rate about 15; actual observed counts are usually lower. Observe around the peak on adjacent nights; timing is a prediction.",
+      "text": "Annual maximum near 06:00 UTC; models also suggest possible enhancements on 17–20 November. Moonlight and prediction uncertainty limit expectations.",
       "imageKey": "meteor"
     },
     {
@@ -165,7 +177,7 @@
   "imo2027": {
     "label": "International Meteor Organization 2027 Meteor Shower Calendar",
     "url": "https://www.imo.net/files/meteor-shower/cal2027.pdf",
-    "note": "2027 maxima and lunar conditions, including Table 5. Predictions can change. ZHR is an idealised rate, not a guaranteed visible count."
+    "note": "2027 maxima, lunar conditions and possible modelled Leonid enhancements, including Table 5. Predictions can change or fail to appear; ZHR is an idealised rate, not a guaranteed visible count."
   },
   "nasaEclipses2027": {
     "label": "NASA eclipse catalogues: 2027",
