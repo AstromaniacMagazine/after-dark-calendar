@@ -16,3 +16,5 @@ jobs:
         run: node scripts/validate-calendar.mjs
       - name: Check forecast failure cases and ratings
         run: node scripts/test-forecast.mjs
+      - name: Cross-check Sun and Moon calculations against USNO and JPL fixtures
+        run: node scripts/test-astronomy.mjs

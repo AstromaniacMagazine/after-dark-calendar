@@ -36,6 +36,18 @@ For each version:
 
 ## Notes
 
+### Beta0.9.7b (27 October 2026)
+
+Desktop expansions use a measured two-column overlay with a raised border and dimmed background dates. The grid keeps fixed rows, and selected-day summary content has a reserved scrollable area, so changing events does not move the chart or forecast. Mobile retains native date swiping and uses compact data cards.
+
+Moon azimuth and altitude are explicitly labelled **21:00 local time**, rather than the former unlabelled midnight sample. Azimuth is clockwise from true north; the Moon-centre altitude includes standard refraction. Rise/set searches use the actual local midnight-to-midnight interval, including 23/25-hour DST days, and displayed times round to the nearest minute. Terrain and non-standard weather are outside the model. Checked reference cases in `scripts/fixtures/astronomy-reference.json` cover USNO Sun/Moon rise/set for London, Sydney, New York and a DST date, plus a JPL apparent topocentric Moon position. `node scripts/test-astronomy.mjs` verifies these without network access.
+
+Location history and theme persistence are optional and off by default. A user can enable a five-place history on the location dropdown or in Sources and logs. Coordinates stored in that history and sent to weather/reverse-geocoding services are rounded to three decimals; astronomy uses the selected coordinates in memory. History expires after 30 days and expired records are removed on the next calendar visit. Clearing it stops persistence; the current location can continue in memory until the visit ends. Legacy automatic location/theme storage is removed unless the user opts into the new controls. No location API requests run before a location is selected or an explicitly remembered one is restored. Calendar API requests omit credentials and referrers, and the standalone page no longer requests Google Fonts.
+
+The calendar privacy notice identifies Open-Meteo, BigDataCloud, external imagery and the magazine policy. Technical storage controls follow an opt-in approach consistent with the [ICO storage/access guidance](https://ico.org.uk/for-organisations/direct-marketing-and-privacy-and-electronic-communications/guidance-on-the-use-of-storage-and-access-technologies/). This repository does not control Squarespace's separate analytics/consent configuration or third-party processing policies; a whole-site legal compliance assessment must cover those too.
+
+Additional browser checks: `node scripts/test-polish.mjs --modules <node_modules> --output <snapshot-directory>`. This measures overlay alignment and unchanged section positions, checks one-line dates without clipping, and exercises history opt-in, five-entry limits, selection, keyboard navigation, deletion, expiry, theme opt-out and denied browser storage.
+
 ### Beta0.9.7 (27 October 2026)
 
 The calendar covers May 2026–December 2027. Month files remain lazy-loaded; there is no runtime article scraping or annual data bundle. `data/2027-audit.json` retains the checked USNO phase/season records, Espenak planetary almanac records and IMO 2027 meteor predictions. USNO takes precedence for lunar and seasonal instants; IMO takes precedence for shower maxima. Future launches are omitted unless a reliable dated schedule is available. Meteor maxima are predictions, ZHRs are idealised, and local visibility must be checked.

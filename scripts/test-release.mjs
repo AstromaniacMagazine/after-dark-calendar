@@ -33,7 +33,7 @@ try {
   assert.equal(await page.locator('.amc-day').count(),days,id);
   await page.locator('.amc-day[data-day="15"]').click();
   assert.equal(await page.locator('.amc-day[aria-expanded="true"]').count(),1);
-  assert.equal(await page.locator('.amc-day[aria-expanded="true"]').evaluate(el=>getComputedStyle(el).borderTopWidth),'4px');
+  assert.equal(await page.locator('.amc-day[aria-expanded="true"] .amc-expanded').evaluate(el=>getComputedStyle(el).borderTopWidth),'5px');
   await page.locator('.amc-day[data-day="15"] .amc-minimise').click();
   assert.equal(await page.locator('.amc-day[aria-expanded="true"]').count(),0);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`${id} overflow`);
@@ -51,7 +51,7 @@ try {
    while(await page.locator('#amc-after-dark-calendar').getAttribute('data-theme')!==theme)await page.locator('#amc-theme-toggle').click();
    await page.evaluate(()=>document.fonts.ready);
    await page.waitForTimeout(400);
-   const file=path.join(output,`ADC_${theme.toUpperCase()}_Beta0.9.7.png`);
+   const file=path.join(output,`ADC_${theme.toUpperCase()}_Beta0.9.7b.png`);
    await page.screenshot({path:file,fullPage:true,animations:'disabled'});
    const png=await fs.readFile(file);assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.equal(png.readUInt32BE(16),3840);
   }
@@ -73,7 +73,7 @@ try {
   await mp.setViewportSize({width,height:844});await mp.waitForTimeout(200);
   assert.equal(await mp.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`2027 inline overflow at ${width}`);
  }
- if(output){await mp.setViewportSize({width:390,height:844});await mp.waitForTimeout(200);await mp.screenshot({path:path.join(output,'ADC_MOBILE_Beta0.9.7.png'),fullPage:true});}
+ if(output){await mp.setViewportSize({width:390,height:844});await mp.waitForTimeout(200);await mp.screenshot({path:path.join(output,'ADC_MOBILE_Beta0.9.7b.png'),fullPage:true});}
  result.inline2027=true;result.yearBoundary=true;result.responsiveWidths=[320,390,430,600,768];
  assert.deepEqual(errors,[]);result.pageErrors=errors;
  console.log(JSON.stringify(result,null,2));
