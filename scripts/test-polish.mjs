@@ -70,8 +70,8 @@ try{
  for(const [month,day] of [['2026-11',17],['2026-12',12],['2027-11',18],['2027-12',6]]){
   const {context,page}=await setup({width:1440,height:1000},false,month);
   await page.locator(`.amc-day[data-day="${day}"]`).click();
-  const gaps=await page.locator('.amc-detail-summary').evaluate(el=>{const title=el.querySelector('.amc-detail-title').getBoundingClientRect(),list=el.querySelector('.amc-event-list').getBoundingClientRect();return {titleToList:list.top-title.bottom,items:[...el.querySelectorAll('.amc-event')].map(item=>{const heading=item.querySelector('h4').getBoundingClientRect(),copy=item.querySelector('p').getBoundingClientRect();return copy.top-heading.bottom})}});
-  assert(gaps.titleToList>=4&&gaps.items.every(gap=>gap>=2),`${month}-${day} event text overlaps: ${JSON.stringify(gaps)}`);
+  const gaps=await page.locator('.amc-detail-summary').evaluate(el=>{const title=el.querySelector('.amc-detail-title').getBoundingClientRect(),listElement=el.querySelector('.amc-event-list'),list=listElement.getBoundingClientRect(),last=listElement.lastElementChild.getBoundingClientRect(),summary=el.getBoundingClientRect();return {titleToList:list.top-title.bottom,visible:last.bottom<=summary.bottom-2,items:[...el.querySelectorAll('.amc-event')].map(item=>{const heading=item.querySelector('h4').getBoundingClientRect(),copy=item.querySelector('p').getBoundingClientRect();return copy.top-heading.bottom})}});
+  assert(gaps.titleToList>=4&&gaps.items.every(gap=>gap>=5)&&gaps.visible,`${month}-${day} event text overlaps or is clipped: ${JSON.stringify(gaps)}`);
   if(output&&month==='2026-11')await page.screenshot({path:path.join(output,'POLISH_EVENT_NOVEMBER.png'),fullPage:true});
   await context.close();
  }

@@ -557,6 +557,7 @@
     if (state.mobileScrollFrame) window.cancelAnimationFrame(state.mobileScrollFrame);
     state.mobileScrollFrame = window.requestAnimationFrame(() => {
       state.mobileScrollFrame = null;
+      if (state.inlineHorizontalTouch?.scroller === els.grid && state.inlineHorizontalTouch.axis === "x") return;
       if (!state.mobileNavigationTarget && !state.mobileMonthTransition) {
         const closest = closestMobileSlide();
         if (closest?.slide.classList.contains("amc-month-edge") && closest.distance < closest.slide.offsetWidth * .24) {
@@ -781,6 +782,7 @@
     els.mobileDayRail.scrollTo({ left, behavior: smooth && !window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "smooth" : "auto" });
     window.setTimeout(() => {
       centreMobileRailChip(active);
+      els.mobileDayRail.classList.remove("is-inline-dragging");
       window.requestAnimationFrame(() => {
         state.mobileRailSyncing = false;
         if (state.mobileRailTimer) window.clearTimeout(state.mobileRailTimer);
@@ -802,6 +804,7 @@
     if (state.mobileRailFrame) window.cancelAnimationFrame(state.mobileRailFrame);
     state.mobileRailFrame = window.requestAnimationFrame(() => {
       state.mobileRailFrame = null;
+      if (els.mobileDayRail.classList.contains("is-inline-dragging")) return;
       const ignoreProgrammaticScroll = state.mobileRailSyncing || performance.now() < state.mobileRailIgnoreUntil;
       updateMobileRailFocus(!ignoreProgrammaticScroll);
       if (ignoreProgrammaticScroll) {
@@ -1142,16 +1145,24 @@
 
   function handleInlineHorizontalTouchStart(event) {
     if (root.dataset.inline !== "true" || !isMobileCarousel() || event.touches.length !== 1) return;
+    if (event.target instanceof Element && event.target.closest(".amc-target-list")) return;
     const scroller = event.target instanceof Element
-      ? event.target.closest(".amc-target-list, .amc-mobile-day-rail, .amc-grid")
+      ? event.target.closest(".amc-mobile-day-rail, .amc-grid")
       : null;
     if (!scroller || scroller.scrollWidth <= scroller.clientWidth + 1) return;
+    if (scroller === els.grid && state.mobileScrollAnimationFrame) {
+      window.cancelAnimationFrame(state.mobileScrollAnimationFrame);
+      state.mobileScrollAnimationFrame = null;
+    }
+    if (scroller === els.mobileDayRail && state.mobileRailTimer) window.clearTimeout(state.mobileRailTimer);
     state.inlineHorizontalTouch = {
       scroller,
       x: event.touches[0].clientX,
       y: event.touches[0].clientY,
       lastX: event.touches[0].clientX,
       lastY: event.touches[0].clientY,
+      lastAt: performance.now(),
+      velocityX: 0,
       scrollLeft: scroller.scrollLeft,
       scrollTop: document.scrollingElement?.scrollTop || window.scrollY || 0,
       axis: ""
@@ -1165,11 +1176,17 @@
     const dy = event.touches[0].clientY - gesture.y;
     if (!gesture.axis && Math.max(Math.abs(dx), Math.abs(dy)) > 4) {
       gesture.axis = Math.abs(dx) > Math.abs(dy) * 1.15 ? "x" : "y";
+      if (gesture.axis === "x") gesture.scroller.classList.add(gesture.scroller === els.grid ? "is-mobile-programmatic" : "is-inline-dragging");
     }
     if (gesture.axis !== "x") return;
     if (event.cancelable) event.preventDefault();
+    const now = performance.now();
+    const elapsed = Math.max(8, now - gesture.lastAt);
+    const velocity = (event.touches[0].clientX - gesture.lastX) / elapsed;
+    gesture.velocityX = gesture.velocityX * .55 + velocity * .45;
     gesture.lastX = event.touches[0].clientX;
     gesture.lastY = event.touches[0].clientY;
+    gesture.lastAt = now;
     gesture.scroller.scrollLeft = gesture.scrollLeft - dx;
   }
 
@@ -1177,15 +1194,31 @@
     const gesture = state.inlineHorizontalTouch;
     if (!gesture) return;
     state.inlineHorizontalTouch = null;
+    if (event.type === "touchcancel") {
+      if (gesture.scroller === els.grid) centreMobileDay(state.selectedDay, true);
+      else gesture.scroller.classList.remove("is-inline-dragging");
+      return;
+    }
     if (gesture.axis === "x") {
       const horizontalDistance = gesture.lastX - gesture.x;
       if (gesture.scroller === els.grid) {
         holdVerticalScroll(gesture.scrollTop);
-        if (Math.abs(horizontalDistance) > 48) moveMobileDay(horizontalDistance < 0 ? 1 : -1);
-        else settleHorizontalScroller(gesture.scroller);
+        if (Math.abs(horizontalDistance) > 48 || (Math.abs(horizontalDistance) > 18 && Math.abs(gesture.velocityX) > .35)) {
+          moveMobileDay(horizontalDistance < 0 ? 1 : -1);
+        } else {
+          centreMobileDay(state.selectedDay, true);
+        }
       } else if (gesture.scroller === els.mobileDayRail) {
         holdVerticalScroll(gesture.scrollTop, 420);
-        settleHorizontalScroller(gesture.scroller);
+        const rail = els.mobileDayRail;
+        const projected = Math.max(0, Math.min(rail.scrollLeft - gesture.velocityX * 110, rail.scrollWidth - rail.clientWidth));
+        const chips = [...rail.querySelectorAll(".amc-mobile-day-chip")];
+        const chip = chips.reduce((nearest, candidate) => {
+          const left = candidate.offsetLeft + candidate.offsetWidth / 2 - rail.clientWidth / 2;
+          return !nearest || Math.abs(left - projected) < nearest.distance ? { element: candidate, distance: Math.abs(left - projected) } : nearest;
+        }, null)?.element;
+        if (chip) navigateMobileRailTarget(chip.dataset.monthId, Number(chip.dataset.day));
+        else rail.classList.remove("is-inline-dragging");
       }
     }
   }
@@ -1322,7 +1355,6 @@
     const date = new Date(Date.UTC(state.month.year, state.month.monthIndex, day, 12));
     const weekday = weekdays[date.getUTCDay()];
     const events = dayEvents(day);
-    const primary = primaryEvent(events);
     const nightInfo = state.hasLocation ? state.night[day] || noDark() : locationNeeded();
     const skyInfo = state.hasLocation ? state.sky[day] : null;
     els.detail.innerHTML = `
@@ -1332,7 +1364,7 @@
           <span class="amc-detail-date">${weekday} ${day} ${monthTitle()}</span>
           <span class="amc-detail-location">${locationPill(locationDisplay())}</span>
         </div>
-        ${primary.title ? `<h2 class="amc-detail-title ${eventMeta(primary).css}">${escapeHtml(primary.title)}</h2>` : `<h2 class="amc-detail-title"></h2>`}
+        ${events.length ? `<h2 class="amc-detail-title">Events on this date</h2>` : `<h2 class="amc-detail-title"></h2>`}
         ${events.length ? `<ul class="amc-event-list">${events.map(eventItem).join("")}</ul>` : ""}
         </div>
         ${moonChart(skyInfo, nightInfo, false)}

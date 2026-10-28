@@ -224,6 +224,19 @@ try {
     return Math.abs((rail.left + rail.width / 2) - (focus.left + focus.width / 2));
   });
   assert(railAlignment < 2, `The focused date is not inside the fixed centre highlight: ${railAlignment}px`);
+  assert.match(targetMetrics.touchAction, /pan-x|manipulation/, "Target cards should use native horizontal momentum scrolling");
+  const railBox = await page.locator("#amc-mobile-day-rail").boundingBox();
+  const railMonthBefore = await page.locator(".amc-mobile-day-chip.is-active").getAttribute("data-month-id");
+  const railDayBefore = Number(await page.locator(".amc-day.is-mobile-active").getAttribute("data-day"));
+  await touchDrag(cdp,
+    { x: railBox.x + railBox.width * .72, y: railBox.y + railBox.height * .5 },
+    { x: railBox.x + railBox.width * .3, y: railBox.y + railBox.height * .5 + 2 }, 14);
+  await page.waitForTimeout(670);
+  const railMonthAfter = await page.locator(".amc-mobile-day-chip.is-active").getAttribute("data-month-id");
+  const railDayAfter = Number(await page.locator(".amc-day.is-mobile-active").getAttribute("data-day"));
+  assert(railMonthAfter > railMonthBefore || (railMonthAfter === railMonthBefore && railDayAfter > railDayBefore), `Date rail swipe did not advance: ${railMonthBefore}-${railDayBefore} -> ${railMonthAfter}-${railDayAfter}`);
+  await page.locator("#amc-today-button").click();
+  await page.waitForTimeout(430);
   await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight - innerHeight));
   await page.waitForTimeout(120);
   assert.equal(await page.locator("#amc-back-to-top").evaluate(element => element.classList.contains("is-visible")), true, "Back-to-top control did not appear");
