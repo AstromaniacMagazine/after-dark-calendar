@@ -6,7 +6,7 @@
   if (!script || !host || host.dataset.amcLoaded === "true") return;
 
   const base = new URL("../", script.src).href;
-  const build = "Beta0.9.7c-20261028a";
+  const build = "Beta0.9.7d-20261028a";
   host.dataset.amcLoaded = "true";
   host.classList.add("amc-inline-host");
 
@@ -40,7 +40,7 @@
   }
 
   host.innerHTML = `
-    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="Beta0.9.7c" data-asset-version="${build}" data-asset-base="${base}" data-inline="true" aria-labelledby="amc-title">
+    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="Beta0.9.7d" data-asset-version="${build}" data-asset-base="${base}" data-inline="true" aria-labelledby="amc-title">
       <div class="amc-print-brand" aria-hidden="true">
         <img class="amc-print-logo" src="${base}assets/astromaniac-logo.webp" alt="">
         <div><strong>After Dark Calendar</strong><span>by Astromaniac Magazine</span></div>
@@ -50,7 +50,7 @@
       <header class="amc-top">
         <div class="amc-brand-lockup">
           <img class="amc-brand-logo" src="${base}assets/astromaniac-logo.webp" alt="" width="56" height="56" loading="eager" decoding="async">
-          <h1 class="amc-title" id="amc-title"><span class="amc-title-line"><span>After Dark Calendar</span><small class="amc-version-badge" aria-label="Current version Beta0.9.7c">Beta0.9.7c</small></span><span class="amc-byline">by Astromaniac Magazine</span></h1>
+          <h1 class="amc-title" id="amc-title"><span class="amc-title-line"><span>After Dark Calendar</span><small class="amc-version-badge" aria-label="Current version Beta0.9.7d">Beta0.9.7d</small></span><span class="amc-byline">by Astromaniac Magazine</span></h1>
         </div>
 
         <div class="amc-month-strip">
@@ -100,11 +100,11 @@
           <summary><span>Sources and logs</span><a class="amc-feedback-link" href="https://www.astromaniacmagazine.com/contact" target="_blank" rel="noopener">Suggestions or feedback?</a></summary>
           <ul class="amc-source-list" id="amc-source-list"></ul>
           <div class="amc-version-panel">
-            <h3>Current version: Beta0.9.7c</h3>
+            <h3>Current version: Beta0.9.7d</h3>
             <ul class="amc-version-list">
+              <li><b>Beta0.9.7d:</b> gives event descriptions room to breathe and refines mobile date and target swiping.</li>
               <li><b>Beta0.9.7c:</b> fixes event spacing, aligns four forecast icons with their night intervals, tightens day cards and mobile sources, and rechecks future events.</li>
               <li><b>Beta0.9.7b:</b> aligns raised two-day overlays, compacts mobile cards, clarifies timed Moon positions and adds optional location history.</li>
-              <li><b>Beta0.9.7:</b> adds all of 2027, audits November/December, tightens five-level forecasts and refreshes related reading and SEO.</li>
             </ul>
             <section class="amc-privacy" aria-labelledby="amc-privacy-title">
               <h3 id="amc-privacy-title">Location and privacy</h3>

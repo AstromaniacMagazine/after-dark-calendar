@@ -36,6 +36,10 @@ For each version:
 
 ## Notes
 
+### Beta0.9.7d (28 October 2026)
+
+The right-side event panel uses a neutral heading instead of repeating the first event title, gives event headings and descriptions separate rows, and reserves enough space for the longer multi-event dates before the Moon chart. Mobile inline date gestures suspend scroll snapping while the finger moves, then settle on a day; the date rail uses swipe velocity to select a nearby date. Observing target cards use native horizontal touch scrolling. Responsive checks verify multi-event copy is fully visible, date and target swipes work, and vertical scrolling remains available.
+
 ### Beta0.9.7c (28 October 2026)
 
 The desktop event summary now separates event headings from explanatory text while keeping the chart and forecast anchored. Forecast headers place the date and four icons on one row; each icon comes from the same four-hour interval as its colour bars. Unexpanded desktop date rows are shorter. Mobile shows the seven-night forecast before observing targets and related articles, uses two source columns, and offers an animated, keyboard-accessible location prompt for the Moon chart. Monthly highlight text is larger and clearer within the existing cards.
