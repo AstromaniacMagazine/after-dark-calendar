@@ -81,7 +81,7 @@
     astronomyEngine: {
       label: "Astronomy Engine",
       url: "https://github.com/cosinekitty/astronomy",
-      note: "Moon phase, distance, altitude, azimuth, rise/set and twilight calculations use Astronomy Engine's browser library."
+      note: "Moon phase, distance, altitude, azimuth, rise/set and twilight use Astronomy Engine. Moon position is sampled at 21:00 local time, with azimuth from true north and standard atmospheric refraction. Rise/set uses each actual local civil day, including DST changes; horizon, terrain and unusual weather can affect observations. Cross-checked against USNO rise/set and JPL Horizons position references."
     },
     openMeteo: {
       label: "Open-Meteo Forecast API",

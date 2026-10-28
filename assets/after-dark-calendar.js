@@ -24,7 +24,11 @@
     mobileDayNav: root.querySelector("#amc-mobile-day-nav"),
     mobileDayRail: root.querySelector("#amc-mobile-day-rail"),
     feedbackLink: root.querySelector(".amc-feedback-link"),
-    backToTop: root.querySelector("#amc-back-to-top")
+    backToTop: root.querySelector("#amc-back-to-top"),
+    rememberLocations: root.querySelector("#amc-remember-locations"),
+    rememberTheme: root.querySelector("#amc-remember-theme"),
+    clearLocations: root.querySelector("#amc-clear-locations"),
+    privacyStatus: root.querySelector("#amc-privacy-status")
   };
 
   const zonedFormatters = new Map();
@@ -34,6 +38,9 @@
   const assetVersion = root.dataset.assetVersion || root.dataset.version || "";
   const assetBase = root.dataset.assetBase || "";
   const locationKey = "amc-sky-calendar-location";
+  const historyKey = "amc-location-history";
+  const rememberKey = "amc-remember-locations";
+  const themePreferenceKey = "amc-remember-theme";
   const themeKey = "amc-sky-calendar-theme";
   const themeOrder = ["light", "dark", "red", "teal"];
   const chartStartHour = 16;
@@ -194,12 +201,16 @@
 
   async function boot() {
     const embedded = isEmbeddedFrame() && root.dataset.inline !== "true";
+    syncPrivacyControls();
+    if (!remembersLocations()) { safeStorageRemove(locationKey); safeStorageRemove(historyKey); }
+    else readLocationHistory();
     const savedLocation = readSavedLocation();
     state.parentManagedEmbed = embedded;
     root.classList.toggle("is-embedded", embedded);
     root.classList.toggle("is-legacy-parent", embedded);
     if (savedLocation) primeSavedLocation(savedLocation);
-    const savedTheme = safeStorageGet(themeKey);
+    if (safeStorageGet(themePreferenceKey) !== "yes") safeStorageRemove(themeKey);
+    const savedTheme = safeStorageGet(themePreferenceKey) === "yes" ? safeStorageGet(themeKey) : null;
     setTheme(themeOrder.includes(savedTheme) ? savedTheme : "light");
     bindEvents();
     if (embedded) setupEmbedBridge();
@@ -215,6 +226,24 @@
     els.useLocation.addEventListener("click", useBrowserLocation);
     els.manualForm.addEventListener("submit", useManualLocation);
     els.manualInput.addEventListener("input", handleManualLocationInput);
+    els.manualInput.addEventListener("focus", showLocationHistory);
+    els.manualInput.addEventListener("click", showLocationHistory);
+    els.manualInput.addEventListener("keydown", handleLocationKeys);
+    els.locationResults?.addEventListener("keydown", handleLocationKeys);
+    els.rememberLocations?.addEventListener("change", () => setLocationMemory(els.rememberLocations.checked));
+    els.rememberTheme?.addEventListener("change", () => {
+      if (els.rememberTheme.checked) {
+        if (!safeStorageSet(themePreferenceKey, "yes") || !safeStorageSet(themeKey, root.dataset.theme)) {
+          safeStorageRemove(themePreferenceKey);
+          if (els.privacyStatus) els.privacyStatus.textContent = "Browser storage is unavailable; this theme will only be used for this visit.";
+          syncPrivacyControls();
+        }
+      } else {
+        safeStorageRemove(themePreferenceKey);
+        safeStorageRemove(themeKey);
+      }
+    });
+    els.clearLocations?.addEventListener("click", () => setLocationMemory(false));
     els.locationResults?.addEventListener("click", handleLocationResultClick);
     document.addEventListener("click", hideLocationResultsOnOutsideClick);
     els.previousMonth?.addEventListener("click", () => goToAdjacentMonth(-1));
@@ -396,6 +425,7 @@
     if (!mobileCarousel) {
       for (let i = 0; i < state.month.firstDayOffset; i += 1) html.push(`<div class="amc-empty" aria-hidden="true"></div>`);
     }
+    root.classList.toggle("has-expanded-day", !mobileCarousel && validDay(state.expandedDay));
     if (mobileCarousel) state.expandedDay = state.selectedDay;
     const previousMobileMonth = mobileCarousel ? adjacentMonth(-1) : null;
     const nextMobileMonth = mobileCarousel ? adjacentMonth(1) : null;
@@ -454,6 +484,7 @@
     }
     if (nextMobileMonth) html.push(mobileMonthEdge(nextMobileMonth, 1));
     els.grid.innerHTML = html.join("");
+    if (!mobileCarousel && validDay(state.expandedDay)) positionExpandedDay(els.grid.querySelector(`.amc-day[data-day="${state.expandedDay}"]`));
     els.grid.querySelectorAll(".amc-day").forEach(card => {
       card.addEventListener("click", event => {
         if (event.target.closest(".amc-weather-segments i")) return;
@@ -514,6 +545,7 @@
         state.expandedDay = mobileLayout ? state.selectedDay : null;
         renderAll();
       }
+      if (!mobileLayout && validDay(state.expandedDay)) positionExpandedDay(els.grid.querySelector(`.amc-day[data-day="${state.expandedDay}"]`));
       syncLocationActionLabel();
     }, 140);
   }
@@ -1220,8 +1252,8 @@
       <span class="amc-mini-grid">
         ${zodiacCard(day)}
         ${eventDataCard(primary)}
-        ${miniItem("azimuth", "Moon azimuth", skyInfo?.moonAzLabel || "Use location")}
-        ${miniItem("altitude", "Moon altitude", skyInfo?.moonAltLabel || "Use location")}
+        ${miniItem("azimuth", skyInfo ? `Moon azimuth · ${skyInfo.positionTime}` : "Moon azimuth", skyInfo?.moonAzLabel || "Use location", skyInfo?.positionContext)}
+        ${miniItem("altitude", skyInfo ? `Moon altitude · ${skyInfo.positionTime}` : "Moon altitude", skyInfo?.moonAltLabel || "Use location", skyInfo?.positionContext)}
         ${miniItem("moonrise", "Moonrise", skyInfo?.moonriseLabel || "Use location")}
         ${miniItem("moonset", "Moonset", skyInfo?.moonsetLabel || "Use location")}
         ${miniItem("sunrise", "Sunrise", skyInfo?.sunriseLabel || "Use location")}
@@ -1262,12 +1294,12 @@
     </span>`;
   }
 
-  function miniItem(icon, label, value) {
-    return `<span class="amc-mini">${iconSvg(icon)}<span><small>${label}</small><b>${escapeHtml(value)}</b></span></span>`;
+  function miniItem(icon, label, value, context = "") {
+    return `<span class="amc-mini"${context ? ` title="${escapeHtml(context)}"` : ""}>${iconSvg(icon)}<span><small>${label}</small><b>${escapeHtml(value)}</b></span></span>`;
   }
 
   function eventDataCard(primary) {
-    if (!primary?.title) return `<span class="amc-mini amc-event-mini is-empty" aria-hidden="true"></span>`;
+    if (!primary?.title) return miniItem("event", "Event", "No listed event");
     const meta = eventMeta(primary);
     return `<span class="amc-mini amc-event-mini ${meta.css}">${iconSvg("event")}<span><small>Event</small><b>${escapeHtml(primary.title)}</b></span></span>`;
   }
@@ -1292,12 +1324,14 @@
     const skyInfo = state.hasLocation ? state.sky[day] : null;
     els.detail.innerHTML = `
       <div class="amc-detail-body">
+        <div class="amc-detail-summary">
         <div class="amc-detail-head">
           <span class="amc-detail-date">${weekday} ${day} ${monthTitle()}</span>
           <span class="amc-detail-location">${locationPill(locationDisplay())}</span>
         </div>
         ${primary.title ? `<h2 class="amc-detail-title ${eventMeta(primary).css}">${escapeHtml(primary.title)}</h2>` : `<h2 class="amc-detail-title"></h2>`}
         ${events.length ? `<ul class="amc-event-list">${events.map(eventItem).join("")}</ul>` : ""}
+        </div>
         ${moonChart(skyInfo, nightInfo, false)}
         ${weatherPanel()}
       </div>
@@ -1315,6 +1349,12 @@
 
   function renderRecommendations() {
     els.recommendations.innerHTML = recommendationsMarkup(state.selectedDay);
+    lockCalendarRow();
+  }
+
+  function lockCalendarRow() {
+    const calendar = root.querySelector(".amc-calendar-wrap");
+    if (calendar && !isMobileCarousel()) root.style.setProperty("--calendar-row-height", `${calendar.offsetHeight}px`);
   }
 
   function recommendationsMarkup(day) {
@@ -1588,9 +1628,9 @@
 
   function moonAltitudeSvg(timeline, compact) {
     const maxAltitude = 75;
-    const chart = { x: compact ? 26 : 30, y: compact ? 12 : 16, width: compact ? 300 : 326, height: compact ? 130 : 178 };
+    const chart = { x: compact ? 26 : 30, y: compact ? 8 : 10, width: compact ? 300 : 326, height: compact ? 130 : 174 };
     const viewWidth = compact ? 332 : 360;
-    const viewHeight = compact ? 184 : 238;
+    const viewHeight = compact ? 176 : 224;
     const tickStep = 2;
     const hours = Array.from({ length: (chartDurationHours / tickStep) + 1 }, (_, i) => (chartStartHour + (i * tickStep)) % 24);
     const yTicks = compact ? [0, 38, 75] : [0, 25, 50, 75];
@@ -1765,6 +1805,7 @@
     const safeLat = Number(lat);
     const safeLon = Number(lon);
     if (!Number.isFinite(safeLat) || !Number.isFinite(safeLon)) return;
+    const locationRequestId = state.locationRequestId = (state.locationRequestId || 0) + 1;
     state.hasLocation = true;
     state.lat = safeLat;
     state.lon = safeLon;
@@ -1773,13 +1814,13 @@
     state.locationSavedAt = options.fromStorage ? Number(options.savedAt) : Date.now();
     root.classList.add("has-location");
     updateLocationLabel();
-    showLocationMessage(state.locationName, "Local timing and forecast are using your saved location.", false);
+    showLocationMessage(state.locationName, "Local timing and forecast are using your selected location.", false);
     saveLocation();
     recalculateLocationData();
     renderAll();
     updateWeather();
     if (!options.skipReverseGeocode) reverseGeocode(safeLat, safeLon).then(result => {
-      if (!result) return;
+      if (!result || state.locationRequestId !== locationRequestId) return;
       state.locationName = result.name || state.locationName;
       state.timeZone = result.timeZone || state.timeZone;
       saveLocation();
@@ -1811,13 +1852,13 @@
     refreshLivePanels();
     try {
       const params = new URLSearchParams({
-        latitude: state.lat.toFixed(5),
-        longitude: state.lon.toFixed(5),
+        latitude: state.lat.toFixed(3),
+        longitude: state.lon.toFixed(3),
         hourly: "cloud_cover,temperature_2m,relative_humidity_2m,dew_point_2m,precipitation_probability,wind_speed_10m,wind_gusts_10m,visibility,cape,weather_code",
         forecast_days: "8",
         timezone: "auto"
       });
-      const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params.toString()}`, { cache: "no-store" });
+      const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params.toString()}`, { cache: "no-store", credentials: "omit", referrerPolicy: "no-referrer" });
       if (!response.ok) throw new Error("Weather request failed");
       const payload = await response.json();
       if (requestId !== state.weatherRequestId) return;
@@ -1932,14 +1973,17 @@
     if (!Astronomy) return unavailableSky();
     try {
       const observer = new Astronomy.Observer(state.lat, state.lon, 0);
-      const sample = zonedDate(state.month.year, state.month.monthIndex, day, 0, 0, 0);
+      const sample = zonedDate(state.month.year, state.month.monthIndex, day, 21, 0, 0);
       const start = zonedDate(state.month.year, state.month.monthIndex, day, 0, 0, 0);
       const moonHorizon = horizon(Astronomy.Body.Moon, sample, observer);
-      const moonrise = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, +1, start, 1);
-      const moonset = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, -1, start, 1);
-      const sunrise = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, +1, start, 1);
-      const sunset = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, -1, start, 1);
+      const end = zonedDate(state.month.year, state.month.monthIndex, day + 1, 0, 0, 0);
+      const moonrise = riseSetOnLocalDay(Astronomy.Body.Moon, observer, +1, start, end);
+      const moonset = riseSetOnLocalDay(Astronomy.Body.Moon, observer, -1, start, end);
+      const sunrise = riseSetOnLocalDay(Astronomy.Body.Sun, observer, +1, start, end);
+      const sunset = riseSetOnLocalDay(Astronomy.Body.Sun, observer, -1, start, end);
       return {
+        positionTime: formatTime(sample),
+        positionContext: `Moon centre at ${formatLocal(sample)} (${state.timeZone}). Azimuth clockwise from true north; altitude includes standard atmospheric refraction.`,
         moonAltLabel: `${Math.round(moonHorizon.altitude)}°`,
         moonAzLabel: `${Math.round(moonHorizon.azimuth)}°`,
         moonriseLabel: formatAstroTime(moonrise),
@@ -1951,6 +1995,11 @@
     } catch {
       return unavailableSky();
     }
+  }
+
+  function riseSetOnLocalDay(body, observer, direction, start, end) {
+    const result = window.Astronomy.SearchRiseSet(body, observer, direction, start, (end - start) / 86400000);
+    return result?.date && result.date >= start && result.date < end ? result : null;
   }
 
   function calculateAstroNight(day) {
@@ -2017,7 +2066,7 @@
     const wasExpanded = state.expandedDay === day;
     // Expansion changes card geometry at every breakpoint. Preserve the clicked
     // card's viewport position so opening or closing a day never pulls the page.
-    const preservePosition = true;
+    const preservePosition = isMobileCarousel();
     const currentButton = els.grid.querySelector(`.amc-day[data-day="${day}"]`);
     const previousTop = preservePosition && currentButton ? currentButton.getBoundingClientRect().top : null;
     const previouslyExpanded = validDay(state.expandedDay)
@@ -2027,8 +2076,8 @@
     state.expandedDay = wasExpanded ? null : day;
     if (previouslyExpanded && previouslyExpanded !== currentButton) updateDayExpansion(previouslyExpanded, false);
     if (currentButton) updateDayExpansion(currentButton, !wasExpanded);
-    renderDetail();
-    renderRecommendations();
+    if (!wasExpanded) { renderDetail(); renderRecommendations(); }
+    root.classList.toggle("has-expanded-day", !wasExpanded);
     if (currentButton && previousTop !== null) preserveDayViewport(currentButton, previousTop);
   }
 
@@ -2056,11 +2105,37 @@
     if (!panel) return;
     if (!expanded) {
       panel.innerHTML = "";
+      panel.removeAttribute("style");
       return;
     }
     const date = new Date(Date.UTC(state.month.year, state.month.monthIndex, day, 12));
     const events = dayEvents(day);
     panel.innerHTML = expandedDay(day, weekdays[date.getUTCDay()], moonForDay(day), events, primaryEvent(events));
+    positionExpandedDay(button);
+  }
+
+  function positionExpandedDay(button) {
+    if (!button || isMobileCarousel()) return;
+    const panel = button.querySelector(".amc-expanded");
+    if (!panel) return;
+    const own = button.getBoundingClientRect();
+    const row = [...els.grid.querySelectorAll(".amc-day")]
+      .map(element => ({ element, rect: element.getBoundingClientRect() }))
+      .filter(item => Math.abs(item.rect.top - own.top) < 2);
+    const index = row.findIndex(item => item.element === button);
+    const neighbour = row[index + 1] || row[index - 1];
+    // A final partial row can contain only one date; use a column from another row.
+    const gap = parseFloat(getComputedStyle(els.grid).columnGap) || 0;
+    const width = neighbour ? Math.max(own.right, neighbour.rect.right) - Math.min(own.left, neighbour.rect.left) : own.width * 2 + gap;
+    let left = neighbour ? Math.min(own.left, neighbour.rect.left) : own.left;
+    const grid = els.grid.getBoundingClientRect();
+    left = Math.max(grid.left, Math.min(left, grid.right - width));
+    panel.style.width = `${width}px`;
+    panel.style.left = `${left - own.left - button.clientLeft}px`;
+    panel.style.right = "auto";
+    const height = Math.max(300, own.height * 2 + gap + 14);
+    panel.style.height = `${height}px`;
+    panel.style.top = `${Math.abs(own.bottom - grid.bottom) < 2 ? own.height - height - button.clientTop : -button.clientTop}px`;
   }
 
   function goToAdjacentMonth(direction) {
@@ -2108,34 +2183,102 @@
 
   function finishSavedLocationRestore() {
     updateLocationLabel();
-    showLocationMessage(state.locationName, "Local timing and forecast are using your saved location.", false);
+    showLocationMessage(state.locationName, "Local timing and forecast are using your selected location.", false);
     updateWeather();
     syncLocationActionLabel();
   }
 
   function readSavedLocation() {
     try {
+      if (!remembersLocations()) return null;
       const data = JSON.parse(safeStorageGet(locationKey) || "null");
       const lat = Number(data?.lat);
       const lon = Number(data?.lon);
       const savedAt = Date.parse(data?.savedAt || "");
       if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
-      if (!Number.isFinite(savedAt) || Date.now() - savedAt > locationMemoryMs) return null;
+      if (!Number.isFinite(savedAt) || Date.now() - savedAt > locationMemoryMs || savedAt > Date.now()) { safeStorageRemove(locationKey); return null; }
       return { lat, lon, name: cleanName(data.name), timeZone: cleanTimeZone(data.timeZone), savedAt };
     } catch {
       return null;
     }
   }
 
+  function remembersLocations() { return safeStorageGet(rememberKey) === "yes"; }
+
+  function syncPrivacyControls() {
+    if (els.rememberLocations) els.rememberLocations.checked = remembersLocations();
+    if (els.rememberTheme) els.rememberTheme.checked = safeStorageGet(themePreferenceKey) === "yes";
+  }
+
+  function setLocationMemory(enabled) {
+    if (enabled) {
+      if (!safeStorageSet(rememberKey, "yes")) {
+        if (els.privacyStatus) els.privacyStatus.textContent = "Browser storage is unavailable; locations will only be used for this visit.";
+        syncPrivacyControls();
+        return;
+      }
+      saveLocation();
+    } else {
+      safeStorageRemove(rememberKey);
+      safeStorageRemove(historyKey);
+      safeStorageRemove(locationKey);
+    }
+    syncPrivacyControls();
+    if (els.privacyStatus) els.privacyStatus.textContent = enabled ? "Location history enabled on this browser for up to 30 days." : "Remembered locations cleared. History is off; your current location is used only for this visit.";
+    hideLocationResults();
+  }
+
+  function readLocationHistory() {
+    if (!remembersLocations()) return [];
+    try {
+      const raw = JSON.parse(safeStorageGet(historyKey) || "[]");
+      const seen = new Set();
+      const history = (Array.isArray(raw) ? raw : []).filter(item => {
+        const age = Date.now() - Date.parse(item?.savedAt);
+        const key = `${item?.lat},${item?.lon}`;
+        if (!Number.isFinite(item?.lat) || !Number.isFinite(item?.lon) || Math.abs(item.lat) > 90 || Math.abs(item.lon) > 180 || !Number.isFinite(age) || age < 0 || age > locationMemoryMs || seen.has(key)) return false;
+        seen.add(key); return true;
+      }).slice(0, 5).map(item => ({ lat: item.lat, lon: item.lon, name: cleanName(item.name), timeZone: cleanTimeZone(item.timeZone), savedAt: item.savedAt }));
+      safeStorageSet(historyKey, JSON.stringify(history));
+      return history;
+    } catch { safeStorageRemove(historyKey); return []; }
+  }
+
+  function showLocationHistory() {
+    if (els.manualInput.value.trim()) return;
+    state.locationSearchId += 1;
+    const results = readLocationHistory().map(item => ({ ...item, detail: `Recent · ${item.timeZone || "local time"}` }));
+    state.locationMatches = results;
+    renderLocationResults(results);
+    els.locationResults.insertAdjacentHTML("afterbegin", `<span class="amc-history-caption">${results.length ? "Recent locations" : "No recent locations"}</span>`);
+    els.locationResults.insertAdjacentHTML("beforeend", remembersLocations()
+      ? '<button type="button" class="amc-history-action" data-clear-history>Clear history and stop remembering</button>'
+      : '<button type="button" class="amc-history-action" data-enable-history>Remember my last 5 locations for 30 days</button>');
+    els.locationResults.insertAdjacentHTML("beforeend", '<small class="amc-history-note">Typed searches use Open-Meteo. Location and privacy controls are in Sources and logs.</small>');
+  }
+
+  function handleLocationKeys(event) {
+    if (event.key === "Escape") { event.preventDefault(); els.manualInput.focus(); hideLocationResults(); return; }
+    if (!["ArrowDown", "ArrowUp"].includes(event.key)) return;
+    event.preventDefault();
+    if (els.locationResults.hidden) showLocationHistory();
+    const options = [...els.locationResults.querySelectorAll("button")];
+    const index = options.indexOf(document.activeElement);
+    options[(index + (event.key === "ArrowDown" ? 1 : -1) + options.length) % options.length]?.focus();
+  }
+
   function saveLocation() {
-    if (!state.hasLocation) return;
-    safeStorageSet(locationKey, JSON.stringify({
-      lat: Number(state.lat.toFixed(5)),
-      lon: Number(state.lon.toFixed(5)),
+    if (!state.hasLocation || !remembersLocations()) return;
+    const saved = {
+      lat: Number(state.lat.toFixed(3)),
+      lon: Number(state.lon.toFixed(3)),
       name: cleanName(state.locationName),
       timeZone: cleanTimeZone(state.timeZone),
       savedAt: new Date(state.locationSavedAt || Date.now()).toISOString()
-    }));
+    };
+    safeStorageSet(locationKey, JSON.stringify(saved));
+    const history = readLocationHistory().filter(item => Math.abs(item.lat-saved.lat) > .0005 || Math.abs(item.lon-saved.lon) > .0005);
+    safeStorageSet(historyKey, JSON.stringify([saved, ...history].slice(0, 5)));
   }
 
   function renderLocationResults(results) {
@@ -2151,6 +2294,7 @@
   function handleManualLocationInput() {
     const query = els.manualInput.value.trim();
     if (state.locationSearchTimer) window.clearTimeout(state.locationSearchTimer);
+    if (!query) { showLocationHistory(); return; }
     if (query.length < 2 || parseCoordinateQuery(query)) {
       hideLocationResults();
       return;
@@ -2171,6 +2315,8 @@
   }
 
   function handleLocationResultClick(event) {
+    if (event.target.closest("[data-enable-history]")) { setLocationMemory(true); showLocationHistory(); return; }
+    if (event.target.closest("[data-clear-history]")) { setLocationMemory(false); showLocationHistory(); return; }
     const option = event.target.closest(".amc-location-option");
     if (!option) return;
     const result = state.locationMatches[Number(option.dataset.locationIndex)];
@@ -2190,6 +2336,7 @@
     if (state.locationSearchTimer) window.clearTimeout(state.locationSearchTimer);
     state.locationSearchTimer = null;
     state.locationMatches = [];
+    state.locationSearchId += 1;
     if (!els.locationResults) return;
     els.locationResults.hidden = true;
     els.locationResults.innerHTML = "";
@@ -2198,7 +2345,7 @@
 
   async function geocodeLocationQuery(query) {
     const params = new URLSearchParams({ name: query, count: "10", language: "en", format: "json" });
-    const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?${params.toString()}`, { cache: "no-store" });
+    const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?${params.toString()}`, { cache: "no-store", credentials: "omit", referrerPolicy: "no-referrer" });
     if (!response.ok) throw new Error("Geocoding failed");
     const payload = await response.json();
     const results = Array.isArray(payload.results) ? payload.results.map(normaliseLocationResult).filter(Boolean) : [];
@@ -2208,11 +2355,11 @@
 
   async function reverseGeocode(lat, lon) {
     const params = new URLSearchParams({
-      latitude: lat.toFixed(5),
-      longitude: lon.toFixed(5),
+      latitude: lat.toFixed(3),
+      longitude: lon.toFixed(3),
       localityLanguage: "en"
     });
-    const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?${params.toString()}`, { cache: "no-store" });
+    const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?${params.toString()}`, { cache: "no-store", credentials: "omit", referrerPolicy: "no-referrer" });
     if (!response.ok) return null;
     const payload = await response.json();
     const place = cleanName(payload.city || payload.locality || payload.principalSubdivision);
@@ -2347,10 +2494,10 @@
 
   function cycleTheme() {
     const currentIndex = themeOrder.indexOf(root.dataset.theme);
-    setTheme(themeOrder[(currentIndex + 1) % themeOrder.length]);
+    setTheme(themeOrder[(currentIndex + 1) % themeOrder.length], true);
   }
 
-  function setTheme(theme) {
+  function setTheme(theme, persist = false) {
     const safeTheme = themeOrder.includes(theme) ? theme : "light";
     const nextTheme = themeOrder[(themeOrder.indexOf(safeTheme) + 1) % themeOrder.length];
     const labels = { light: "Light", dark: "Night", red: "Observatory Red", teal: "Royal Teal" };
@@ -2359,7 +2506,7 @@
     els.themeToggle.innerHTML = iconSvg(icons[safeTheme]);
     els.themeToggle.setAttribute("aria-label", `Current theme: ${labels[safeTheme]}. Switch to ${labels[nextTheme]}`);
     els.themeToggle.title = `Switch to ${labels[nextTheme]}`;
-    safeStorageSet(themeKey, safeTheme);
+    if (persist && safeStorageGet(themePreferenceKey) === "yes") safeStorageSet(themeKey, safeTheme);
     postEmbedMessage({ type: "amc:theme-state", theme: safeTheme });
   }
 
@@ -2770,7 +2917,8 @@
   }
 
   function formatAstroTime(astroTime) {
-    return formatTime(astroTime?.date || null);
+    const date = astroTime?.date;
+    return formatTime(date ? new Date(Math.round(date.getTime() / 60000) * 60000) : null);
   }
 
   function zonedDate(year, monthIndex, day, hour = 0, minute = 0, second = 0) {
@@ -3094,6 +3242,10 @@
     } catch {
       return false;
     }
+  }
+
+  function safeStorageRemove(key) {
+    try { localStorage.removeItem(key); } catch {}
   }
 
   function escapeHtml(value) {

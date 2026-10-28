@@ -86,6 +86,7 @@ try {
   const pageErrors = [];
   page.on("pageerror", error => pageErrors.push(error.message));
   await page.addInitScript(savedLocation => {
+    localStorage.setItem("amc-remember-locations", "yes");
     localStorage.setItem("amc-sky-calendar-location", JSON.stringify(savedLocation));
     localStorage.setItem("amc-sky-calendar-theme", "light");
   }, location);

@@ -90,6 +90,7 @@ try {
     } } });
   });
   await context.addInitScript(() => {
+    localStorage.setItem("amc-remember-locations", "yes");
     localStorage.setItem("amc-sky-calendar-location", JSON.stringify({
       lat: 51.50853, lon: -0.12574, name: "London, Greater London",
       timeZone: "Europe/London", savedAt: new Date().toISOString()
