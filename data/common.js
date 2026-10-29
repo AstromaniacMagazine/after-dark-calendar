@@ -113,10 +113,20 @@
       url: "https://simbad.cds.unistra.fr/simbad/",
       note: "Deep-sky target coordinates and catalogue identities are cross-checked against the SIMBAD database operated by CDS, Strasbourg."
     },
+    nasaImages: {
+      label: "NASA Hubble and science image library",
+      url: "https://science.nasa.gov/asset/hubble/noao-image-of-the-horsehead-nebula/",
+      note: "The standard optical Horsehead Nebula thumbnail is credited to Travis Rector (NOAO); other NASA/JPL/Hubble target images are labelled by subject."
+    },
+    esoImages: {
+      label: "ESO Double Cluster image",
+      url: "https://www.eso.org/public/images/b02/",
+      note: "The Double Cluster in Perseus image is credited to ESO/S. Brunier."
+    },
     astromaniacReviews: {
       label: "Astromaniac Magazine reviews",
       url: "https://www.astromaniacmagazine.com/reviews",
-      note: "Article and review indexes, Artemis II and Webb mission features reviewed 27 October 2026. Two contextual links per night keep recommendations focused; no live scraping or extra runtime requests."
+      note: "Article and review indexes, Artemis II and Webb mission features reviewed 29 October 2026. Two contextual links per night keep recommendations focused; no live scraping or extra runtime requests."
     },
     astromaniacArticles: {
       label: "Astromaniac Magazine articles",

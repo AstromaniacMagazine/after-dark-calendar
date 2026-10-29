@@ -36,6 +36,12 @@ For each version:
 
 ## Notes
 
+### Beta0.9.8 (29 October 2026)
+
+The event summary now grows with its actual content and gives dates without listed events a short message, allowing the Moon chart to sit directly below it. Theme-specific heading and source-link colours improve contrast. The chart spans 0–85°, uses larger axis labels, and displays a stronger live Now line only when the current time falls within the selected 16:00–08:00 window. Sources and logs retain three release entries; privacy details are folded into a short disclosure. Very dark nights prioritise seasonal faint targets, including the Horsehead Nebula in November and December, while related articles and reviews rotate across years. The Horsehead thumbnail uses a standard optical NOAO image supplied through NASA with its credit in the alt text and sources.
+
+Release checks cover all 20 months, astronomy reference cases, weather scoring, responsive layout, touch gestures, New Moon recommendations and privacy controls. The calendar avoids location and weather requests until a location is chosen or deliberately remembered. Target image requests use anonymous cross-origin mode and no referrer; a clean-browser check on the standalone page recorded no cookies or failed visible images before opt-in. The Squarespace host's own cookie configuration and its wider privacy policy require a separate site-level review; this repository alone cannot certify legal compliance.
+
 ### Beta0.9.7d (28 October 2026)
 
 The right-side event panel uses a neutral heading instead of repeating the first event title, gives event headings and descriptions separate rows, and reserves enough space for the longer multi-event dates before the Moon chart. Mobile inline date gestures suspend scroll snapping while the finger moves, then settle on a day; the date rail uses swipe velocity to select a nearby date. Observing target cards use native horizontal touch scrolling. Responsive checks verify multi-event copy is fully visible, date and target swipes work, and vertical scrolling remains available.

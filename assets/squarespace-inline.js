@@ -6,7 +6,7 @@
   if (!script || !host || host.dataset.amcLoaded === "true") return;
 
   const base = new URL("../", script.src).href;
-  const build = "Beta0.9.7d-20261028a";
+  const build = "Beta0.9.8-20261029a";
   host.dataset.amcLoaded = "true";
   host.classList.add("amc-inline-host");
 
@@ -40,7 +40,7 @@
   }
 
   host.innerHTML = `
-    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="Beta0.9.7d" data-asset-version="${build}" data-asset-base="${base}" data-inline="true" aria-labelledby="amc-title">
+    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="Beta0.9.8" data-asset-version="${build}" data-asset-base="${base}" data-inline="true" aria-labelledby="amc-title">
       <div class="amc-print-brand" aria-hidden="true">
         <img class="amc-print-logo" src="${base}assets/astromaniac-logo.webp" alt="">
         <div><strong>After Dark Calendar</strong><span>by Astromaniac Magazine</span></div>
@@ -50,7 +50,7 @@
       <header class="amc-top">
         <div class="amc-brand-lockup">
           <img class="amc-brand-logo" src="${base}assets/astromaniac-logo.webp" alt="" width="56" height="56" loading="eager" decoding="async">
-          <h1 class="amc-title" id="amc-title"><span class="amc-title-line"><span>After Dark Calendar</span><small class="amc-version-badge" aria-label="Current version Beta0.9.7d">Beta0.9.7d</small></span><span class="amc-byline">by Astromaniac Magazine</span></h1>
+          <h1 class="amc-title" id="amc-title"><span class="amc-title-line"><span>After Dark Calendar</span><small class="amc-version-badge" aria-label="Current version Beta0.9.8">Beta0.9.8</small></span><span class="amc-byline">by Astromaniac Magazine</span></h1>
         </div>
 
         <div class="amc-month-strip">
@@ -100,21 +100,23 @@
           <summary><span>Sources and logs</span><a class="amc-feedback-link" href="https://www.astromaniacmagazine.com/contact" target="_blank" rel="noopener">Suggestions or feedback?</a></summary>
           <ul class="amc-source-list" id="amc-source-list"></ul>
           <div class="amc-version-panel">
-            <h3>Current version: Beta0.9.7d</h3>
+            <h3>Current version: Beta0.9.8</h3>
             <ul class="amc-version-list">
-              <li><b>Beta0.9.7d:</b> gives event descriptions room to breathe and refines mobile date and target swiping.</li>
-              <li><b>Beta0.9.7c:</b> fixes event spacing, aligns four forecast icons with their night intervals, tightens day cards and mobile sources, and rechecks future events.</li>
-              <li><b>Beta0.9.7b:</b> aligns raised two-day overlays, compacts mobile cards, clarifies timed Moon positions and adds optional location history.</li>
+              <li><b>Beta0.9.8:</b> lets the Moon chart follow events, improves chart readability and dark-night targets, and compacts privacy details.</li>
+              <li><b>Beta0.9.7d:</b> fixes event descriptions and refines mobile date and target swiping.</li>
+              <li><b>Beta0.9.7c:</b> aligns four forecast icons, tightens cards and rechecks future events.</li>
             </ul>
             <section class="amc-privacy" aria-labelledby="amc-privacy-title">
               <h3 id="amc-privacy-title">Location and privacy</h3>
-              <p>The calendar sets no advertising or analytics cookies. Location history is off until you enable it. Your last five selected places can be remembered in this browser for up to 30 days, then removed on your next calendar visit; they are not stored in a calendar account or sent as a history to our servers. You can use the calendar without remembering places.</p>
+              <p>Location is optional. Save up to five places in this browser for 30 days only if you opt in; you can clear them at any time. Theme memory is optional too.</p>
               <label><input type="checkbox" id="amc-remember-locations"> Remember my last five locations for 30 days</label>
               <label><input type="checkbox" id="amc-remember-theme"> Remember my colour theme</label>
               <button type="button" class="amc-button secondary" id="amc-clear-locations">Clear remembered locations</button>
               <span id="amc-privacy-status" role="status"></span>
-              <p>Using device location requires your browser permission. Location coordinates are sent to Open-Meteo for weather and to BigDataCloud to name a device or coordinate location; typed searches go to Open-Meteo geocoding. These providers receive your IP address. External images and the calendar host also receive ordinary network requests. Browser permission and remembered locations are separate controls. Times assume a level horizon, sea-level observer and standard atmospheric refraction; terrain and weather can change observed rise/set times.</p>
-              <p><a href="https://open-meteo.com/en/terms" target="_blank" rel="noopener">Open-Meteo terms</a> · <a href="https://www.bigdatacloud.com/privacy-policy" target="_blank" rel="noopener">BigDataCloud privacy</a> · <a href="https://www.astromaniacmagazine.com/privacy-policy" target="_blank" rel="noopener">Magazine privacy policy</a>. The magazine website manages its own cookies separately.</p>
+              <details class="amc-privacy-more"><summary>How location and external services work</summary>
+                <p>Device location needs browser permission. Coordinates go to Open-Meteo for weather and BigDataCloud to name the place; typed searches use Open-Meteo geocoding. Those services receive your IP address. The calendar host and external images also receive ordinary network requests. The magazine site manages its own cookies.</p>
+                <p>Rise and set times assume a level horizon, sea-level observer and standard refraction; terrain and weather may change observed times. <a href="https://open-meteo.com/en/terms" target="_blank" rel="noopener noreferrer">Open-Meteo terms</a> · <a href="https://www.bigdatacloud.com/privacy-policy" target="_blank" rel="noopener noreferrer">BigDataCloud privacy</a> · <a href="https://www.astromaniacmagazine.com/privacy-policy" target="_blank" rel="noopener noreferrer">Magazine privacy policy</a>.</p>
+              </details>
             </section>
             <section class="amc-about" aria-labelledby="amc-about-title">
               <h2 id="amc-about-title">2026–2027 night-sky calendar and astrophotography planner</h2>

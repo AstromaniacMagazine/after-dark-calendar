@@ -1,7 +1,7 @@
 {
   "checked": "2026-10-27",
   "rechecked": {
-    "date": "2026-10-28",
+    "date": "2026-10-29",
     "scope": "All 49 lunar phases and six seasons/apsides matched the live USNO APIs; November/December meteor predictions were compared with the IMO 2027 calendar, including uncertain Leonid and Andromedid enhancements.",
     "usnoPhases": "https://aa.usno.navy.mil/api/moon/phases/year?year=2027",
     "usnoSeasons": "https://aa.usno.navy.mil/api/seasons?year=2027",
