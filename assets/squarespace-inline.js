@@ -6,7 +6,7 @@
   if (!script || !host || host.dataset.amcLoaded === "true") return;
 
   const base = new URL("../", script.src).href;
-  const build = "Beta0.9.8-20261029a";
+  const build = "Beta0.9.8-20261029b";
   host.dataset.amcLoaded = "true";
   host.classList.add("amc-inline-host");
 

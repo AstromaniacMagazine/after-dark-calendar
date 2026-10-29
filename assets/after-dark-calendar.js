@@ -1586,6 +1586,7 @@
       <span class="amc-target-copy">
         <span class="amc-target-type">${escapeHtml(target.type)}</span>
         <span class="amc-target-name">${escapeHtml(target.name)}</span>
+        ${target.image.credit ? `<small class="amc-target-credit">Image: ${escapeHtml(target.image.credit)}</small>` : ""}
       </span>
       <span class="amc-target-facts">
         <span><em>Highest point</em><strong>${escapeHtml(target.best)}</strong></span>
@@ -2786,10 +2787,10 @@
     if (/messier 2|m2\b/.test(text)) return imageAsset("https://assets.science.nasa.gov/content/dam/science/missions/hubble/stars/globular-clusters/Hubble_M2_potw1913a.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "Messier 2 thumbnail");
     if (/messier 15|m15\b/.test(text)) return imageAsset("https://science.nasa.gov/wp-content/uploads/2023/04/heic1321a-jpg.webp?w=600", "Messier 15 thumbnail");
     if (/orion nebula|m42\b/.test(text)) return wikimediaImage("Orion Nebula (M42) part HST 4800px.jpg", "Orion Nebula thumbnail");
-    if (/horsehead|barnard 33/.test(text)) return imageAsset("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/releases/2001/04/STScI-01EVT9N4HJ57T0R4MN2MJW8N89.jpg?crop=faces%2Cfocalpoint&fit=clip&h=813&w=800", "Optical image of the Horsehead Nebula by Travis Rector (NOAO)");
+    if (/horsehead|barnard 33/.test(text)) return imageAsset("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/releases/2001/04/STScI-01EVT9N4HJ57T0R4MN2MJW8N89.jpg?crop=faces%2Cfocalpoint&fit=clip&h=813&w=800", "Optical image of the Horsehead Nebula by Travis Rector (NOAO)", "Travis Rector (NOAO)");
     if (/rosette|ngc 2237/.test(text)) return wikimediaImage("Rosette nebula s.jpg", "Rosette Nebula thumbnail");
     if (/california|ngc 1499/.test(text)) return wikimediaImage("California nebula NGC1499.jpg", "California Nebula thumbnail");
-    if (/double cluster|ngc 869|ngc 884/.test(text)) return imageAsset("https://cdn.eso.org/images/screen/b02.jpg", "The Double Cluster in Perseus, ESO/S. Brunier");
+    if (/double cluster|ngc 869|ngc 884/.test(text)) return imageAsset("https://cdn.eso.org/images/screen/b02.jpg", "The Double Cluster in Perseus, ESO/S. Brunier", "ESO/S. Brunier");
     if (/asteroid 9 metis|\bmetis\b/.test(text)) return imageAsset("https://damit.cuni.cz/projects/damit/stored_files/open/85/shape.png", "Asteroid 9 Metis shape model thumbnail");
     if (/meteor|perseid|aquariid|capricornid|cygnid|aurigid|taurid|leonid|geminid|ursid/.test(text)) return wikimediaImage("Perseid meteor shower.jpg", "Meteor shower thumbnail");
     if (/moon|lunar|crater/.test(text)) return wikimediaImage("Full Moon Luc Viatour.jpg", "Moon thumbnail");
@@ -2805,8 +2806,8 @@
     return { src: `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(fileName)}?width=320`, alt };
   }
 
-  function imageAsset(src, alt) {
-    return { src, alt };
+  function imageAsset(src, alt, credit = "") {
+    return { src, alt, credit };
   }
 
   function moonZodiacInfo(day) {
