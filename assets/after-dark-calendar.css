@@ -1900,7 +1900,7 @@ body.amc-standalone-body {
   padding: 0;
 }
 
-.amc-sources summary {
+.amc-sources > summary {
   align-items: center;
   cursor: pointer;
   display: flex;
@@ -1912,11 +1912,11 @@ body.amc-standalone-body {
   text-transform: uppercase;
 }
 
-.amc-sources summary::-webkit-details-marker {
+.amc-sources > summary::-webkit-details-marker {
   display: none;
 }
 
-.amc-sources summary::before {
+.amc-sources > summary::before {
   content: ">";
   display: inline-block;
   font-weight: 600;
@@ -1924,7 +1924,7 @@ body.amc-standalone-body {
   transition: transform .16s ease;
 }
 
-.amc-sources[open] summary::before {
+.amc-sources[open] > summary::before {
   transform: rotate(90deg);
 }
 
@@ -3741,3 +3741,27 @@ body.amc-standalone-body {
   .amc-mobile-day-rail.is-inline-dragging { scroll-snap-type: none; }
   .amc-sky-calendar[data-inline="true"] .amc-mobile-recommendations .amc-target-list { touch-action: pan-x pan-y pinch-zoom; }
 }
+
+/* Beta 0.9.8: fit the event summary to its actual content. */
+.amc-sky-calendar { --event-heading: #263139; --readable-link: #075b74; }
+.amc-sky-calendar[data-theme="dark"] { --event-heading: #e8ebef; --readable-link: #9be8f4; }
+.amc-sky-calendar[data-theme="teal"] { --event-heading: #a9eee3; --readable-link: #a0f0dc; }
+.amc-sky-calendar[data-theme="red"] { --event-heading: #ffc3bb; --readable-link: #ffb0a6; }
+.amc-sky-calendar .amc-detail-title { color: var(--event-heading) !important; font-weight: 650; line-height: 1.22; }
+.amc-no-events { color: var(--muted); font-size: .78rem; line-height: 1.4; margin: 0; }
+.amc-sky-calendar .amc-privacy a,
+.amc-sky-calendar .amc-source-list a { color: var(--readable-link) !important; text-decoration: underline; text-underline-offset: 2px; }
+.amc-sky-calendar .amc-privacy a:hover,
+.amc-sky-calendar .amc-source-list a:hover { color: var(--event-heading) !important; }
+@media screen and (min-width: 601px) {
+  .amc-detail-body { grid-template-rows: max-content max-content max-content; }
+  .amc-detail-summary { overflow: visible; padding: 0; }
+  .amc-recommendations { align-self: end; margin-top: auto; }
+}
+.amc-privacy { margin-top: 7px; padding-top: 7px; }
+.amc-privacy p { margin: 5px 0; }
+.amc-privacy label { margin: 5px 0; }
+.amc-privacy-more { margin-top: 6px; }
+.amc-privacy-more > summary { color: var(--readable-link); cursor: pointer; font-size: .72rem; font-weight: 700; line-height: 1.3; padding: 4px 0; }
+.amc-privacy-more > summary::marker { color: var(--readable-link); }
+.amc-privacy-more > p { padding-left: 12px; }

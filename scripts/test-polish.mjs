@@ -39,7 +39,10 @@ try{
    await page.evaluate(day=>document.querySelector(`.amc-day[data-day="${day}"]`).click(),day);
    await page.waitForTimeout(80);
    const after=await boxes(page);
-   for(const [id,rect] of Object.entries(before))for(const axis of ['x','y'])assert(Math.abs(rect[axis]-after[id][axis])<.3,`${width}px day ${day} moved ${id}.${axis}: ${rect[axis]} -> ${after[id][axis]}`);
+   for(const [id,rect] of Object.entries(before).filter(([id])=>id.startsWith('day')))for(const axis of ['x','y'])assert(Math.abs(rect[axis]-after[id][axis])<.3,`${width}px day ${day} moved ${id}.${axis}: ${rect[axis]} -> ${after[id][axis]}`);
+   const flow=await page.locator('.amc-detail-body').evaluate(el=>{const summary=el.querySelector('.amc-detail-summary').getBoundingClientRect(),chart=el.querySelector('.amc-chart').getBoundingClientRect();return {gap:chart.top-summary.bottom,events:el.querySelectorAll('.amc-event').length,noEvents:!!el.querySelector('.amc-no-events')};});
+   assert(flow.gap>=0&&flow.gap<=12,`${width}px day ${day} Moon chart does not follow events: ${JSON.stringify(flow)}`);
+   if(!flow.events)assert(flow.noEvents,`${width}px day ${day} missing no-events message`);
    for(const id of Object.keys(before).filter(id=>id.startsWith('day')))assert(Math.abs(before[id].h-after[id].h)<.3,`${id} changed height`);
    const alignment=await page.locator(`.amc-day[data-day="${day}"]`).evaluate(el=>{
     const r=el.getBoundingClientRect(),p=el.querySelector('.amc-expanded').getBoundingClientRect();
@@ -54,7 +57,7 @@ try{
    assert.equal(alignment.border,'5px');
    await page.evaluate(day=>document.querySelector(`.amc-day[data-day="${day}"] .amc-minimise`).click(),day);
    const closed=await boxes(page);
-   for(const [id,rect]of Object.entries(before))for(const axis of ['x','y'])assert(Math.abs(rect[axis]-closed[id][axis])<.3,`Collapse moved ${id}`);
+   for(const [id,rect]of Object.entries(before).filter(([id])=>id.startsWith('day')))for(const axis of ['x','y'])assert(Math.abs(rect[axis]-closed[id][axis])<.3,`Collapse moved ${id}`);
   }
   const headers=await page.locator('.amc-detail .amc-weather-card-date b').evaluateAll(els=>els.map(el=>{const range=document.createRange();range.selectNodeContents(el);return {lines:range.getClientRects().length,fits:el.scrollWidth<=el.clientWidth}}));
   assert(headers.every(h=>h.lines===1&&h.fits),`${width} forecast date wraps or clips: ${JSON.stringify(headers)}`);
@@ -70,12 +73,22 @@ try{
  for(const [month,day] of [['2026-11',17],['2026-12',12],['2027-11',18],['2027-12',6]]){
   const {context,page}=await setup({width:1440,height:1000},false,month);
   await page.locator(`.amc-day[data-day="${day}"]`).click();
-  const gaps=await page.locator('.amc-detail-summary').evaluate(el=>{const title=el.querySelector('.amc-detail-title').getBoundingClientRect(),listElement=el.querySelector('.amc-event-list'),list=listElement.getBoundingClientRect(),last=listElement.lastElementChild.getBoundingClientRect(),summary=el.getBoundingClientRect();return {titleToList:list.top-title.bottom,visible:last.bottom<=summary.bottom-2,items:[...el.querySelectorAll('.amc-event')].map(item=>{const heading=item.querySelector('h4').getBoundingClientRect(),copy=item.querySelector('p').getBoundingClientRect();return copy.top-heading.bottom})}});
+  const gaps=await page.locator('.amc-detail-summary').evaluate(el=>{const title=el.querySelector('.amc-detail-title').getBoundingClientRect(),listElement=el.querySelector('.amc-event-list'),list=listElement.getBoundingClientRect(),last=listElement.lastElementChild.getBoundingClientRect(),summary=el.getBoundingClientRect();return {titleToList:list.top-title.bottom,visible:last.bottom<=summary.bottom+1,items:[...el.querySelectorAll('.amc-event')].map(item=>{const heading=item.querySelector('h4').getBoundingClientRect(),copy=item.querySelector('p').getBoundingClientRect();return copy.top-heading.bottom})}});
   assert(gaps.titleToList>=4&&gaps.items.every(gap=>gap>=5)&&gaps.visible,`${month}-${day} event text overlaps or is clipped: ${JSON.stringify(gaps)}`);
   if(output&&month==='2026-11')await page.screenshot({path:path.join(output,'POLISH_EVENT_NOVEMBER.png'),fullPage:true});
   await context.close();
  }
  results.eventSpacing='November/December 2026 and 2027 titles and copy do not overlap';
+ for(const [month,day] of [['2026-11',9],['2026-12',9]]){
+  const {context,page}=await setup({width:1440,height:1000},false,month);
+  await page.locator(`.amc-day[data-day="${day}"]`).click();
+  const names=await page.locator('.amc-recommendations .amc-target-name').allTextContents();
+  assert(names.some(name=>/Horsehead Nebula/.test(name)),`${month}-${day} New Moon should recommend a seasonal dark nebula: ${names}`);
+  const links=await page.locator('.amc-recommendations .amc-article-promo').evaluateAll(els=>els.map(el=>({kind:el.querySelector('small')?.textContent,url:el.href})));
+  assert.equal(links.length,2);assert(links.some(link=>/review/i.test(link.kind)),`${month}-${day} needs a relevant review`);
+  await context.close();
+ }
+ results.darkMoonRecommendations='seasonal dark nebula and contextual article/review on November and December New Moon';
  if(output){
   const seeded=await setup({width:390,height:844},true);
   await seeded.page.waitForFunction(()=>document.querySelectorAll('.amc-day.is-mobile-active .amc-cell-weather-row').length===7);

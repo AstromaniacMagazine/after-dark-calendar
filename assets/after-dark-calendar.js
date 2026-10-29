@@ -884,6 +884,7 @@
         if (!source) return;
         const image = new Image();
         image.decoding = "async";
+        image.crossOrigin = "anonymous";
         image.src = source;
       });
     };
@@ -1364,8 +1365,8 @@
           <span class="amc-detail-date">${weekday} ${day} ${monthTitle()}</span>
           <span class="amc-detail-location">${locationPill(locationDisplay())}</span>
         </div>
-        ${events.length ? `<h2 class="amc-detail-title">Events on this date</h2>` : `<h2 class="amc-detail-title"></h2>`}
-        ${events.length ? `<ul class="amc-event-list">${events.map(eventItem).join("")}</ul>` : ""}
+        <h2 class="amc-detail-title">Events on this date</h2>
+        ${events.length ? `<ul class="amc-event-list">${events.map(eventItem).join("")}</ul>` : `<p class="amc-no-events">No major astronomical events listed for this date.</p>`}
         </div>
         ${moonChart(skyInfo, nightInfo, false)}
         ${weatherPanel()}
@@ -1421,7 +1422,9 @@
     });
     const fallbacks = fallbackTargetPool(moon);
     const featuredDeepSky = seasonal[0];
-    const candidates = uniqueTargetNames([...seeded, featuredDeepSky, ...rankedSeasonal, ...fallbacks].filter(Boolean));
+    const darkNightPool = moon.phase <= 15 ? darkNightTargets() : [];
+    const darkNight = rotateTargets(darkNightPool, day + state.month.year).sort((left, right) => targetRank(right, day) - targetRank(left, day));
+    const candidates = uniqueTargetNames([...darkNight, ...seeded, featuredDeepSky, ...rankedSeasonal, ...fallbacks].filter(Boolean));
     const selected = [];
     const groups = new Set();
 
@@ -1441,7 +1444,7 @@
     candidates.forEach(name => addTarget(name, false));
     fallbacks.forEach(name => addTarget(name, false, false));
 
-    const deepSkyCandidates = uniqueTargetNames([featuredDeepSky, ...rankedSeasonal, ...seeded, ...fallbacks].filter(Boolean))
+    const deepSkyCandidates = uniqueTargetNames([...darkNight, featuredDeepSky, ...rankedSeasonal, ...seeded, ...fallbacks].filter(Boolean))
       .filter(name => isDeepSkyTarget(name));
     let deepSkyAdded = deepSkyCandidates.some(name => addTarget(name, false, true, 4));
     if (!deepSkyAdded) deepSkyAdded = deepSkyCandidates.some(name => addTarget(name, false, false, 4));
@@ -1454,6 +1457,24 @@
     if (!targets.length) return [];
     const index = ((offset % targets.length) + targets.length) % targets.length;
     return [...targets.slice(index), ...targets.slice(0, index)];
+  }
+
+  function darkNightTargets() {
+    const byMonth = {
+      0: ["Horsehead Nebula (Barnard 33)", "Rosette Nebula (NGC 2237)"],
+      1: ["Horsehead Nebula (Barnard 33)", "Rosette Nebula (NGC 2237)"],
+      2: ["Pinwheel Galaxy (M101)", "Whirlpool Galaxy (M51)"],
+      3: ["Whirlpool Galaxy (M51)", "Pinwheel Galaxy (M101)"],
+      4: ["Pinwheel Galaxy (M101)", "Whirlpool Galaxy (M51)"],
+      5: ["Rho Ophiuchi Cloud Complex", "Whirlpool Galaxy (M51)"],
+      6: ["Rho Ophiuchi Cloud Complex", "Elephant Trunk Nebula (IC 1396A)"],
+      7: ["Elephant Trunk Nebula (IC 1396A)", "Rho Ophiuchi Cloud Complex"],
+      8: ["Elephant Trunk Nebula (IC 1396A)", "Triangulum Galaxy (M33)"],
+      9: ["Elephant Trunk Nebula (IC 1396A)", "Triangulum Galaxy (M33)"],
+      10: ["Horsehead Nebula (Barnard 33)", "Triangulum Galaxy (M33)"],
+      11: ["Horsehead Nebula (Barnard 33)", "Triangulum Galaxy (M33)"]
+    };
+    return byMonth[state.month.monthIndex] || [];
   }
 
   function seasonalTargetPool(moon) {
@@ -1561,7 +1582,7 @@
 
   function targetCard(target, index = 0) {
     return `<li class="amc-target-card">
-      <img src="${escapeHtml(target.image.src)}" alt="${escapeHtml(target.image.alt)}" loading="${isMobileCarousel() && index < 2 ? "eager" : "lazy"}" fetchpriority="${isMobileCarousel() && index === 0 ? "high" : "auto"}" decoding="async" width="82" height="82">
+      <img src="${escapeHtml(target.image.src)}" alt="${escapeHtml(target.image.alt)}" loading="${isMobileCarousel() && index < 2 ? "eager" : "lazy"}" fetchpriority="${isMobileCarousel() && index === 0 ? "high" : "auto"}" decoding="async" crossorigin="anonymous" referrerpolicy="no-referrer" width="82" height="82">
       <span class="amc-target-copy">
         <span class="amc-target-type">${escapeHtml(target.type)}</span>
         <span class="amc-target-name">${escapeHtml(target.name)}</span>
@@ -1577,7 +1598,7 @@
 
   function recommendedArticles(day, events, moon) {
     const typeSet = new Set(events.map(item => item.type));
-    const seed = day + (state.month.monthIndex + 1) * 37;
+    const seed = day + (state.month.monthIndex + 1) * 37 + state.month.year * 11;
     let editorial;
     let reviews;
     if (typeSet.has("eclipse")) {
@@ -1589,7 +1610,7 @@
     } else if (typeSet.has("meteor")) {
       editorial = [state.articles.deepSky, state.articles.lightPollution, state.articles.numbers, state.articles.accessories];
       reviews = [state.articles.sqmReview, state.articles.askar80Review, state.articles.sqa55Review, state.articles.atr2600Review];
-    } else if (typeSet.has("moon") || moon.phase >= 70) {
+    } else if (moon.phase >= 70 || (typeSet.has("moon") && moon.phase >= 35)) {
       editorial = [state.articles.moon, state.articles.artemis, state.articles.lunarLife, state.articles.lunarClock];
       reviews = [state.articles.sqmReview, state.articles.monitorReview, state.articles.powerReview, state.articles.zwoReview];
     } else if (typeSet.has("telescope")) {
@@ -1621,8 +1642,8 @@
 
   function articlePromo(article) {
     if (!article) return "";
-    return `<a class="amc-article-promo" href="${escapeHtml(article.url)}" target="_blank" rel="noopener">
-      <img src="${escapeHtml(article.image || state.media.milkyWay?.src || "")}" alt="${escapeHtml(article.title)}" loading="lazy" decoding="async" width="96" height="72">
+    return `<a class="amc-article-promo" href="${escapeHtml(article.url)}" target="_blank" rel="noopener noreferrer">
+      <img src="${escapeHtml(article.image || state.media.milkyWay?.src || "")}" alt="${escapeHtml(article.title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" width="96" height="72">
       <span class="amc-article-copy"><small>${escapeHtml(article.kind || "Article")}</small><b>${escapeHtml(article.title)}</b></span>
     </a>`;
   }
@@ -1662,13 +1683,13 @@
   }
 
   function moonAltitudeSvg(timeline, compact) {
-    const maxAltitude = 75;
+    const maxAltitude = 85;
     const chart = { x: compact ? 26 : 30, y: compact ? 8 : 10, width: compact ? 300 : 326, height: compact ? 130 : 174 };
     const viewWidth = compact ? 332 : 360;
     const viewHeight = compact ? 176 : 224;
     const tickStep = 2;
     const hours = Array.from({ length: (chartDurationHours / tickStep) + 1 }, (_, i) => (chartStartHour + (i * tickStep)) % 24);
-    const yTicks = compact ? [0, 38, 75] : [0, 25, 50, 75];
+    const yTicks = compact ? [0, 40, 85] : [0, 25, 50, 75, 85];
     const bands = timeline.bands.map(band => {
       const x = chart.x + (band.startHour / chartDurationHours) * chart.width;
       const width = ((band.endHour - band.startHour) / chartDurationHours) * chart.width;
@@ -1687,11 +1708,11 @@
     }).join("");
     const hourTicks = hours.map((hour, index) => {
       const x = chart.x + ((index * tickStep) / chartDurationHours) * chart.width;
-      return `<g><line x1="${x}" x2="${x}" y1="${chart.y}" y2="${chart.y + chart.height}" stroke="rgba(22,25,29,.12)"/><text x="${x}" y="${chart.y + chart.height + (compact ? 16 : 18)}" text-anchor="middle" fill="currentColor" font-size="${compact ? 8.1 : 9.1}" font-weight="600">${String(hour).padStart(2, "0")}</text></g>`;
+      return `<g><line x1="${x}" x2="${x}" y1="${chart.y}" y2="${chart.y + chart.height}" stroke="rgba(22,25,29,.12)"/><text x="${x}" y="${chart.y + chart.height + (compact ? 16 : 18)}" text-anchor="middle" fill="currentColor" font-size="${compact ? 9.4 : 10.5}" font-weight="600">${String(hour).padStart(2, "0")}</text></g>`;
     }).join("");
     const altitudeTicks = yTicks.map(tick => {
       const y = chart.y + chart.height - (tick / maxAltitude) * chart.height;
-      return `<g><line x1="${chart.x}" x2="${chart.x + chart.width}" y1="${y}" y2="${y}" stroke="rgba(22,25,29,.16)"/><text x="${chart.x - 8}" y="${y + 3}" text-anchor="end" fill="currentColor" font-size="${compact ? 8.1 : 9.1}" font-weight="600">${tick}°</text></g>`;
+      return `<g><line x1="${chart.x}" x2="${chart.x + chart.width}" y1="${y}" y2="${y}" stroke="rgba(22,25,29,.16)"/><text x="${chart.x - 8}" y="${y + 3}" text-anchor="end" fill="currentColor" font-size="${compact ? 9.4 : 10.5}" font-weight="600">${tick}°</text></g>`;
     }).join("");
     const paths = timeline.moonSegments
       .map(segment => smoothPath(segment.map(point => chartPoint(point, chart, maxAltitude))))
@@ -1704,11 +1725,12 @@
     const nowStyle = now ? "" : " style=\"display:none\"";
     const nowMarker = `<g class="amc-now-marker" data-now-marker${nowStyle}>
       <title data-now-title>${now ? `Now: ${now.detail}` : "Current time is outside this chart window"}</title>
-      <line data-now-line x1="${nowX}" x2="${nowX}" y1="${chart.y}" y2="${chart.y + chart.height}" stroke="var(--accent)" stroke-width="1.15" stroke-dasharray="4 3"/>
-      <text data-now-label x="${nowX}" y="${chart.y + 12}" text-anchor="${nowAnchor}" fill="var(--accent)" font-size="${compact ? 9.2 : 10.4}" font-weight="700">NOW</text>
+      <line data-now-line x1="${nowX}" x2="${nowX}" y1="${chart.y}" y2="${chart.y + chart.height}" stroke="var(--accent)" stroke-width="2.2" stroke-dasharray="5 3"/>
+      <circle data-now-dot cx="${nowX}" cy="${chart.y}" r="3.5" fill="var(--accent)" stroke="var(--panel)" stroke-width="1.2"/>
+      <text data-now-label x="${nowX}" y="${chart.y + 13}" text-anchor="${nowAnchor}" fill="var(--accent)" font-size="${compact ? 10.2 : 11.3}" font-weight="800">NOW</text>
       <text data-now-detail x="${nowX}" y="${chart.y + chart.height - 7}" text-anchor="${nowAnchor}" fill="var(--accent)" font-size="${compact ? 8.2 : 9.4}" font-weight="700">${now?.detail || ""}</text>
     </g>`;
-    return `<svg class="amc-alt-svg" data-now-chart data-chart-start="${timeline.startMs}" data-chart-end="${timeline.endMs}" data-chart-x="${chart.x}" data-chart-width="${chart.width}" viewBox="0 0 ${viewWidth} ${viewHeight}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Moon altitude from 16:00 to 08:00, scaled from 0 to 75 degrees">
+    return `<svg class="amc-alt-svg" data-now-chart data-chart-start="${timeline.startMs}" data-chart-end="${timeline.endMs}" data-chart-x="${chart.x}" data-chart-width="${chart.width}" viewBox="0 0 ${viewWidth} ${viewHeight}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Moon altitude from 16:00 to 08:00, scaled from 0 to 85 degrees; Now marker appears when the current time is in this window">
       <g style="color: var(--text)">
         ${bands}${hourTicks}${altitudeTicks}${bandLabels}
         <line x1="${chart.x}" x2="${chart.x + chart.width}" y1="${chart.y + chart.height}" y2="${chart.y + chart.height}" stroke="rgba(22,25,29,.42)" stroke-width="1.2"/>
@@ -2516,6 +2538,7 @@
       const x = Number(svg.dataset.chartX) + (now.hour / chartDurationHours) * Number(svg.dataset.chartWidth);
       marker.querySelector("[data-now-line]")?.setAttribute("x1", x);
       marker.querySelector("[data-now-line]")?.setAttribute("x2", x);
+      marker.querySelector("[data-now-dot]")?.setAttribute("cx", x);
       marker.querySelector("[data-now-label]")?.setAttribute("x", x);
       marker.querySelector("[data-now-detail]")?.setAttribute("x", x);
       const anchor = now.hour < 2.5 ? "start" : now.hour > chartDurationHours - 2.5 ? "end" : "middle";
@@ -2763,10 +2786,10 @@
     if (/messier 2|m2\b/.test(text)) return imageAsset("https://assets.science.nasa.gov/content/dam/science/missions/hubble/stars/globular-clusters/Hubble_M2_potw1913a.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "Messier 2 thumbnail");
     if (/messier 15|m15\b/.test(text)) return imageAsset("https://science.nasa.gov/wp-content/uploads/2023/04/heic1321a-jpg.webp?w=600", "Messier 15 thumbnail");
     if (/orion nebula|m42\b/.test(text)) return wikimediaImage("Orion Nebula (M42) part HST 4800px.jpg", "Orion Nebula thumbnail");
-    if (/horsehead|barnard 33/.test(text)) return wikimediaImage("Horsehead-Hubble.jpg", "Horsehead Nebula thumbnail");
+    if (/horsehead|barnard 33/.test(text)) return imageAsset("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/releases/2001/04/STScI-01EVT9N4HJ57T0R4MN2MJW8N89.jpg?crop=faces%2Cfocalpoint&fit=clip&h=813&w=800", "Optical image of the Horsehead Nebula by Travis Rector (NOAO)");
     if (/rosette|ngc 2237/.test(text)) return wikimediaImage("Rosette nebula s.jpg", "Rosette Nebula thumbnail");
     if (/california|ngc 1499/.test(text)) return wikimediaImage("California nebula NGC1499.jpg", "California Nebula thumbnail");
-    if (/double cluster|ngc 869|ngc 884/.test(text)) return wikimediaImage("Double cluster.jpg", "Double Cluster thumbnail");
+    if (/double cluster|ngc 869|ngc 884/.test(text)) return imageAsset("https://cdn.eso.org/images/screen/b02.jpg", "The Double Cluster in Perseus, ESO/S. Brunier");
     if (/asteroid 9 metis|\bmetis\b/.test(text)) return imageAsset("https://damit.cuni.cz/projects/damit/stored_files/open/85/shape.png", "Asteroid 9 Metis shape model thumbnail");
     if (/meteor|perseid|aquariid|capricornid|cygnid|aurigid|taurid|leonid|geminid|ursid/.test(text)) return wikimediaImage("Perseid meteor shower.jpg", "Meteor shower thumbnail");
     if (/moon|lunar|crater/.test(text)) return wikimediaImage("Full Moon Luc Viatour.jpg", "Moon thumbnail");
