@@ -3765,3 +3765,4 @@ body.amc-standalone-body {
 .amc-privacy-more > summary { color: var(--readable-link); cursor: pointer; font-size: .72rem; font-weight: 700; line-height: 1.3; padding: 4px 0; }
 .amc-privacy-more > summary::marker { color: var(--readable-link); }
 .amc-privacy-more > p { padding-left: 12px; }
+.amc-target-credit { color: var(--muted); font-size: .58rem; line-height: 1.2; }

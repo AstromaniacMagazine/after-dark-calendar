@@ -84,6 +84,8 @@ try{
   await page.locator(`.amc-day[data-day="${day}"]`).click();
   const names=await page.locator('.amc-recommendations .amc-target-name').allTextContents();
   assert(names.some(name=>/Horsehead Nebula/.test(name)),`${month}-${day} New Moon should recommend a seasonal dark nebula: ${names}`);
+  const horsehead=page.locator('.amc-recommendations .amc-target-card').filter({hasText:'Horsehead Nebula'}).first();
+  assert.match(await horsehead.locator('.amc-target-credit').textContent(),/Travis Rector \(NOAO\)/);
   const links=await page.locator('.amc-recommendations .amc-article-promo').evaluateAll(els=>els.map(el=>({kind:el.querySelector('small')?.textContent,url:el.href})));
   assert.equal(links.length,2);assert(links.some(link=>/review/i.test(link.kind)),`${month}-${day} needs a relevant review`);
   await context.close();
