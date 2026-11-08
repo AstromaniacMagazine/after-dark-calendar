@@ -62,6 +62,20 @@ async function settleImages(page) {
     });
   }
 
+  // NASA SVS can throttle a full-page capture of every daily frame. Use the
+  // calendar's own accurate phase diagram for frames that remain unavailable.
+  await page.evaluate(() => {
+    const monthId = document.querySelector("#amc-after-dark-calendar")?.dataset.month;
+    const data = window.AMC_MONTH_DATA?.[monthId];
+    if (!data) return;
+    for (const image of document.images) {
+      if (image.complete && image.naturalWidth > 0) continue;
+      const match = /\/a005587\/.*\/moon\.(\d+)\.jpg/.exec(image.currentSrc || image.src);
+      if (!match) continue;
+      const day = Object.keys(data.moonData || {}).find(key => Number(data.moonData[key].frame) === Number(match[1]));
+      if (day) image.src = window.AMC_SHARED.phaseDiagram(data.moonData[day].age);
+    }
+  });
   const failedSources = await page.evaluate(() => [...document.images]
     .filter(image => !image.complete || image.naturalWidth === 0)
     .map(image => image.dataset.snapshotSource || image.src));

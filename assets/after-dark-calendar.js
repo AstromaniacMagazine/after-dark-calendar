@@ -222,6 +222,16 @@
   }
 
   function bindEvents() {
+    root.addEventListener("error", event => {
+      const image = event.target;
+      if (!(image instanceof HTMLImageElement) || image.dataset.moonFallback) return;
+      const frame = /\/a005587\/.*\/moon\.(\d+)\.jpg/.exec(image.currentSrc || image.src);
+      if (!frame) return;
+      const day = Object.keys(state.moonData).find(value => Number(state.moonData[value]?.frame) === Number(frame[1]));
+      if (!day) return;
+      image.dataset.moonFallback = "true";
+      image.src = shared.phaseDiagram(state.moonData[day].age);
+    }, true);
     els.themeToggle.addEventListener("click", cycleTheme);
     els.useLocation.addEventListener("click", useBrowserLocation);
     els.manualForm.addEventListener("submit", useManualLocation);
@@ -1582,11 +1592,11 @@
 
   function targetCard(target, index = 0) {
     return `<li class="amc-target-card">
-      <img src="${escapeHtml(target.image.src)}" alt="${escapeHtml(target.image.alt)}" loading="${isMobileCarousel() && index < 2 ? "eager" : "lazy"}" fetchpriority="${isMobileCarousel() && index === 0 ? "high" : "auto"}" decoding="async" crossorigin="anonymous" referrerpolicy="no-referrer" width="82" height="82">
+      <img src="${escapeHtml(target.image.src)}" alt="${escapeHtml(target.image.alt)}" loading="${isMobileCarousel() && index < 2 ? "eager" : "lazy"}" fetchpriority="${isMobileCarousel() && index === 0 ? "high" : "auto"}" decoding="async" ${target.image.src.includes("wikimedia.org") ? 'crossorigin="anonymous"' : ""} referrerpolicy="no-referrer" width="82" height="82">
       <span class="amc-target-copy">
         <span class="amc-target-type">${escapeHtml(target.type)}</span>
         <span class="amc-target-name">${escapeHtml(target.name)}</span>
-        ${target.image.credit ? `<small class="amc-target-credit">Image: ${escapeHtml(target.image.credit)}</small>` : ""}
+        ${target.image.credit ? `<small class="amc-target-credit">Image: ${target.image.sourceUrl ? `<a href="${escapeHtml(target.image.sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(target.image.credit)}</a>` : escapeHtml(target.image.credit)}${target.image.license ? ` · ${escapeHtml(target.image.license)}` : ""}</small>` : ""}
       </span>
       <span class="amc-target-facts">
         <span><em>Highest point</em><strong>${escapeHtml(target.best)}</strong></span>
@@ -2138,6 +2148,7 @@
     if (!wasExpanded) { renderDetail(); renderRecommendations(); }
     root.classList.toggle("has-expanded-day", !wasExpanded);
     if (currentButton && previousTop !== null) preserveDayViewport(currentButton, previousTop);
+    updateTodayButton();
   }
 
   function preserveDayViewport(button, previousTop) {
@@ -2208,15 +2219,14 @@
     const todayId = monthIdFromParts(today.getFullYear(), today.getMonth());
     if (!manifest.some(item => item.id === todayId)) return;
     if (state.monthId === todayId) {
+      if (state.selectedDay === today.getDate() && state.expandedDay === today.getDate()) return;
       if (isMobileCarousel()) beginMobileNavigation(today.getDate(), smooth);
-      else {
-        state.selectedDay = today.getDate();
-        state.expandedDay = null;
-        renderAll();
-      }
+      else selectDay(today.getDate());
       return;
     }
-    showMonth(todayId, { selectedDay: today.getDate(), direction: todayId < state.monthId ? -1 : 1 });
+    showMonth(todayId, { selectedDay: today.getDate(), direction: todayId < state.monthId ? -1 : 1 })?.then(() => {
+      if (!isMobileCarousel() && state.expandedDay !== today.getDate()) selectDay(today.getDate());
+    });
   }
 
   function updateTodayButton() {
@@ -2224,7 +2234,7 @@
     const today = new Date();
     const todayId = monthIdFromParts(today.getFullYear(), today.getMonth());
     const loaded = manifest.some(item => item.id === todayId);
-    const selected = state.monthId === todayId && state.selectedDay === today.getDate();
+    const selected = state.monthId === todayId && state.selectedDay === today.getDate() && state.expandedDay === today.getDate();
     els.today.disabled = !loaded || selected;
     els.today.title = loaded ? `Show today, ${today.getDate()} ${monthLong[today.getMonth()]} ${today.getFullYear()}` : "Today's month is not loaded";
   }
@@ -2747,7 +2757,7 @@
     if (/rho ophiuchi|antares region/.test(text)) return wikimediaImage("Antares and Rho Ophiuchi by Adam Block.jpg", "Rho Ophiuchi and Antares region thumbnail");
     if (/antares/.test(text)) return wikimediaImage("Antares (Updated).jpg", "Antares thumbnail");
     if (/elnath|beta tauri/.test(text)) return wikimediaImage("Elnath.png", "Elnath Beta Tauri thumbnail");
-    if (/regulus/.test(text)) return imageAsset("https://apod.nasa.gov/apod/image/2404/Regulus_Dwarf_by_Markus_Horn1024.png", "Regulus star field thumbnail");
+    if (/regulus/.test(text)) return wikimediaImage("Regulus in true color.jpg", "Regulus star field thumbnail");
     if (/comet 10p|tempel 2/.test(text)) return imageAsset("https://assets.science.nasa.gov/content/dam/science/cds/apod/apod/2026/july/10P_Tempel2_20260711_DEBartlett2048.jpg?w=400&h=230&fit=crop&crop=faces%2Cfocalpoint", "Comet 10P Tempel 2 thumbnail");
     if (/globular cluster/.test(text)) return wikimediaImage("Messier 13 Hubble WikiSky.jpg", "Globular cluster thumbnail");
     if (/saturn/.test(text)) return wikimediaImage("Saturn during Equinox.jpg", "Saturn thumbnail");
@@ -2791,7 +2801,7 @@
     if (/rosette|ngc 2237/.test(text)) return wikimediaImage("Rosette nebula s.jpg", "Rosette Nebula thumbnail");
     if (/california|ngc 1499/.test(text)) return wikimediaImage("California nebula NGC1499.jpg", "California Nebula thumbnail");
     if (/double cluster|ngc 869|ngc 884/.test(text)) return imageAsset("https://cdn.eso.org/images/screen/b02.jpg", "The Double Cluster in Perseus, ESO/S. Brunier", "ESO/S. Brunier");
-    if (/asteroid 9 metis|\bmetis\b/.test(text)) return imageAsset("https://damit.cuni.cz/projects/damit/stored_files/open/85/shape.png", "Asteroid 9 Metis shape model thumbnail");
+    if (/asteroid 9 metis|\bmetis\b/.test(text)) return wikimediaImage("000009-asteroid shape model (9) Metis.png", "Asteroid 9 Metis shape model thumbnail");
     if (/meteor|perseid|aquariid|capricornid|cygnid|aurigid|taurid|leonid|geminid|ursid/.test(text)) return wikimediaImage("Perseid meteor shower.jpg", "Meteor shower thumbnail");
     if (/moon|lunar|crater/.test(text)) return wikimediaImage("Full Moon Luc Viatour.jpg", "Moon thumbnail");
     if (/venus/.test(text)) return wikimediaImage("Venus-real color.jpg", "Venus thumbnail");
@@ -2802,8 +2812,155 @@
     return { src: state.media.milkyWay?.src || moonImage(day, 216), alt: `${target} thumbnail` };
   }
 
+  const wikimediaThumbnails = {
+  "Antares and Crescent Moon.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/53/Antares_and_Crescent_Moon.jpg/330px-Antares_and_Crescent_Moon.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Antares_and_Crescent_Moon.jpg",
+    "credit": "Ox1997cow",
+    "license": "CC BY-SA 3.0"
+  },
+  "Antares and Rho Ophiuchi by Adam Block.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/46/Antares_and_Rho_Ophiuchi_by_Adam_Block.jpg/330px-Antares_and_Rho_Ophiuchi_by_Adam_Block.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Antares_and_Rho_Ophiuchi_by_Adam_Block.jpg",
+    "credit": "Adam Block/Steward Observatory/University of Arizona",
+    "license": "CC BY-SA 4.0"
+  },
+  "Antares (Updated).jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ca/Antares_%28Updated%29.jpg/330px-Antares_%28Updated%29.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Antares_(Updated).jpg",
+    "credit": "Danny William Wilson",
+    "license": "CC BY-SA 4.0"
+  },
+  "Elnath.png": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/Elnath.png/330px-Elnath.png",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Elnath.png",
+    "credit": "Pablo Carlos Budassi",
+    "license": "CC BY-SA 4.0"
+  },
+  "Messier 13 Hubble WikiSky.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/74/Messier_13_Hubble_WikiSky.jpg/330px-Messier_13_Hubble_WikiSky.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Messier_13_Hubble_WikiSky.jpg",
+    "credit": "",
+    "license": ""
+  },
+  "Saturn during Equinox.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c7/Saturn_during_Equinox.jpg/330px-Saturn_during_Equinox.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Saturn_during_Equinox.jpg",
+    "credit": "",
+    "license": ""
+  },
+  "Pleiades large.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4e/Pleiades_large.jpg/330px-Pleiades_large.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Pleiades_large.jpg",
+    "credit": "",
+    "license": ""
+  },
+  "Lagoon Nebula.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c4/Lagoon_Nebula.jpg/330px-Lagoon_Nebula.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Lagoon_Nebula.jpg",
+    "credit": "ESO/IDA/Danish 1.5 m/ R. Gendler, U.G. Jørgensen, K. Harpsøe",
+    "license": "CC BY 4.0"
+  },
+  "Trifid.nebula.arp.750pix.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/Trifid.nebula.arp.750pix.jpg/330px-Trifid.nebula.arp.750pix.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Trifid.nebula.arp.750pix.jpg",
+    "credit": "",
+    "license": ""
+  },
+  "Eagle Nebula from ESO.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2b/Eagle_Nebula_from_ESO.jpg/330px-Eagle_Nebula_from_ESO.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Eagle_Nebula_from_ESO.jpg",
+    "credit": "ESO",
+    "license": "CC BY 4.0"
+  },
+  "M57 The Ring Nebula.JPG": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/13/M57_The_Ring_Nebula.JPG/330px-M57_The_Ring_Nebula.JPG",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:M57_The_Ring_Nebula.JPG",
+    "credit": "",
+    "license": ""
+  },
+  "Pelican Nebula.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/Pelican_Nebula.jpg/330px-Pelican_Nebula.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Pelican_Nebula.jpg",
+    "credit": "Urmymuse",
+    "license": "CC BY-SA 4.0"
+  },
+  "Orion Nebula (M42) part HST 4800px.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b9/Orion_Nebula_%28M42%29_part_HST_4800px.jpg/330px-Orion_Nebula_%28M42%29_part_HST_4800px.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Orion_Nebula_(M42)_part_HST_4800px.jpg",
+    "credit": "",
+    "license": ""
+  },
+  "Rosette nebula s.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/86/Rosette_nebula_s.jpg/330px-Rosette_nebula_s.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rosette_nebula_s.jpg",
+    "credit": "",
+    "license": ""
+  },
+  "California nebula NGC1499.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f2/California_nebula_NGC1499.jpg/330px-California_nebula_NGC1499.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:California_nebula_NGC1499.jpg",
+    "credit": "Ram samudrala",
+    "license": "CC BY 4.0"
+  },
+  "Perseid meteor shower.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a1/Perseid_meteor_shower.jpg/330px-Perseid_meteor_shower.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Perseid_meteor_shower.jpg",
+    "credit": "Jared Tennant",
+    "license": "CC BY 2.0"
+  },
+  "Full Moon Luc Viatour.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/dd/Full_Moon_Luc_Viatour.jpg/330px-Full_Moon_Luc_Viatour.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Full_Moon_Luc_Viatour.jpg",
+    "credit": "Luc Viatour",
+    "license": "CC BY-SA 3.0"
+  },
+  "Venus-real color.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Venus-real_color.jpg/330px-Venus-real_color.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Venus-real_color.jpg",
+    "credit": "",
+    "license": ""
+  },
+  "Solar System true color.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/19/Solar_System_true_color.jpg/330px-Solar_System_true_color.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Solar_System_true_color.jpg",
+    "credit": "CactiStaccingCrane",
+    "license": "CC BY-SA 4.0"
+  },
+  "ESO - Milky Way.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/60/ESO_-_Milky_Way.jpg/330px-ESO_-_Milky_Way.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:ESO_-_Milky_Way.jpg",
+    "credit": "ESO/ S. Brunier",
+    "license": "CC BY 4.0"
+  },
+  "Comet Hartley 2.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e6/Comet_Hartley_2.jpg/330px-Comet_Hartley_2.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Comet_Hartley_2.jpg",
+    "credit": "",
+    "license": ""
+  },
+  "Total Solar Eclipse 8-21-17.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cd/Total_Solar_Eclipse_8-21-17.jpg/330px-Total_Solar_Eclipse_8-21-17.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Total_Solar_Eclipse_8-21-17.jpg",
+    "credit": "Michael S Adler",
+    "license": "CC BY-SA 4.0"
+  },
+  "000009-asteroid shape model (9) Metis.png": {
+    "src": "https://upload.wikimedia.org/wikipedia/commons/6/6c/000009-asteroid_shape_model_%289%29_Metis.png",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:000009-asteroid_shape_model_(9)_Metis.png",
+    "credit": "Astronomical Institute of the Charles University : Josef Ďurech , Vojtěch Sidorin",
+    "license": "CC BY 4.0"
+  },
+  "Regulus in true color.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c4/Regulus_in_true_color.jpg/330px-Regulus_in_true_color.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Regulus_in_true_color.jpg",
+    "credit": "Stanley Joseph \"Stan\"",
+    "license": "CC BY 4.0"
+  }
+};
+
   function wikimediaImage(fileName, alt) {
-    return { src: `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(fileName)}?width=320`, alt };
+    return { ...wikimediaThumbnails[fileName], alt };
   }
 
   function imageAsset(src, alt, credit = "") {
@@ -3143,41 +3300,44 @@
   }
 
   function cloudColour(value) {
-    if (value <= 15) return "#083b7a";
-    if (value <= 40) return "#2f73c8";
-    if (value <= 70) return "#9ed8ff";
-    return "#f8fbff";
+    if (value <= 10) return observingColour("excellent");
+    if (value <= 25) return observingColour("good");
+    if (value <= 45) return observingColour("fair");
+    if (value <= 70) return observingColour("average");
+    return observingColour("poor");
   }
 
   function transparencyColour(value) {
-    if (value >= 75) return "#2f73c8";
-    if (value >= 58) return "#148cff";
-    if (value >= 38) return "#36d6ff";
-    return "#f8fbff";
+    if (value >= 82) return observingColour("excellent");
+    if (value >= 68) return observingColour("good");
+    if (value >= 52) return observingColour("fair");
+    if (value >= 35) return observingColour("average");
+    return observingColour("poor");
   }
 
   function seeingColour(value) {
-    if (value >= 78) return "#061d49";
-    if (value >= 58) return "#083b7a";
-    if (value >= 38) return "#2369b7";
-    return "#36d6ff";
+    if (value >= 82) return observingColour("excellent");
+    if (value >= 68) return observingColour("good");
+    if (value >= 52) return observingColour("fair");
+    if (value >= 35) return observingColour("average");
+    return observingColour("poor");
   }
 
   function windColour(value) {
-    if (value <= 6) return "#fff2cc";
-    if (value <= 15) return "#f2c14e";
-    if (value <= 28) return "#d9782f";
-    return "#7a4a24";
+    if (value <= 6) return observingColour("excellent");
+    if (value <= 12) return observingColour("good");
+    if (value <= 20) return observingColour("fair");
+    if (value <= 30) return observingColour("average");
+    return observingColour("poor");
   }
 
   function temperatureColour(value) {
-    if (value < 0) return "#1f6feb";
-    if (value < 10) return "#35a852";
-    if (value < 15) return "#f2c94c";
-    if (value < 20) return "#f2994a";
-    if (value < 25) return "#e84a4a";
-    if (value < 30) return "#9f1d1d";
-    return "#6b001f";
+    // Temperature is physical, not an observing-quality score: blue to red means cold to hot.
+    if (value < 0) return "#3f75c6";
+    if (value < 10) return "#78a7d8";
+    if (value < 18) return "#e0c769";
+    if (value < 26) return "#d88e52";
+    return "#ba5655";
   }
 
   function weatherKind(code, cloud) {
