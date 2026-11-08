@@ -69,7 +69,7 @@
       {
         "type": "sky",
         "title": "Earth at Perihelion",
-        "copy": "At 02:33 UTC, earth at perihelion. This orbital distance marker does not cause Earth's seasons.",
+        "copy": "At 02:33 UTC, Earth reaches perihelion. This orbital distance marker does not cause Earth's seasons.",
         "fact": "Times and dates are UTC; local visibility depends on your location.",
         "sourceIds": [
           "usnoSeasons2027"
@@ -91,7 +91,7 @@
       {
         "type": "meteor",
         "title": "Quadrantids meteor shower peak",
-        "copy": "Predicted maximum near 03:25 UTC. Little lunar interference near New Moon. Ideal zenithal hourly rate about 80; actual observed counts are usually lower. Observe around the peak on adjacent nights; timing is a prediction.",
+        "copy": "Predicted maximum near 03:30 UTC. Little lunar interference near New Moon. Ideal zenithal hourly rate about 80; actual observed counts are usually lower. Observe around the peak on adjacent nights; timing is a prediction.",
         "fact": "Times and dates are UTC; local visibility depends on your location.",
         "sourceIds": [
           "imo2027"
@@ -104,7 +104,7 @@
     {
       "day": 4,
       "title": "Quadrantids meteor shower peak",
-      "text": "Predicted maximum near 03:25 UTC. Little lunar interference near New Moon. Ideal zenithal hourly rate about 80; actual observed counts are usually lower. Observe around the peak on adjacent nights; timing is a prediction.",
+      "text": "Predicted maximum near 03:30 UTC. Little lunar interference near New Moon. Ideal zenithal hourly rate about 80; actual observed counts are usually lower. Observe around the peak on adjacent nights; timing is a prediction.",
       "imageKey": "meteor"
     },
     {
@@ -116,7 +116,7 @@
     {
       "day": 3,
       "title": "Earth at Perihelion",
-      "text": "At 02:33 UTC, earth at perihelion. This orbital distance marker does not cause Earth's seasons.",
+      "text": "At 02:33 UTC, Earth reaches perihelion. This orbital distance marker does not cause Earth's seasons.",
       "imageKey": "sun"
     },
     {

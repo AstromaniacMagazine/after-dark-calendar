@@ -27,7 +27,7 @@ try {
  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
  const ids=Array.from({length:14},(_,i)=>i<2?`2026-${i+11}`:`2027-${String(i-1).padStart(2,'0')}`);
  for(const id of ids){
-  await page.goto(`http://127.0.0.1:4175/?snapshot=1&month=${id}`);
+  await page.goto(`http://127.0.0.1:4175/?snapshot=1&month=${id}`, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(id=>document.querySelector('#amc-after-dark-calendar')?.dataset.ready==='true'&&document.querySelector('#amc-after-dark-calendar')?.dataset.month===id,id);
   const days=new Date(Number(id.slice(0,4)),Number(id.slice(5)),0).getDate();
   assert.equal(await page.locator('.amc-day').count(),days,id);
@@ -41,7 +41,7 @@ try {
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`${id} overflow`);
  }
  result.monthsChecked=ids.length;
- await page.goto('http://127.0.0.1:4175/?snapshot=1&month=2027-08');
+ await page.goto('http://127.0.0.1:4175/?snapshot=1&month=2027-08', { waitUntil: 'domcontentloaded' });
  await page.waitForFunction(()=>document.querySelector('#amc-after-dark-calendar')?.dataset.ready==='true');
  await page.locator('.amc-day[data-day="2"]').click();
  assert.match(await page.locator('.amc-day[data-day="2"] .amc-expanded').innerText(),/Total solar eclipse/);
@@ -62,7 +62,7 @@ try {
  const mobile=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true,deviceScaleFactor:2});
  const mp=await mobile.newPage();mp.on('pageerror',e=>errors.push(e.message));
  await mp.clock.install({time:new Date('2027-01-01T12:00:00Z')});
- await mp.goto('http://127.0.0.1:4175/inline');
+ await mp.goto('http://127.0.0.1:4175/inline', { waitUntil: 'domcontentloaded' });
  await mp.waitForFunction(()=>document.querySelector('#amc-after-dark-calendar')?.dataset.ready==='true');
  assert.equal(await mp.locator('#amc-after-dark-calendar').getAttribute('data-month'),'2027-01','Inline loader must open current year');
  assert.equal(await mp.locator('.amc-day.is-mobile-active').getAttribute('data-day'),'1');

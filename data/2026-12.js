@@ -13,7 +13,7 @@
 
   const sources = {
     ...shared.sources,
-    auditedAlmanac: { label: "Fred Espenak 2026 Sky Event Almanac", url: "https://astropixels.com/almanac/almanac21/almanac2026gmt.html", note: "November and December rechecked 29 October 2026 against USNO phases and seasons, IMO meteor predictions and the almanac. USNO phase times take precedence. Removed the unsupported 1 December Venus elongation." },
+    auditedAlmanac: { label: "Fred Espenak 2026 Sky Event Almanac", url: "https://astropixels.com/almanac/almanac21/almanac2026gmt.html", note: "November and December rechecked 8 November 2026 against live USNO phases and seasons, IMO meteor predictions, NASA supermoon guidance and the almanac. USNO phase times take precedence." },
     usnoPhases: {
       label: "US Naval Observatory 2026 Moon phases",
       url: "https://aa.usno.navy.mil/calculated/moon/phases?year=2026",
@@ -34,6 +34,7 @@
       url: "https://www.imo.net/files/meteor-shower/cal2026.pdf",
       note: "Primary source for meteor-shower timing and Moon conditions."
     },
+    nasaSupermoons: { label: "NASA Supermoons", url: "https://science.nasa.gov/moon/supermoons/", note: "NASA identifies the 24 November and 24 December 2026 full Moons as supermoons; the term is informal." },
     inSky: {
       label: "In-The-Sky.org December 2026 calendar",
       url: "https://in-the-sky.org/newscal.php?month=12&year=2026",
@@ -60,7 +61,7 @@
     { day: 9, title: "New Moon", text: "9 Dec. Dark skies favour Orion, Rosette and faint winter nebulae.", image: moonImage(9, 216), alt: "New Moon" },
     { day: 14, title: "Geminids", text: "14 Dec. Strong shower; the waxing crescent sets during the evening. Ideal ZHR about 150; actual counts are lower.", image: media.meteor.src, alt: "Geminid meteor" },
     { day: 21, title: "December solstice", text: "21 Dec. The solstice occurs at 20:50 UTC.", image: media.sun.src, alt: "Sun" },
-    { day: 24, title: "Cold Moon", text: "24 Dec. Full Moon at 01:28 UTC.", image: moonImage(24, 216), alt: "Full Moon" }
+    { day: 24, title: "Cold Moon", text: "24 Dec. Supermoon/Full Moon at 01:28 UTC.", image: moonImage(24, 216), alt: "Full Moon" }
   ];
 
   const targetData = {
@@ -105,7 +106,7 @@
       event("meteor", "Ursid meteor shower peak", "The Ursids peak near 22:00 UTC with a typical zenithal hourly rate around 10. A roughly 96%-illuminated Moon severely reduces faint-meteor visibility in 2026.", "Best from northern latitudes despite strong moonlight.", ["imo2026", "nasaSkyCal"], media.meteor)
     ],
     24: [
-      event("moon", "Cold Moon (Full Moon)", "Full Moon occurs at 01:28 UTC. December's popular traditional name is the Cold Moon; bright moonlight limits faint deep-sky imaging.", "Moon phase marker.", ["usnoPhases", "nasaSkyCal", "nasaSvs", "astronomyEngine", "fullMoonNames"])
+      event("moon", "Cold Moon (Full Moon)", "Full Moon occurs at 01:28 UTC. NASA also calls this a supermoon, an informal term for a full Moon near perigee. December's traditional name is the Cold Moon; bright moonlight limits faint deep-sky imaging.", "Moon phase marker.", ["usnoPhases", "nasaSkyCal", "nasaSvs", "astronomyEngine", "fullMoonNames", "nasaSupermoons"])
     ],
     27: [
       event("sky", "Moon and Jupiter", "The waning Moon passes Jupiter at 17:32 UTC. Local rise times determine the best viewing and imaging window.", "Moon-planet pairing.", ["auditedAlmanac", "inSky"], media.planets)

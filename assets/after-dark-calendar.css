@@ -3766,3 +3766,25 @@ body.amc-standalone-body {
 .amc-privacy-more > summary::marker { color: var(--readable-link); }
 .amc-privacy-more > p { padding-left: 12px; }
 .amc-target-credit { color: var(--muted); font-size: .58rem; line-height: 1.2; }
+.amc-target-credit a { color: var(--readable-link); text-decoration: underline; text-underline-offset: 2px; }
+
+/* Beta 0.9.8b: increase the visual size without changing line or panel geometry. */
+.amc-weather-icon svg,
+.amc-detail .amc-weather-icons svg { transform: scale(1.09); transform-origin: center; }
+.amc-legend span { transform: scale(1.06); transform-origin: center; }
+@media screen and (min-width: 761px) {
+  .amc-privacy {
+    align-items: center;
+    column-gap: 18px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(245px, 1fr);
+    row-gap: 2px;
+  }
+  .amc-privacy > h3 { grid-column: 1 / -1; margin: 0; }
+  .amc-privacy > p:first-of-type { grid-column: 1; grid-row: 2 / 4; }
+  .amc-privacy > label:first-of-type { grid-column: 2; grid-row: 2; }
+  .amc-privacy > label:nth-of-type(2) { grid-column: 2; grid-row: 3; }
+  .amc-privacy > #amc-clear-locations { grid-column: 2; grid-row: 4; justify-self: start; }
+  .amc-privacy > #amc-privacy-status { grid-column: 1; grid-row: 4; }
+  .amc-privacy > .amc-privacy-more { grid-column: 1 / -1; grid-row: 5; }
+}

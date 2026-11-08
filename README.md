@@ -36,6 +36,12 @@ For each version:
 
 ## Notes
 
+### Beta0.9.8b (8 November 2026)
+
+- Repaired target imagery with direct Wikimedia thumbnails, image credits, and verified fallback sources.
+- Improved Today navigation, weather colours, icon and legend sizing, and desktop privacy layout.
+- Rechecked November–January events against USNO, IMO and NASA.
+
 ### Beta0.9.8 (29 October 2026)
 
 The event summary now grows with its actual content and gives dates without listed events a short message, allowing the Moon chart to sit directly below it. Theme-specific heading and source-link colours improve contrast. The chart spans 0–85°, uses larger axis labels, and displays a stronger live Now line only when the current time falls within the selected 16:00–08:00 window. Sources and logs retain three release entries; privacy details are folded into a short disclosure. Very dark nights prioritise seasonal faint targets, including the Horsehead Nebula in November and December, while related articles and reviews rotate across years. The Horsehead and Double Cluster thumbnails use standard optical images with visible credits and source links.

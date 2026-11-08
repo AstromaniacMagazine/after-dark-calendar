@@ -13,7 +13,7 @@
 
   const sources = {
     ...shared.sources,
-    auditedAlmanac: { label: "Fred Espenak 2026 Sky Event Almanac", url: "https://astropixels.com/almanac/almanac21/almanac2026gmt.html", note: "November and December rechecked 29 October 2026 against USNO phases and seasons, IMO meteor predictions and the almanac. USNO phase times take precedence. Removed the unsupported 1 December Venus elongation." },
+    auditedAlmanac: { label: "Fred Espenak 2026 Sky Event Almanac", url: "https://astropixels.com/almanac/almanac21/almanac2026gmt.html", note: "November and December rechecked 8 November 2026 against live USNO phases and seasons, IMO meteor predictions, NASA supermoon guidance and the almanac. USNO phase times take precedence." },
     usnoPhases: {
       label: "US Naval Observatory 2026 Moon phases",
       url: "https://aa.usno.navy.mil/calculated/moon/phases?year=2026",
@@ -29,6 +29,7 @@
       url: "https://www.imo.net/files/meteor-shower/cal2026.pdf",
       note: "Primary source for meteor-shower timing and Moon conditions."
     },
+    nasaSupermoons: { label: "NASA Supermoons", url: "https://science.nasa.gov/moon/supermoons/", note: "NASA identifies the 24 November and 24 December 2026 full Moons as supermoons; the term is informal." },
     inSky: {
       label: "In-The-Sky.org November 2026 calendar",
       url: "https://in-the-sky.org/newscal.php?month=11&year=2026",
@@ -104,7 +105,7 @@
       event("sky", "Mercury at greatest western elongation", "Mercury reaches its greatest morning separation from the Sun at 22:59 UTC. Visibility depends strongly on latitude and a clear eastern horizon.", "Morning planet opportunity.", ["auditedAlmanac", "inSky"], media.planets)
     ],
     24: [
-      event("moon", "Beaver Moon (Full Moon)", "Full Moon occurs at 14:53 UTC. November's popular traditional name is the Beaver Moon; bright moonlight limits faint deep-sky work.", "Moon phase marker.", ["usnoPhases", "nasaSkyCal", "nasaSvs", "astronomyEngine", "fullMoonNames"]),
+      event("moon", "Beaver Moon (Full Moon)", "Full Moon occurs at 14:53 UTC. NASA also calls this a supermoon, an informal term for a full Moon near perigee. November's traditional name is the Beaver Moon; bright moonlight limits faint deep-sky work.", "Moon phase marker.", ["usnoPhases", "nasaSkyCal", "nasaSvs", "astronomyEngine", "fullMoonNames", "nasaSupermoons"]),
       event("sky", "Moon near the Pleiades", "The Full Moon passes the Pleiades, producing a bright wide-field pairing but washing out the cluster's faint reflection nebulosity.", "Moon-cluster pairing.", ["auditedAlmanac", "inSky"], media.pleiades)
     ],
     25: [

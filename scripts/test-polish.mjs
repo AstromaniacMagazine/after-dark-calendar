@@ -25,7 +25,7 @@ async function setup(viewport,seed=false,month='2026-10'){
  await context.route('**/api.bigdatacloud.net/**',route=>route.fulfill({json:{city:'Selected place',timeZone:'Europe/London'}}));
  if(seed)await context.addInitScript(()=>{localStorage.setItem('amc-remember-locations','yes');localStorage.setItem('amc-sky-calendar-location',JSON.stringify({lat:51.50853,lon:-.12574,name:'London',timeZone:'Europe/London',savedAt:new Date().toISOString()}));});
  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
- await page.goto(`http://127.0.0.1:4177/?snapshot=1&month=${month}`);
+ await page.goto(`http://127.0.0.1:4177/?snapshot=1&month=${month}`, { waitUntil: 'domcontentloaded' });
  await page.waitForFunction(()=>document.querySelector('#amc-after-dark-calendar')?.dataset.ready==='true');
  return {context,page,requests};
 }
@@ -146,7 +146,7 @@ try{
  assert.equal(await page.evaluate(()=>localStorage.getItem('amc-location-history')),null);
  assert.equal(await page.evaluate(()=>localStorage.getItem('amc-sky-calendar-location')),null);
  const previousRequests=requests.weather;
- await page.reload();await page.waitForFunction(()=>document.querySelector('#amc-after-dark-calendar')?.dataset.ready==='true');
+ await page.reload({waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.querySelector('#amc-after-dark-calendar')?.dataset.ready==='true');
  assert.equal(await page.locator('#amc-after-dark-calendar').evaluate(el=>el.classList.contains('has-location')),false);
  assert.equal(requests.weather,previousRequests,'Cleared location must not trigger a background weather request');
  await page.waitForFunction(()=>{const a=document.querySelector('.amc-day.is-mobile-active'),g=document.querySelector('.amc-grid');if(!a||!g)return false;const ar=a.getBoundingClientRect(),gr=g.getBoundingClientRect();return Math.abs((ar.left+ar.right)/2-(gr.left+gr.right)/2)<2&&a.querySelector('.amc-mini-grid')?.getBoundingClientRect().height>100;});
@@ -154,7 +154,7 @@ try{
  results.history={optIn:true,max:5,selection:true,keyboard:true,clear:true,mobileGridHeight:compact,chartSpacing};
  // Expiry is enforced on the next visit, including removal of the legacy current-location record.
  await page.evaluate(()=>{const old={lat:51,lon:0,name:'Expired',timeZone:'UTC',savedAt:new Date(Date.now()-31*86400000).toISOString()};localStorage.setItem('amc-remember-locations','yes');localStorage.setItem('amc-location-history',JSON.stringify([old]));localStorage.setItem('amc-sky-calendar-location',JSON.stringify(old));});
- await page.reload();await page.waitForFunction(()=>document.querySelector('#amc-after-dark-calendar')?.dataset.ready==='true');
+ await page.reload({waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.querySelector('#amc-after-dark-calendar')?.dataset.ready==='true');
  assert.equal(await page.evaluate(()=>localStorage.getItem('amc-location-history')),'[]');assert.equal(await page.evaluate(()=>localStorage.getItem('amc-sky-calendar-location')),null);
  results.history.expiry=true;
  await page.locator('.amc-sources > summary').click();
@@ -169,6 +169,6 @@ try{
  results.optionalThemeMemory=true;
  await context.close();
  const denied=await browser.newContext();await denied.addInitScript(()=>{Storage.prototype.setItem=()=>{throw new DOMException('Storage blocked')};});
- const dp=await denied.newPage();dp.on('pageerror',e=>errors.push(e.message));await dp.goto('http://127.0.0.1:4177/');await dp.waitForFunction(()=>document.querySelector('#amc-after-dark-calendar')?.dataset.ready==='true');await dp.locator('#amc-location-input').click();await dp.locator('[data-enable-history]').click();assert.match(await dp.locator('#amc-privacy-status').textContent(),/unavailable/);await denied.close();
+ const dp=await denied.newPage();dp.on('pageerror',e=>errors.push(e.message));await dp.goto('http://127.0.0.1:4177/', { waitUntil: 'domcontentloaded' });await dp.waitForFunction(()=>document.querySelector('#amc-after-dark-calendar')?.dataset.ready==='true');await dp.locator('#amc-location-input').click();await dp.locator('[data-enable-history]').click();assert.match(await dp.locator('#amc-privacy-status').textContent(),/unavailable/);await denied.close();
  results.blockedStorage=true;assert.deepEqual(errors,[]);results.pageErrors=errors;console.log(JSON.stringify(results,null,2));
 }finally{await browser.close();server.close()}
