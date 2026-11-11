@@ -109,6 +109,7 @@ try {
 
   const today = new Date().getDate();
   assert.equal(Number(await page.locator(".amc-day.is-mobile-active").getAttribute("data-day")), today, "Calendar did not open on Today");
+  assert.equal(await page.locator("#amc-bottom-today").isDisabled(), true, "Lower Today control should be disabled on Today");
   assert.equal(await page.locator("#amc-use-location .amc-use-location-text").evaluate(element => getComputedStyle(element).display), "none", "Mobile current-location text was not replaced by an icon");
   assert.match(await page.locator("#amc-location-label").innerText(), /London/i, "The determined location name is missing");
   assert.notEqual(await page.locator("#amc-location-label").evaluate(element => getComputedStyle(element).display), "none", "The determined location box is hidden");
@@ -188,6 +189,17 @@ try {
   const parentAfter = await page.evaluate(() => scrollY);
   const touchStartY = await page.evaluate(() => window.__amcTestTouchStartY);
   assert(monthAfter > monthBefore || (monthAfter === monthBefore && dayAfter > dayBefore), `Horizontal day swipe did not advance: ${monthBefore}-${dayBefore} -> ${monthAfter}-${dayAfter}; box=${JSON.stringify(gridBox)}`);
+  assert.equal(await page.locator("#amc-bottom-today").isEnabled(), true, "Lower Today control should be enabled after changing day");
+  const lowerGap = await page.evaluate(() => {
+    const recs = document.querySelector(".amc-day.is-mobile-active .amc-mobile-recommendations");
+    const nav = document.querySelector(".amc-bottom-day-nav");
+    return nav.getBoundingClientRect().top - recs.getBoundingClientRect().bottom;
+  });
+  assert(lowerGap < 36, `Too much empty space below mobile Related Articles: ${lowerGap}px`);
+  await page.locator("#amc-bottom-today").click();
+  await page.waitForTimeout(530);
+  assert.equal(Number(await page.locator(".amc-day.is-mobile-active").getAttribute("data-day")), today, "Lower Today control did not return to Today");
+  assert.equal(await page.locator("#amc-bottom-today").isDisabled(), true, "Lower Today control did not disable on Today");
   assert(Math.abs(parentAfter - touchStartY) < 12, `Horizontal day swipe moved the page after touch start: ${touchStartY} -> ${parentAfter} (pre-touch momentum was ${parentBefore})`);
 
   const [transitionYear, transitionMonth] = monthAfter.split("-").map(Number);

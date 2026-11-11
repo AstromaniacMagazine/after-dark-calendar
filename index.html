@@ -63,7 +63,7 @@
         "applicationSubCategory": "Astrophotography planner and night-sky calendar",
         "operatingSystem": "Any",
         "browserRequirements": "Requires JavaScript and a modern web browser",
-        "softwareVersion": "Beta0.9.8b",
+        "softwareVersion": "Beta0.9.9",
         "isAccessibleForFree": true,
         "inLanguage": "en-GB",
         "publisher": { "@id": "https://www.astromaniacmagazine.com/#organization" },
@@ -86,11 +86,11 @@
   <link rel="preconnect" href="https://svs.gsfc.nasa.gov" crossorigin>
   <link rel="dns-prefetch" href="https://commons.wikimedia.org">
   <link rel="dns-prefetch" href="https://images.squarespace-cdn.com">
-  <link rel="stylesheet" href="assets/after-dark-calendar.css?v=Beta0.9.8b-20261108a">
+  <link rel="stylesheet" href="assets/after-dark-calendar.css?v=Beta0.9.9-20261111a">
 </head>
 <body class="amc-standalone-body">
   <main class="amc-preview-shell">
-    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="Beta0.9.8b" data-asset-version="Beta0.9.8b-20261108a" aria-labelledby="amc-title">
+    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="Beta0.9.9" data-asset-version="Beta0.9.9-20261111a" aria-labelledby="amc-title">
       <div class="amc-print-brand" aria-hidden="true">
         <img class="amc-print-logo" src="assets/astromaniac-logo.webp" alt="">
         <div>
@@ -103,7 +103,7 @@
       <header class="amc-top">
         <div class="amc-brand-lockup">
           <img class="amc-brand-logo" src="assets/astromaniac-logo.webp" alt="" width="56" height="56" loading="eager" decoding="async">
-          <h1 class="amc-title" id="amc-title"><span class="amc-title-line"><span>After Dark Calendar</span><small class="amc-version-badge" aria-label="Current version Beta0.9.8b">Beta0.9.8b</small></span><span class="amc-byline">by Astromaniac Magazine</span></h1>
+          <h1 class="amc-title" id="amc-title"><span class="amc-title-line"><span>After Dark Calendar</span><small class="amc-version-badge" aria-label="Current version Beta0.9.9">Beta0.9.9</small></span><span class="amc-byline">by Astromaniac Magazine</span></h1>
         </div>
 
         <div class="amc-month-strip">
@@ -164,16 +164,21 @@
         <section class="amc-recommendations" id="amc-recommendations" aria-live="polite" aria-label="Night photography targets and related articles"></section>
       </div>
 
+      <nav class="amc-bottom-day-nav" aria-label="Change day from below the calendar">
+        <span aria-hidden="true">‹</span><span>Swipe left or right to change day</span><span aria-hidden="true">›</span>
+        <button class="amc-button secondary" id="amc-bottom-today" type="button">Back to Today</button>
+      </nav>
+
       <div class="amc-reference-row">
         <details class="amc-sources">
           <summary><span>Sources and logs</span><a class="amc-feedback-link" href="https://www.astromaniacmagazine.com/contact" target="_blank" rel="noopener">Suggestions or feedback?</a></summary>
           <ul class="amc-source-list" id="amc-source-list"></ul>
           <div class="amc-version-panel">
-            <h3>Current version: Beta0.9.8b</h3>
+            <h3>Current version: Beta0.9.9</h3>
             <ul class="amc-version-list">
+              <li><b>Beta0.9.9:</b> fits forecast nights to available desktop space, tightens mobile spacing and privacy controls, and adds a lower Today shortcut.</li>
               <li><b>Beta0.9.8b:</b> repairs target images, refines forecast colours and Today navigation, and rechecks November through January.</li>
               <li><b>Beta0.9.8:</b> improves chart readability, dark-night targets and privacy details.</li>
-              <li><b>Beta0.9.7d:</b> fixes event descriptions and refines mobile date and target swiping.</li>
             </ul>
             <section class="amc-privacy" aria-labelledby="amc-privacy-title">
               <h3 id="amc-privacy-title">Location and privacy</h3>
@@ -199,10 +204,10 @@
     </section>
   </main>
 
-  <script defer src="assets/astronomy.browser.js?v=Beta0.9.8b-20261108a"></script>
-  <script defer src="data/common.js?v=Beta0.9.8b-20261108a"></script>
-  <script defer src="data/month-manifest.js?v=Beta0.9.8b-20261108a"></script>
-  <script defer src="data/2026-10.js?v=Beta0.9.8b-20261108a"></script>
-  <script defer src="assets/after-dark-calendar.js?v=Beta0.9.8b-20261108a"></script>
+  <script defer src="assets/astronomy.browser.js?v=Beta0.9.9-20261111a"></script>
+  <script defer src="data/common.js?v=Beta0.9.9-20261111a"></script>
+  <script defer src="data/month-manifest.js?v=Beta0.9.9-20261111a"></script>
+  <script defer src="data/2026-10.js?v=Beta0.9.9-20261111a"></script>
+  <script defer src="assets/after-dark-calendar.js?v=Beta0.9.9-20261111a"></script>
 </body>
 </html>

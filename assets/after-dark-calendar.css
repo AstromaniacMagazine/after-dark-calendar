@@ -3788,3 +3788,50 @@ body.amc-standalone-body {
   .amc-privacy > #amc-privacy-status { grid-column: 1; grid-row: 4; }
   .amc-privacy > .amc-privacy-more { grid-column: 1 / -1; grid-row: 5; }
 }
+
+/* Beta 0.9.9: compact the optional controls and add lower mobile navigation. */
+.amc-bottom-day-nav { display: none; }
+.amc-privacy { margin-top: 6px; padding-top: 6px; }
+.amc-privacy p { margin: 3px 0; }
+.amc-privacy label { margin: 3px 0; }
+.amc-privacy-more { margin-top: 2px; }
+.amc-privacy > #amc-clear-locations { font-size: .69rem; height: 34px; padding-inline: 10px; }
+@media screen and (min-width: 761px) {
+  .amc-privacy { row-gap: 0; }
+  .amc-privacy > h3 { grid-column: 1; grid-row: 1; }
+  .amc-privacy > p:first-of-type { grid-column: 1; grid-row: 2 / 4; }
+  .amc-privacy > label:first-of-type { grid-column: 2; grid-row: 1; }
+  .amc-privacy > label:nth-of-type(2) { grid-column: 2; grid-row: 2; }
+  .amc-privacy > #amc-clear-locations { grid-column: 2; grid-row: 3; }
+  .amc-privacy > #amc-privacy-status { grid-column: 1; grid-row: 3; }
+  .amc-privacy > .amc-privacy-more { grid-column: 1 / -1; grid-row: 4; }
+}
+@media screen and (max-width: 600px) {
+  .amc-layout { display: block; }
+  .amc-grid { padding-bottom: 4px; }
+  .amc-day[aria-expanded="true"] { padding-bottom: 3px; }
+  .amc-day[aria-expanded="true"] .amc-expanded { padding-bottom: 0; }
+  .amc-legend { margin-inline: -4px; padding: 2px 4px 9px; }
+  .amc-bottom-day-nav {
+    align-items: center;
+    background: color-mix(in srgb, var(--panel-soft) 65%, transparent);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-inner);
+    color: var(--muted);
+    display: flex;
+    font-size: .69rem;
+    font-weight: 600;
+    gap: 5px;
+    justify-content: center;
+    line-height: 1.2;
+    margin-top: -3px;
+    min-height: 48px;
+    padding: 4px 7px;
+  }
+  .amc-bottom-day-nav > span:first-child,
+  .amc-bottom-day-nav > span:nth-child(3) { color: var(--accent); font-size: 1.1rem; }
+  .amc-bottom-day-nav > button { font-size: .66rem; height: 40px; margin-left: auto; padding-inline: 8px; }
+  .amc-bottom-day-nav > button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .amc-reference-row { margin-top: 5px; }
+}
+@media print { .amc-bottom-day-nav { display: none !important; } }

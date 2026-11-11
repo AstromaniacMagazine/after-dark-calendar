@@ -115,7 +115,7 @@ try {
   }
   await settleImages(page);
 
-  for (const theme of ["light", "dark", "red"]) {
+  for (const theme of ["light", "dark", "red", "teal"]) {
     while (await page.locator("#amc-after-dark-calendar").getAttribute("data-theme") !== theme) {
       await page.locator("#amc-theme-toggle").click();
     }
