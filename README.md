@@ -24,10 +24,11 @@ For each version:
 1. Create a release branch from the latest `origin/main`.
 2. Edit the production files directly in this repository root.
 3. Run `node scripts/validate-calendar.mjs`, `node scripts/test-mobile-interactions.mjs --modules <node_modules>` and complete responsive browser checks.
-4. Save three standard high-resolution full-page release snapshots in `G:\My Drive\After Dark Calendar\Snapshots`:
+4. Save four standard high-resolution full-page release snapshots in `G:\My Drive\After Dark Calendar\Snapshots`:
    - `ADC_LIGHT_<VERSION>.png`
    - `ADC_DARK_<VERSION>.png`
    - `ADC_RED_<VERSION>.png`
+   - `ADC_TEAL_<VERSION>.png`
    Use `scripts/capture-release-snapshots.mjs` to produce full-page, 2x-resolution PNG files and verify their PNG signatures and dimensions. Do not generate 3D, perspective or depth-of-field variants.
 5. Review the diff, commit only the intended release files and push the branch.
 6. Open a pull request to `main`, merge it, and verify the GitHub Pages build.
@@ -35,6 +36,12 @@ For each version:
 8. Keep the Squarespace Code Block on the inline installation in `SQUARESPACE_EMBED.md`; do not restore the retired iframe bridge.
 
 ## Notes
+
+### Beta0.9.9 (11 November 2026)
+
+- Expanded the desktop seven-night forecast into available space beside six-row months without changing the calendar or recommendations positions.
+- Tightened privacy controls and mobile day-card spacing, gave the mobile event guide more room, and added a lower swipe hint and Today control.
+- Captured all four themes and rechecked astronomy data, article links, observing targets, privacy behavior, and responsive layout before release.
 
 ### Beta0.9.8b (8 November 2026)
 

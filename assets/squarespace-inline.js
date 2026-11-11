@@ -6,7 +6,7 @@
   if (!script || !host || host.dataset.amcLoaded === "true") return;
 
   const base = new URL("../", script.src).href;
-  const build = "Beta0.9.8b-20261108a";
+  const build = "Beta0.9.9-20261111a";
   host.dataset.amcLoaded = "true";
   host.classList.add("amc-inline-host");
 
@@ -40,7 +40,7 @@
   }
 
   host.innerHTML = `
-    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="Beta0.9.8b" data-asset-version="${build}" data-asset-base="${base}" data-inline="true" aria-labelledby="amc-title">
+    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="Beta0.9.9" data-asset-version="${build}" data-asset-base="${base}" data-inline="true" aria-labelledby="amc-title">
       <div class="amc-print-brand" aria-hidden="true">
         <img class="amc-print-logo" src="${base}assets/astromaniac-logo.webp" alt="">
         <div><strong>After Dark Calendar</strong><span>by Astromaniac Magazine</span></div>
@@ -50,7 +50,7 @@
       <header class="amc-top">
         <div class="amc-brand-lockup">
           <img class="amc-brand-logo" src="${base}assets/astromaniac-logo.webp" alt="" width="56" height="56" loading="eager" decoding="async">
-          <h1 class="amc-title" id="amc-title"><span class="amc-title-line"><span>After Dark Calendar</span><small class="amc-version-badge" aria-label="Current version Beta0.9.8b">Beta0.9.8b</small></span><span class="amc-byline">by Astromaniac Magazine</span></h1>
+          <h1 class="amc-title" id="amc-title"><span class="amc-title-line"><span>After Dark Calendar</span><small class="amc-version-badge" aria-label="Current version Beta0.9.9">Beta0.9.9</small></span><span class="amc-byline">by Astromaniac Magazine</span></h1>
         </div>
 
         <div class="amc-month-strip">
@@ -95,16 +95,21 @@
         <section class="amc-recommendations" id="amc-recommendations" aria-live="polite" aria-label="Night photography targets and related articles"></section>
       </div>
 
+      <nav class="amc-bottom-day-nav" aria-label="Change day from below the calendar">
+        <span aria-hidden="true">‹</span><span>Swipe left or right to change day</span><span aria-hidden="true">›</span>
+        <button class="amc-button secondary" id="amc-bottom-today" type="button">Back to Today</button>
+      </nav>
+
       <div class="amc-reference-row">
         <details class="amc-sources">
           <summary><span>Sources and logs</span><a class="amc-feedback-link" href="https://www.astromaniacmagazine.com/contact" target="_blank" rel="noopener">Suggestions or feedback?</a></summary>
           <ul class="amc-source-list" id="amc-source-list"></ul>
           <div class="amc-version-panel">
-            <h3>Current version: Beta0.9.8b</h3>
+            <h3>Current version: Beta0.9.9</h3>
             <ul class="amc-version-list">
+              <li><b>Beta0.9.9:</b> fits forecast nights to available desktop space, tightens mobile spacing and privacy controls, and adds a lower Today shortcut.</li>
               <li><b>Beta0.9.8b:</b> repairs target images, refines forecast colours and Today navigation, and rechecks November through January.</li>
               <li><b>Beta0.9.8:</b> improves chart readability, dark-night targets and privacy details.</li>
-              <li><b>Beta0.9.7d:</b> fixes event descriptions and refines mobile date and target swiping.</li>
             </ul>
             <section class="amc-privacy" aria-labelledby="amc-privacy-title">
               <h3 id="amc-privacy-title">Location and privacy</h3>

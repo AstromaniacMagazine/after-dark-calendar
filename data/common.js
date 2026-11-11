@@ -126,7 +126,7 @@
     astromaniacReviews: {
       label: "Astromaniac Magazine reviews",
       url: "https://www.astromaniacmagazine.com/reviews",
-      note: "Article and review indexes, Artemis II and Webb mission features reviewed 29 October 2026. Two contextual links per night keep recommendations focused; no live scraping or extra runtime requests."
+      note: "Article and review indexes, Artemis II and Webb mission features reviewed in November 2026; all 35 catalogue links rechecked 11 November 2026. Two contextual links per night keep recommendations focused; no live scraping or extra runtime requests."
     },
     astromaniacArticles: {
       label: "Astromaniac Magazine articles",

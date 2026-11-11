@@ -19,6 +19,7 @@
     previousMonth: root.querySelector("[data-month-prev]"),
     nextMonth: root.querySelector("[data-month-next]"),
     today: root.querySelector("#amc-today-button"),
+    bottomToday: root.querySelector("#amc-bottom-today"),
     sources: root.querySelector("#amc-source-list"),
     tooltip: root.querySelector("#amc-weather-tooltip"),
     mobileDayNav: root.querySelector("#amc-mobile-day-nav"),
@@ -136,6 +137,7 @@
     inlineScrollHoldFrame: null,
     backTopFrame: null,
     resizeTimer: null,
+    forecastFitFrame: null,
     embedResizeTimer: null,
     embedResizeObserver: null,
     mobileLayout: window.matchMedia("(max-width: 600px)").matches,
@@ -262,6 +264,7 @@
     els.previousMonth?.addEventListener("click", () => goToAdjacentMonth(-1));
     els.nextMonth?.addEventListener("click", () => goToAdjacentMonth(1));
     els.today?.addEventListener("click", goToToday);
+    els.bottomToday?.addEventListener("click", goToTodayFromBottom);
     els.backToTop?.addEventListener("click", scrollCalendarToTop);
     if (els.mobileDayRail) {
       els.mobileDayRail.addEventListener("scroll", handleMobileRailScroll, { passive: true });
@@ -496,6 +499,7 @@
       `);
     }
     if (nextMobileMonth) html.push(mobileMonthEdge(nextMobileMonth, 1));
+    if (mobileCarousel) root.style.removeProperty("--amc-mobile-day-height");
     els.grid.innerHTML = html.join("");
     if (!mobileCarousel && validDay(state.expandedDay)) positionExpandedDay(els.grid.querySelector(`.amc-day[data-day="${state.expandedDay}"]`));
     els.grid.querySelectorAll(".amc-day").forEach(card => {
@@ -526,6 +530,7 @@
         window.setTimeout(() => clearMobileNavigation(state.selectedDay), 180);
       });
     }
+    updateTodayButton();
   }
 
   function isMobileCarousel() {
@@ -559,6 +564,7 @@
         renderAll();
       }
       if (!mobileLayout && validDay(state.expandedDay)) positionExpandedDay(els.grid.querySelector(`.amc-day[data-day="${state.expandedDay}"]`));
+      scheduleForecastFit();
       syncLocationActionLabel();
     }, 140);
   }
@@ -684,9 +690,7 @@
     card.classList.add("is-mobile-measuring");
     const height = Math.ceil(card.getBoundingClientRect().height);
     card.classList.remove("is-mobile-measuring");
-    const currentHeight = Number.parseFloat(root.style.getPropertyValue("--amc-mobile-day-height")) || 0;
-    const stableHeight = Math.max(currentHeight, height);
-    if (stableHeight > 0) root.style.setProperty("--amc-mobile-day-height", `${stableHeight}px`);
+    if (height > 0) root.style.setProperty("--amc-mobile-day-height", `${height}px`);
   }
 
   function restoreVerticalScroll(scrollTop) {
@@ -1396,6 +1400,26 @@
   function renderRecommendations() {
     els.recommendations.innerHTML = recommendationsMarkup(state.selectedDay);
     lockCalendarRow();
+    scheduleForecastFit();
+  }
+
+  function scheduleForecastFit() {
+    if (state.forecastFitFrame) window.cancelAnimationFrame(state.forecastFitFrame);
+    state.forecastFitFrame = window.requestAnimationFrame(() => {
+      state.forecastFitFrame = null;
+      const grid = els.detail.querySelector(".amc-weather-grid");
+      if (!grid) return;
+      grid.style.maxHeight = "";
+      // Below this breakpoint the detail stacks above recommendations, so
+      // growing it would move the very section we are trying to align with.
+      if (window.innerWidth < 1321) return;
+      const leftBottom = els.recommendations.getBoundingClientRect().bottom;
+      const rightBottom = els.detail.getBoundingClientRect().bottom;
+      const remainingForecast = Math.max(0, grid.scrollHeight - grid.clientHeight);
+      const available = Math.max(0, leftBottom - rightBottom);
+      const extra = Math.min(remainingForecast, available);
+      if (extra > 1) grid.style.maxHeight = `${Math.round(520 + extra)}px`;
+    });
   }
 
   function lockCalendarRow() {
@@ -2224,9 +2248,18 @@
       else selectDay(today.getDate());
       return;
     }
-    showMonth(todayId, { selectedDay: today.getDate(), direction: todayId < state.monthId ? -1 : 1 })?.then(() => {
+    return showMonth(todayId, { selectedDay: today.getDate(), direction: todayId < state.monthId ? -1 : 1 })?.then(() => {
       if (!isMobileCarousel() && state.expandedDay !== today.getDate()) selectDay(today.getDate());
     });
+  }
+
+  function goToTodayFromBottom() {
+    Promise.resolve(goToToday(true)).then(() => window.setTimeout(() => {
+      const card = els.grid.querySelector(".amc-day.is-mobile-active");
+      if (!card) return;
+      const top = card.getBoundingClientRect().top + window.scrollY - 76;
+      window.scrollTo({ top, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+    }, 340));
   }
 
   function updateTodayButton() {
@@ -2237,6 +2270,10 @@
     const selected = state.monthId === todayId && state.selectedDay === today.getDate() && state.expandedDay === today.getDate();
     els.today.disabled = !loaded || selected;
     els.today.title = loaded ? `Show today, ${today.getDate()} ${monthLong[today.getMonth()]} ${today.getFullYear()}` : "Today's month is not loaded";
+    if (els.bottomToday) {
+      els.bottomToday.disabled = !loaded || selected;
+      els.bottomToday.title = els.today.title;
+    }
   }
 
   function primeSavedLocation(saved) {
