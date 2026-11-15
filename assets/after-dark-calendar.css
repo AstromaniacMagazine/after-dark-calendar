@@ -3662,6 +3662,8 @@ body.amc-standalone-body {
 }
 @media screen and (min-width: 1321px) {
   .amc-layout { grid-template-rows: var(--calendar-row-height, auto) auto; }
+  .amc-intel:empty { min-height: 86px; }
+  .amc-grid:empty, .amc-detail:empty { min-height: 720px; }
 }
 @media screen and (min-width: 1051px) {
   .amc-day[aria-expanded="true"] .amc-expanded:not(:has(.amc-expanded-observing)) { grid-template-rows: auto minmax(0, 1fr); }
@@ -3807,6 +3809,7 @@ body.amc-standalone-body {
   .amc-privacy > .amc-privacy-more { grid-column: 1 / -1; grid-row: 4; }
 }
 @media screen and (max-width: 600px) {
+  .amc-sky-calendar:not([data-ready="true"]) .amc-layout { min-height: 100vh; }
   .amc-layout { display: block; }
   .amc-grid { padding-bottom: 4px; }
   .amc-day[aria-expanded="true"] { padding-bottom: 3px; }

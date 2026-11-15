@@ -2,6 +2,8 @@
 
 This repository contains the production website files for **After Dark Calendar by Astromaniac Magazine**.
 
+Version 1.0 is under final review. See [the release audit](RELEASE_1_0_AUDIT.md) for verified checks and the external-service issues that must be resolved before publication.
+
 ## Folder structure
 
 - `index.html` - main web page
