@@ -2,7 +2,7 @@
 
 This repository contains the production website files for **After Dark Calendar by Astromaniac Magazine**.
 
-Version 1.0 is under final review. See [the release audit](RELEASE_1_0_AUDIT.md) for verified checks and the external-service issues that must be resolved before publication.
+Version 1.0 passed the release's data, astronomy, browser and mobile checks. See [the release audit](RELEASE_1_0_AUDIT.md) for results and the remaining external-service licence caveat.
 
 ## Folder structure
 
@@ -10,6 +10,7 @@ Version 1.0 is under final review. See [the release audit](RELEASE_1_0_AUDIT.md)
 - `assets/` - CSS, JavaScript, images
 - `data/` - month and shared data files
 - `scripts/validate-calendar.mjs` - release-time source and data integrity checks
+- `scripts/audit-host-consent.mjs` - clean-browser check of the magazine host's cookie choices and third-party requests
 - `scripts/test-mobile-interactions.mjs` - real one-finger touch regression checks for native inline scrolling, date swiping, Today and location layout
 - `assets/squarespace-inline.js` - production Squarespace loader that renders the calendar in the page for native mobile scrolling
 - `SQUARESPACE_EMBED.md` - one-line production Code Block installation plus the retired iframe reference
@@ -38,6 +39,13 @@ For each version:
 8. Keep the Squarespace Code Block on the inline installation in `SQUARESPACE_EMBED.md`; do not restore the retired iframe bridge.
 
 ## Notes
+
+### Version 1.0 (15 November 2026)
+
+- Rechecked 20 months and 610 dates against astronomy and source references; repaired target images and added visible image credits.
+- Improved first-load layout stability and stopped sending manually entered coordinates to the device-GPS-only reverse-geocoding endpoint.
+- Verified the magazine's Analytics and AdSense IDs against its signed-in Google accounts, and checked host-page consent behavior in a clean browser.
+- Captured 3840-pixel-wide snapshots in all four themes and passed the release and mobile browser regressions.
 
 ### Beta0.9.9 (11 November 2026)
 
