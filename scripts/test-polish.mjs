@@ -20,9 +20,9 @@ const fixture=()=>{
 };
 async function setup(viewport,seed=false,month='2026-10'){
  const context=await browser.newContext({viewport,hasTouch:viewport.width<601,isMobile:viewport.width<601,deviceScaleFactor:2});
- const requests={weather:0};
+ const requests={weather:0,reverseGeocode:0};
  await context.route('**/api.open-meteo.com/v1/forecast?**',route=>{requests.weather++;return route.fulfill({json:fixture()});});
- await context.route('**/api.bigdatacloud.net/**',route=>route.fulfill({json:{city:'Selected place',timeZone:'Europe/London'}}));
+ await context.route('**/api.bigdatacloud.net/**',route=>{requests.reverseGeocode++;return route.fulfill({json:{city:'Selected place',timeZone:'Europe/London'}});});
  if(seed)await context.addInitScript(()=>{localStorage.setItem('amc-remember-locations','yes');localStorage.setItem('amc-sky-calendar-location',JSON.stringify({lat:51.50853,lon:-.12574,name:'London',timeZone:'Europe/London',savedAt:new Date().toISOString()}));});
  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
  await page.goto(`http://127.0.0.1:4177/?snapshot=1&month=${month}`, { waitUntil: 'domcontentloaded' });
@@ -131,6 +131,7 @@ try{
   await page.waitForTimeout(100);
  }
  const history=await page.evaluate(()=>JSON.parse(localStorage.getItem('amc-location-history')));
+ assert.equal(requests.reverseGeocode,0,'Typed coordinates must not use BigDataCloud’s device-GPS-only free endpoint');
  assert.equal(history.length,5);assert.equal(history[0].lat,50.5);assert.equal(history[4].lat,50.1);
  await page.locator('#amc-location-input').click();
  assert.equal(await page.locator('.amc-location-option').count(),5);

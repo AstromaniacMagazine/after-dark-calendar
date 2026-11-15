@@ -260,6 +260,16 @@ if (!fs.existsSync(path.join(rootDir, "assets", "after-dark-calendar-social.png"
 const versionEntries = html.match(/<ul class="amc-version-list">([\s\S]*?)<\/ul>/)?.[1].match(/<li>/g)?.length || 0;
 if (versionEntries !== 3) fail(`The current-version panel must contain exactly three release entries; found ${versionEntries}.`);
 const calendarScript = read("assets/after-dark-calendar.js");
+try {
+  const imageMapText = calendarScript.split("const wikimediaThumbnails = {")[1]?.split("\n};")[0];
+  const imageMap = JSON.parse(`{${imageMapText}}`);
+  for (const [, name] of calendarScript.matchAll(/wikimediaImage\("([^"]+)"/g)) {
+    const image = imageMap[name];
+    if (!image?.src || !image?.sourceUrl || !image?.credit || !image?.license) fail(`Target image lacks source, credit or licence: ${name}`);
+  }
+} catch (error) {
+  fail(`Could not validate target-image attribution: ${error.message}`);
+}
 const calendarCss = read("assets/after-dark-calendar.css");
 const inlineLoader = read("assets/squarespace-inline.js");
 const squarespaceInstall = read("SQUARESPACE_EMBED.md");

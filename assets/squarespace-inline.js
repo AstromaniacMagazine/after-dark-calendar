@@ -6,7 +6,7 @@
   if (!script || !host || host.dataset.amcLoaded === "true") return;
 
   const base = new URL("../", script.src).href;
-  const build = "Beta0.9.9-20261111a";
+  const build = "1.0-20261115a";
   host.dataset.amcLoaded = "true";
   host.classList.add("amc-inline-host");
 
@@ -40,7 +40,7 @@
   }
 
   host.innerHTML = `
-    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="Beta0.9.9" data-asset-version="${build}" data-asset-base="${base}" data-inline="true" aria-labelledby="amc-title">
+    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="1.0" data-asset-version="${build}" data-asset-base="${base}" data-inline="true" aria-labelledby="amc-title">
       <div class="amc-print-brand" aria-hidden="true">
         <img class="amc-print-logo" src="${base}assets/astromaniac-logo.webp" alt="">
         <div><strong>After Dark Calendar</strong><span>by Astromaniac Magazine</span></div>
@@ -50,7 +50,7 @@
       <header class="amc-top">
         <div class="amc-brand-lockup">
           <img class="amc-brand-logo" src="${base}assets/astromaniac-logo.webp" alt="" width="56" height="56" loading="eager" decoding="async">
-          <h1 class="amc-title" id="amc-title"><span class="amc-title-line"><span>After Dark Calendar</span><small class="amc-version-badge" aria-label="Current version Beta0.9.9">Beta0.9.9</small></span><span class="amc-byline">by Astromaniac Magazine</span></h1>
+          <h1 class="amc-title" id="amc-title"><span class="amc-title-line"><span>After Dark Calendar</span><small class="amc-version-badge" aria-label="Current version 1.0">1.0</small></span><span class="amc-byline">by Astromaniac Magazine</span></h1>
         </div>
 
         <div class="amc-month-strip">
@@ -105,11 +105,11 @@
           <summary><span>Sources and logs</span><a class="amc-feedback-link" href="https://www.astromaniacmagazine.com/contact" target="_blank" rel="noopener">Suggestions or feedback?</a></summary>
           <ul class="amc-source-list" id="amc-source-list"></ul>
           <div class="amc-version-panel">
-            <h3>Current version: Beta0.9.9</h3>
+            <h3>Current version: 1.0</h3>
             <ul class="amc-version-list">
+              <li><b>1.0:</b> improves image reliability, location privacy and first-load stability; rechecks sky events and observing recommendations.</li>
               <li><b>Beta0.9.9:</b> fits forecast nights to available desktop space, tightens mobile spacing and privacy controls, and adds a lower Today shortcut.</li>
               <li><b>Beta0.9.8b:</b> repairs target images, refines forecast colours and Today navigation, and rechecks November through January.</li>
-              <li><b>Beta0.9.8:</b> improves chart readability, dark-night targets and privacy details.</li>
             </ul>
             <section class="amc-privacy" aria-labelledby="amc-privacy-title">
               <h3 id="amc-privacy-title">Location and privacy</h3>
@@ -119,7 +119,7 @@
               <button type="button" class="amc-button secondary" id="amc-clear-locations">Clear remembered locations</button>
               <span id="amc-privacy-status" role="status"></span>
               <details class="amc-privacy-more"><summary>How location and external services work</summary>
-                <p>Device location needs browser permission. Coordinates go to Open-Meteo for weather and BigDataCloud to name the place; typed searches use Open-Meteo geocoding. Those services receive your IP address. The calendar host and external images also receive ordinary network requests. The magazine site manages its own cookies.</p>
+                <p>Device location needs browser permission. Coordinates go to Open-Meteo for weather; only device GPS coordinates go to BigDataCloud to name the place. Typed searches use Open-Meteo geocoding, while manually entered coordinates are not sent to BigDataCloud. Those services receive your IP address. The calendar host and external images also receive ordinary network requests. The magazine site manages its own cookies.</p>
                 <p>Rise and set times assume a level horizon, sea-level observer and standard refraction; terrain and weather may change observed times. <a href="https://open-meteo.com/en/terms" target="_blank" rel="noopener noreferrer">Open-Meteo terms</a> · <a href="https://www.bigdatacloud.com/privacy-policy" target="_blank" rel="noopener noreferrer">BigDataCloud privacy</a> · <a href="https://www.astromaniacmagazine.com/privacy-policy" target="_blank" rel="noopener noreferrer">Magazine privacy policy</a>.</p>
               </details>
             </section>

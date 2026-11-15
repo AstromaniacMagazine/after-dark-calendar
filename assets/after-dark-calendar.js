@@ -1615,12 +1615,17 @@
   }
 
   function targetCard(target, index = 0) {
+    const license = target.image.license || "";
+    const ccLicense = /^CC (BY-SA|BY) ([\d.]+)$/.exec(license);
+    const licenseUrl = ccLicense
+      ? `https://creativecommons.org/licenses/${ccLicense[1].toLowerCase()}/${ccLicense[2]}/`
+      : license === "CC0" ? "https://creativecommons.org/publicdomain/zero/1.0/" : "";
     return `<li class="amc-target-card">
       <img src="${escapeHtml(target.image.src)}" alt="${escapeHtml(target.image.alt)}" loading="${isMobileCarousel() && index < 2 ? "eager" : "lazy"}" fetchpriority="${isMobileCarousel() && index === 0 ? "high" : "auto"}" decoding="async" ${target.image.src.includes("wikimedia.org") ? 'crossorigin="anonymous"' : ""} referrerpolicy="no-referrer" width="82" height="82">
       <span class="amc-target-copy">
         <span class="amc-target-type">${escapeHtml(target.type)}</span>
         <span class="amc-target-name">${escapeHtml(target.name)}</span>
-        ${target.image.credit ? `<small class="amc-target-credit">Image: ${target.image.sourceUrl ? `<a href="${escapeHtml(target.image.sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(target.image.credit)}</a>` : escapeHtml(target.image.credit)}${target.image.license ? ` · ${escapeHtml(target.image.license)}` : ""}</small>` : ""}
+        ${target.image.credit ? `<small class="amc-target-credit">Image: ${target.image.sourceUrl ? `<a href="${escapeHtml(target.image.sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(target.image.credit)}</a>` : escapeHtml(target.image.credit)}${license ? ` · ${licenseUrl ? `<a href="${licenseUrl}" target="_blank" rel="noopener noreferrer">${escapeHtml(license)}</a>` : escapeHtml(license)}` : ""}</small>` : ""}
       </span>
       <span class="amc-target-facts">
         <span><em>Highest point</em><strong>${escapeHtml(target.best)}</strong></span>
@@ -1872,7 +1877,8 @@
     try {
       const parsed = parseCoordinateQuery(query);
       if (parsed) {
-        applyCoordinates(parsed.lat, parsed.lon, { name: parsed.name });
+        // BigDataCloud's free client-side endpoint accepts device GPS coordinates only.
+        applyCoordinates(parsed.lat, parsed.lon, { name: parsed.name, skipReverseGeocode: true });
       } else {
         const results = await geocodeLocationQuery(query);
         if (results.length > 1) {
@@ -2795,7 +2801,7 @@
     if (/antares/.test(text)) return wikimediaImage("Antares (Updated).jpg", "Antares thumbnail");
     if (/elnath|beta tauri/.test(text)) return wikimediaImage("Elnath.png", "Elnath Beta Tauri thumbnail");
     if (/regulus/.test(text)) return wikimediaImage("Regulus in true color.jpg", "Regulus star field thumbnail");
-    if (/comet 10p|tempel 2/.test(text)) return imageAsset("https://assets.science.nasa.gov/content/dam/science/cds/apod/apod/2026/july/10P_Tempel2_20260711_DEBartlett2048.jpg?w=400&h=230&fit=crop&crop=faces%2Cfocalpoint", "Comet 10P Tempel 2 thumbnail");
+    if (/comet 10p|tempel 2/.test(text)) return wikimediaImage("10P Tempel on 21 June 2026.jpg", "Comet 10P Tempel 2 thumbnail");
     if (/globular cluster/.test(text)) return wikimediaImage("Messier 13 Hubble WikiSky.jpg", "Globular cluster thumbnail");
     if (/saturn/.test(text)) return wikimediaImage("Saturn during Equinox.jpg", "Saturn thumbnail");
     if (/jupiter/.test(text)) return imageAsset("https://images-assets.nasa.gov/image/PIA22946/PIA22946~medium.jpg", "Jupiter thumbnail");
@@ -2808,30 +2814,30 @@
     if (/lagoon|m8/.test(text)) return wikimediaImage("Lagoon Nebula.jpg", "Lagoon Nebula thumbnail");
     if (/trifid|m20/.test(text)) return wikimediaImage("Trifid.nebula.arp.750pix.jpg", "Trifid Nebula thumbnail");
     if (/eagle|m16/.test(text)) return wikimediaImage("Eagle Nebula from ESO.jpg", "Eagle Nebula thumbnail");
-    if (/omega nebula|swan nebula|m17/.test(text)) return imageAsset("https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/VST_image_of_the_spectacular_star-forming_region_Messier_17_%28Omega_Nebula%29.jpg/330px-VST_image_of_the_spectacular_star-forming_region_Messier_17_%28Omega_Nebula%29.jpg", "Omega Nebula thumbnail");
-    if (/dumbbell|m27/.test(text)) return imageAsset("https://assets.science.nasa.gov/content/dam/science/missions/hubble/releases/2003/02/STScI-01EVVK02SYNTXZDX0JXGS3DGHN.tif/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "Dumbbell Nebula thumbnail");
+    if (/omega nebula|swan nebula|m17/.test(text)) return wikimediaImage("VST image of the spectacular star-forming region Messier 17 (Omega Nebula).jpg", "Omega Nebula thumbnail");
+    if (/dumbbell|m27/.test(text)) return wikimediaImage("M27 - Dumbbell Nebula.jpg", "Dumbbell Nebula thumbnail");
     if (/ring nebula|m57/.test(text)) return wikimediaImage("M57 The Ring Nebula.JPG", "Ring Nebula thumbnail");
     if (/cygnus loop|veil nebula|ngc 6960|ngc 6992/.test(text)) return imageAsset("https://science.nasa.gov/wp-content/uploads/2023/07/veil-nebula.jpg?w=600", "Cygnus Loop and Veil Nebula thumbnail");
-    if (/clamshell|sh2-119/.test(text)) return imageAsset("https://images.squarespace-cdn.com/content/v1/5debd4b16fcd7b02905712ff/37b3f6ce-ed44-41dd-8be1-a4ecd415dcca/BEAFD85B-9D1F-4069-9A39-DDD2042D1D5E.jpeg?format=750w", "Clamshell Nebula Sh2-119 thumbnail");
-    if (/sadr|gamma cygni|ic 1318/.test(text)) return imageAsset("https://www.guidetothesky.com/images/s/out/sadr_1h_40m_49s_siril_2.jpg", "Sadr Region IC 1318 thumbnail");
+    if (/clamshell|sh2-119/.test(text)) return wikimediaImage("SH2-119 - Clamshell Nebula (Giovanni Barbarino).jpg", "Clamshell Nebula Sh2-119 thumbnail");
+    if (/sadr|gamma cygni|ic 1318/.test(text)) return wikimediaImage("Butterfly Nebula in the Sadr Region.jpg", "Sadr Region IC 1318 thumbnail");
     if (/elephant trunk|ic 1396a|vdb 142/.test(text)) return imageAsset("https://storage.noirlab.edu/media/archives/images/screen/noao-ic1396.jpg", "Elephant Trunk Nebula IC 1396A thumbnail");
     if (/pelican|ic 5070/.test(text)) return wikimediaImage("Pelican Nebula.jpg", "Pelican Nebula IC 5070 thumbnail");
     if (/crescent nebula|ngc 6888|caldwell 27/.test(text)) return imageAsset("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/releases/2000/07/STScI-01EVVP4D33NAHDY0D95T7RPFRE.tif?w=600", "Crescent Nebula NGC 6888 thumbnail");
     if (/bubble nebula|ngc 7635/.test(text)) return imageAsset("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/releases/2016/04/STScI-01EVVGYQGFWPRBWKW0HNACJMEB.tif?w=600", "Bubble Nebula NGC 7635 thumbnail");
     if (/heart nebula|soul nebula|ic 1805|ic 1848/.test(text)) return imageAsset("https://assets.science.nasa.gov/dynamicimage/assets/science/psd/photojournal/pia/pia13/pia13112/PIA13112.jpg?w=600&h=426&fit=clip&crop=faces%2Cfocalpoint", "Heart and Soul nebulae thumbnail");
     if (/north america|ngc 7000/.test(text)) return imageAsset("https://science.nasa.gov/wp-content/uploads/2023/04/ngc7000_wfpc2_2flat_final-jpg.webp?w=600", "North America Nebula thumbnail");
-    if (/andromeda|m31/.test(text)) return imageAsset("https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Andromeda_Galaxy_%28with_h-alpha%29.jpg/330px-Andromeda_Galaxy_%28with_h-alpha%29.jpg", "Andromeda Galaxy thumbnail");
-    if (/triangulum|m33/.test(text)) return imageAsset("https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Triangulum_Galaxy_M33.jpg/330px-Triangulum_Galaxy_M33.jpg", "Triangulum Galaxy thumbnail");
-    if (/whirlpool|m51/.test(text)) return imageAsset("https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Messier51_sRGB.jpg/330px-Messier51_sRGB.jpg", "Whirlpool Galaxy thumbnail");
-    if (/pinwheel|m101/.test(text)) return imageAsset("https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/M101_hires_STScI-PRC2006-10a.jpg/330px-M101_hires_STScI-PRC2006-10a.jpg", "Pinwheel Galaxy thumbnail");
-    if (/centaurus a|ngc 5128/.test(text)) return imageAsset("https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Black_Hole_Outflows_From_Centaurus_A.jpg/330px-Black_Hole_Outflows_From_Centaurus_A.jpg", "Centaurus A thumbnail");
-    if (/sculptor galaxy|ngc 253/.test(text)) return imageAsset("https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Sculptor_Galaxy%2C_NGC_253_%28noao-ngc-253%29.tiff/lossy-page1-330px-Sculptor_Galaxy%2C_NGC_253_%28noao-ngc-253%29.tiff.jpg", "Sculptor Galaxy thumbnail");
-    if (/ngc 55/.test(text)) return imageAsset("https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Irregular_Galaxy_NGC_55_%28ESO_0914a%29.jpg/330px-Irregular_Galaxy_NGC_55_%28ESO_0914a%29.jpg", "NGC 55 thumbnail");
+    if (/andromeda|m31/.test(text)) return wikimediaImage("Andromeda Galaxy (with h-alpha).jpg", "Andromeda Galaxy thumbnail");
+    if (/triangulum|m33/.test(text)) return wikimediaImage("Triangulum Galaxy M33.jpg", "Triangulum Galaxy thumbnail");
+    if (/whirlpool|m51/.test(text)) return wikimediaImage("Messier51 sRGB.jpg", "Whirlpool Galaxy thumbnail");
+    if (/pinwheel|m101/.test(text)) return wikimediaImage("M101 hires STScI-PRC2006-10a.jpg", "Pinwheel Galaxy thumbnail");
+    if (/centaurus a|ngc 5128/.test(text)) return wikimediaImage("Black Hole Outflows From Centaurus A.jpg", "Centaurus A thumbnail");
+    if (/sculptor galaxy|ngc 253/.test(text)) return wikimediaImage("Sculptor Galaxy, NGC 253 (noao-ngc-253).tiff", "Sculptor Galaxy thumbnail");
+    if (/ngc 55/.test(text)) return wikimediaImage("Irregular Galaxy NGC 55 (ESO 0914a).jpg", "NGC 55 thumbnail");
     if (/hercules cluster|m13/.test(text)) return wikimediaImage("Messier 13 Hubble WikiSky.jpg", "Hercules Cluster thumbnail");
     if (/omega centauri|ngc 5139/.test(text)) return imageAsset("https://science.nasa.gov/wp-content/uploads/2023/04/c80-1-jpg.webp?w=600", "Omega Centauri thumbnail");
-    if (/messier 4|m4\b/.test(text)) return imageAsset("https://assets.science.nasa.gov/content/dam/science/missions/hubble/stars/globular-clusters/Hubble_M4_WFC3_ACS_ok_flat_cont_FINAL_NewImage.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "Messier 4 thumbnail");
-    if (/messier 5|m5\b/.test(text)) return imageAsset("https://assets.science.nasa.gov/content/dam/science/missions/hubble/stars/globular-clusters/Hubble_M5_WFC3_UV_flat_FINAL_NewImage.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "Messier 5 thumbnail");
-    if (/messier 2|m2\b/.test(text)) return imageAsset("https://assets.science.nasa.gov/content/dam/science/missions/hubble/stars/globular-clusters/Hubble_M2_potw1913a.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "Messier 2 thumbnail");
+    if (/messier 4|m4\b/.test(text)) return wikimediaImage("Globular star cluster Messier 4.jpg", "Messier 4 thumbnail");
+    if (/messier 5|m5\b/.test(text)) return wikimediaImage("Messier 5 - HST.jpg", "Messier 5 thumbnail");
+    if (/messier 2|m2\b/.test(text)) return wikimediaImage("Messier2 - HST - Potw1913a.jpg", "Messier 2 thumbnail");
     if (/messier 15|m15\b/.test(text)) return imageAsset("https://science.nasa.gov/wp-content/uploads/2023/04/heic1321a-jpg.webp?w=600", "Messier 15 thumbnail");
     if (/orion nebula|m42\b/.test(text)) return wikimediaImage("Orion Nebula (M42) part HST 4800px.jpg", "Orion Nebula thumbnail");
     if (/horsehead|barnard 33/.test(text)) return imageAsset("https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/releases/2001/04/STScI-01EVT9N4HJ57T0R4MN2MJW8N89.jpg?crop=faces%2Cfocalpoint&fit=clip&h=813&w=800", "Optical image of the Horsehead Nebula by Travis Rector (NOAO)", "Travis Rector (NOAO)");
@@ -2877,20 +2883,20 @@
   "Messier 13 Hubble WikiSky.jpg": {
     "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/74/Messier_13_Hubble_WikiSky.jpg/330px-Messier_13_Hubble_WikiSky.jpg",
     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Messier_13_Hubble_WikiSky.jpg",
-    "credit": "",
-    "license": ""
+    "credit": "NASA/STScI/WikiSky",
+    "license": "Public domain"
   },
   "Saturn during Equinox.jpg": {
     "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c7/Saturn_during_Equinox.jpg/330px-Saturn_during_Equinox.jpg",
     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Saturn_during_Equinox.jpg",
-    "credit": "",
-    "license": ""
+    "credit": "NASA/JPL/Space Science Institute",
+    "license": "Public domain"
   },
   "Pleiades large.jpg": {
     "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4e/Pleiades_large.jpg/330px-Pleiades_large.jpg",
     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Pleiades_large.jpg",
-    "credit": "",
-    "license": ""
+    "credit": "NASA/ESA/AURA/Caltech/Palomar Observatory",
+    "license": "Public domain"
   },
   "Lagoon Nebula.jpg": {
     "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c4/Lagoon_Nebula.jpg/330px-Lagoon_Nebula.jpg",
@@ -2901,8 +2907,8 @@
   "Trifid.nebula.arp.750pix.jpg": {
     "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/Trifid.nebula.arp.750pix.jpg/330px-Trifid.nebula.arp.750pix.jpg",
     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Trifid.nebula.arp.750pix.jpg",
-    "credit": "",
-    "license": ""
+    "credit": "Jeff Hester (ASU)/Palomar telescope; NASA/STScI",
+    "license": "Public domain"
   },
   "Eagle Nebula from ESO.jpg": {
     "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2b/Eagle_Nebula_from_ESO.jpg/330px-Eagle_Nebula_from_ESO.jpg",
@@ -2913,8 +2919,8 @@
   "M57 The Ring Nebula.JPG": {
     "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/13/M57_The_Ring_Nebula.JPG/330px-M57_The_Ring_Nebula.JPG",
     "sourceUrl": "https://commons.wikimedia.org/wiki/File:M57_The_Ring_Nebula.JPG",
-    "credit": "",
-    "license": ""
+    "credit": "Hubble Heritage Team (AURA/STScI/NASA)",
+    "license": "Public domain"
   },
   "Pelican Nebula.jpg": {
     "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/Pelican_Nebula.jpg/330px-Pelican_Nebula.jpg",
@@ -2925,14 +2931,14 @@
   "Orion Nebula (M42) part HST 4800px.jpg": {
     "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b9/Orion_Nebula_%28M42%29_part_HST_4800px.jpg/330px-Orion_Nebula_%28M42%29_part_HST_4800px.jpg",
     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Orion_Nebula_(M42)_part_HST_4800px.jpg",
-    "credit": "",
-    "license": ""
+    "credit": "NASA/ESA/Hubble Heritage Team (STScI/AURA)",
+    "license": "Public domain"
   },
   "Rosette nebula s.jpg": {
     "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/86/Rosette_nebula_s.jpg/330px-Rosette_nebula_s.jpg",
     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rosette_nebula_s.jpg",
-    "credit": "",
-    "license": ""
+    "credit": "Nick Wright (UCL)/IPHAS collaboration",
+    "license": "Public domain"
   },
   "California nebula NGC1499.jpg": {
     "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f2/California_nebula_NGC1499.jpg/330px-California_nebula_NGC1499.jpg",
@@ -2955,8 +2961,8 @@
   "Venus-real color.jpg": {
     "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Venus-real_color.jpg/330px-Venus-real_color.jpg",
     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Venus-real_color.jpg",
-    "credit": "",
-    "license": ""
+    "credit": "NASA",
+    "license": "Public domain"
   },
   "Solar System true color.jpg": {
     "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/19/Solar_System_true_color.jpg/330px-Solar_System_true_color.jpg",
@@ -2973,8 +2979,8 @@
   "Comet Hartley 2.jpg": {
     "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e6/Comet_Hartley_2.jpg/330px-Comet_Hartley_2.jpg",
     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Comet_Hartley_2.jpg",
-    "credit": "",
-    "license": ""
+    "credit": "NASA/JPL-Caltech/UMD",
+    "license": "Public domain"
   },
   "Total Solar Eclipse 8-21-17.jpg": {
     "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cd/Total_Solar_Eclipse_8-21-17.jpg/330px-Total_Solar_Eclipse_8-21-17.jpg",
@@ -2993,6 +2999,96 @@
     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Regulus_in_true_color.jpg",
     "credit": "Stanley Joseph \"Stan\"",
     "license": "CC BY 4.0"
+  },
+  "SH2-119 - Clamshell Nebula (Giovanni Barbarino).jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/ff/SH2-119_-_Clamshell_Nebula_%28Giovanni_Barbarino%29.jpg/330px-SH2-119_-_Clamshell_Nebula_%28Giovanni_Barbarino%29.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:SH2-119_-_Clamshell_Nebula_(Giovanni_Barbarino).jpg",
+    "credit": "g.barbarino",
+    "license": "CC BY-SA 2.0"
+  },
+  "Butterfly Nebula in the Sadr Region.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fb/Butterfly_Nebula_in_the_Sadr_Region.jpg/330px-Butterfly_Nebula_in_the_Sadr_Region.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Butterfly_Nebula_in_the_Sadr_Region.jpg",
+    "credit": "Darko7411",
+    "license": "CC0"
+  },
+  "10P Tempel on 21 June 2026.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3d/10P_Tempel_on_21_June_2026.jpg/330px-10P_Tempel_on_21_June_2026.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:10P_Tempel_on_21_June_2026.jpg",
+    "credit": "Dimitrios Katevainis",
+    "license": "CC BY-SA 4.0"
+  },
+  "VST image of the spectacular star-forming region Messier 17 (Omega Nebula).jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7f/VST_image_of_the_spectacular_star-forming_region_Messier_17_%28Omega_Nebula%29.jpg/330px-VST_image_of_the_spectacular_star-forming_region_Messier_17_%28Omega_Nebula%29.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:VST_image_of_the_spectacular_star-forming_region_Messier_17_(Omega_Nebula).jpg",
+    "credit": "ESO/INAF-VST/OmegaCAM; OmegaCen/Astro-WISE/Kapteyn Institute",
+    "license": "CC BY 4.0"
+  },
+  "Andromeda Galaxy (with h-alpha).jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/98/Andromeda_Galaxy_%28with_h-alpha%29.jpg/330px-Andromeda_Galaxy_%28with_h-alpha%29.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Andromeda_Galaxy_(with_h-alpha).jpg",
+    "credit": "Adam Evans",
+    "license": "CC BY 2.0"
+  },
+  "Triangulum Galaxy M33.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a5/Triangulum_Galaxy_M33.jpg/330px-Triangulum_Galaxy_M33.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Triangulum_Galaxy_M33.jpg",
+    "credit": "Denis Paryshev",
+    "license": "CC BY-SA 4.0"
+  },
+  "Messier51 sRGB.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/db/Messier51_sRGB.jpg/330px-Messier51_sRGB.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Messier51_sRGB.jpg",
+    "credit": "NASA/ESA",
+    "license": "Public domain"
+  },
+  "M101 hires STScI-PRC2006-10a.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c5/M101_hires_STScI-PRC2006-10a.jpg/330px-M101_hires_STScI-PRC2006-10a.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:M101_hires_STScI-PRC2006-10a.jpg",
+    "credit": "ESA/NASA; image processing: Davide De Martin (ESA/Hubble)",
+    "license": "CC BY 4.0"
+  },
+  "Black Hole Outflows From Centaurus A.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bf/Black_Hole_Outflows_From_Centaurus_A.jpg/330px-Black_Hole_Outflows_From_Centaurus_A.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Black_Hole_Outflows_From_Centaurus_A.jpg",
+    "credit": "ESO/WFI; MPIfR/ESO/APEX/A. Weiss et al.; NASA/CXC/CfA/R. Kraft et al.; Julian Herzog",
+    "license": "CC BY 4.0"
+  },
+  "Sculptor Galaxy, NGC 253 (noao-ngc-253).tiff": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/13/Sculptor_Galaxy%2C_NGC_253_%28noao-ngc-253%29.tiff/lossy-page1-330px-Sculptor_Galaxy%2C_NGC_253_%28noao-ngc-253%29.tiff.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Sculptor_Galaxy,_NGC_253_(noao-ngc-253).tiff",
+    "credit": "SSRO/PROMPT/CTIO",
+    "license": "CC BY 4.0"
+  },
+  "Irregular Galaxy NGC 55 (ESO 0914a).jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/54/Irregular_Galaxy_NGC_55_%28ESO_0914a%29.jpg/330px-Irregular_Galaxy_NGC_55_%28ESO_0914a%29.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Irregular_Galaxy_NGC_55_(ESO_0914a).jpg",
+    "credit": "ESO",
+    "license": "CC BY 4.0"
+  },
+  "M27 - Dumbbell Nebula.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e8/M27_-_Dumbbell_Nebula.jpg/330px-M27_-_Dumbbell_Nebula.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:M27_-_Dumbbell_Nebula.jpg",
+    "credit": "ESO",
+    "license": "CC BY 4.0"
+  },
+  "Globular star cluster Messier 4.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/90/Globular_star_cluster_Messier_4.jpg/330px-Globular_star_cluster_Messier_4.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Globular_star_cluster_Messier_4.jpg",
+    "credit": "ESO Imaging Survey",
+    "license": "CC BY 4.0"
+  },
+  "Messier 5 - HST.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9a/Messier_5_-_HST.jpg/330px-Messier_5_-_HST.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Messier_5_-_HST.jpg",
+    "credit": "ESA/Hubble & NASA",
+    "license": "Public domain"
+  },
+  "Messier2 - HST - Potw1913a.jpg": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d6/Messier2_-_HST_-_Potw1913a.jpg/330px-Messier2_-_HST_-_Potw1913a.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Messier2_-_HST_-_Potw1913a.jpg",
+    "credit": "ESA/Hubble & NASA, G. Piotto et al.",
+    "license": "CC BY 4.0"
   }
 };
 
@@ -3001,7 +3097,9 @@
   }
 
   function imageAsset(src, alt, credit = "") {
-    return { src, alt, credit };
+    const source = new URL(src).hostname;
+    const sourceCredit = source.endsWith("nasa.gov") ? "NASA" : source.endsWith("eso.org") ? "ESO" : source.endsWith("noirlab.edu") ? "NSF NOIRLab" : "";
+    return { src, alt, credit: credit || sourceCredit, sourceUrl: src, license: source.endsWith("eso.org") ? "CC BY 4.0" : "" };
   }
 
   function moonZodiacInfo(day) {

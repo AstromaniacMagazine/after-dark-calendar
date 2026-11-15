@@ -34,6 +34,11 @@
       url: "https://science.nasa.gov/solar-system/whats-up-june-2026-skywatching-tips-from-nasa/",
       note: "Reference for the Venus-Jupiter conjunction, Mercury/Venus/Jupiter evening grouping, Moon-Venus event, June solstice and seasonal deep-sky context."
     },
+    usnoSeasons: {
+      label: "US Naval Observatory 2026 seasons",
+      url: "https://aa.usno.navy.mil/calculated/seasons?year=2026&tz=0&dst=false",
+      note: "Primary UTC time for the June solstice, verified 15 November 2026."
+    },
     astronomyEngine: {
       label: "Astronomy Engine",
       url: "https://github.com/cosinekitty/astronomy",
@@ -245,7 +250,7 @@
       event("occultation", "Moon and Venus", "The Moon passes Venus; occultation visibility is path-dependent.", "Twilight pairing and occultation opportunity.", ["nasaSky", "inSky"], media.venus)
     ],
     21: [
-      event("sky", "June solstice", "The Sun reaches its northernmost declination at the June solstice.", "Season marker.", ["nasaSky"], media.sun),
+      event("sky", "June solstice", "The June solstice occurred at 08:24 UTC, when the Sun reached its northernmost declination.", "Season marker.", ["usnoSeasons", "nasaSky"], media.sun),
       event("moon", "First Quarter Moon", "Exact phase 21:55 UTC. Lunar terminator detail is strong.", "Moon phase marker.", ["astronomyEngine", "nasaSvs"])
     ],
     29: [
