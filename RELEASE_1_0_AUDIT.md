@@ -1,6 +1,6 @@
 # After Dark Calendar 1.0 release audit — 15 November 2026
 
-**Status: 1.0 technical checks passed; publication directed by the site owner.** The owner directed the release to keep Open-Meteo's free endpoints. Its published commercial-use terms remain an unresolved service-licence risk for a magazine site with advertising and promotional activity. This audit does not certify legal compliance.
+**Status: Version 1.0 published on 15 November 2026.** The owner directed the release to keep Open-Meteo's free endpoints. Its published commercial-use terms remain an unresolved service-licence risk for a magazine site with advertising and promotional activity. This audit does not certify legal compliance.
 
 ## Release gates
 
@@ -24,11 +24,11 @@ These observations identify release risks; they are not a legal certification. T
 - Live USNO comparison: 83 phase dates/types, 70 exact phase times and 10 season entries; no detected mismatches. NASA's [2027 eclipse list](https://eclipse.gsfc.nasa.gov/OH/OH2027.html) agrees with the five catalogued eclipse entries. Forecasts and future event predictions remain subject to later updates.
 - Astronomy fixture: Sun/Moon rise and set reference cases for London, Sydney, New York and DST, plus a JPL apparent Moon position, pass. Local terrain, unusual atmospheric refraction and changing weather are outside this model.
 - Browser regressions pass for all 14 remaining months from November 2026 to December 2027, widths 320–1920 px, mobile swipes, Today navigation, event-copy spacing, chart spacing, target and article rotation, location opt-in/history and all four themes. No page script errors or horizontal overflow in the tested layouts.
-- All 35 recommended magazine links returned HTTP 200. Four 3840 × 2912 PNG theme snapshots are saved under the ignored `.release-snapshots/Version1.0/` folder.
+- All 35 recommended magazine links returned HTTP 200. Four final 3840 × 2886 PNG theme snapshots are saved under the ignored `.release-snapshots/Version1.0/` folder and in the project's standard `Snapshots` folder.
 - Local throttled pages showed about 3–4 seconds to ready, zero desktop CLS and about 0.0002 mobile CLS after the fix; remeasure on production. The current Squarespace host took about 26–29 seconds to calendar ready in a separate throttled run, with roughly 107–130 requests before ready. Site-level assets are the main performance issue observed.
 
 ## SEO and publication checks
 
 - The standalone page has a self-consistent title, description, structured data and canonical to the magazine page. The live magazine page also has a title, description and canonical, but its source renders multiple `h1` elements, some in the footer; simplify those in Squarespace.
-- The magazine still requests `squarespace-inline.js?v=Beta0.9.8b-20261108a`, although the script currently displays Beta 0.9.9. Update the Code Block cache key only after the approved 1.0 build is merged and GitHub Pages serves it.
-- The 1.0 candidate now updates version markers, structured data date, release log (latest three only), privacy copy and Squarespace build key. Calendar validation, astronomy references, desktop/mobile regressions and four-theme snapshots passed. After merging, verify GitHub Pages and update the Squarespace Code Block key, then check the live magazine embed.
+- PR #28 merged as commit `4c23e4d` and GitHub Pages deployed successfully. Squarespace now requests `squarespace-inline.js?v=1.0-20261115a`; the live magazine page reports `data-version="1.0"`, reaches ready state and has no failed visible calendar images in the checked browser.
+- Version markers, structured data date, release log (latest three only), privacy copy and Squarespace build key were updated. Calendar validation, astronomy references, desktop/mobile regressions and four-theme snapshots passed.
