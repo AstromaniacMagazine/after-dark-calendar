@@ -13,7 +13,7 @@
 
   const sources = {
     ...shared.sources,
-    auditedAlmanac: { label: "Fred Espenak 2026 Sky Event Almanac", url: "https://astropixels.com/almanac/almanac21/almanac2026gmt.html", note: "November and December rechecked 8 November 2026 against live USNO phases and seasons, IMO meteor predictions, NASA supermoon guidance and the almanac. USNO phase times take precedence." },
+    auditedAlmanac: { label: "Fred Espenak 2026 Sky Event Almanac", url: "https://astropixels.com/almanac/almanac21/almanac2026gmt.html", note: "December phases, solstice and meteor predictions rechecked 22 November 2026 against USNO and IMO. USNO phase times take precedence." },
     usnoPhases: {
       label: "US Naval Observatory 2026 Moon phases",
       url: "https://aa.usno.navy.mil/calculated/moon/phases?year=2026",
@@ -87,6 +87,9 @@
     ],
     9: [
       event("moon", "New Moon", "New Moon occurs at 00:52 UTC, providing December's best lunar-darkness window for faint winter nebulae and galaxies.", "Moon phase marker.", ["usnoPhases", "nasaSkyCal", "nasaSvs", "astronomyEngine"])
+    ],
+    13: [
+      event("meteor", "Geminids observing night", "The broad Geminid maximum spans the night of 13–14 December, before its predicted 14:00 UTC centre on the 14th. The waxing crescent Moon sets early; look for meteors away from local light pollution.", "Peak timing is a prediction; actual counts depend on sky and radiant altitude.", ["imo2026"], media.meteor)
     ],
     12: [
       event("sky", "Jupiter near Regulus", "Jupiter passes near Regulus on this UTC date. Their apparent altitude and best imaging time depend on location.", "Planet-star pairing.", ["auditedAlmanac", "inSky"], media.planets),

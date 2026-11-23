@@ -41,6 +41,17 @@ try {
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`${id} overflow`);
  }
  result.monthsChecked=ids.length;
+ await page.goto('http://127.0.0.1:4175/?snapshot=1&month=2026-12', { waitUntil: 'domcontentloaded' });
+ await page.waitForFunction(()=>document.querySelector('#amc-after-dark-calendar')?.dataset.month==='2026-12');
+ const reading={editorial:new Set(),reviews:new Set()};
+ for(let day=1;day<=31;day++){
+  await page.evaluate(day=>document.querySelector(`.amc-day[data-day="${day}"]`).click(),day);
+  const links=await page.locator('#amc-recommendations .amc-article-promo').evaluateAll(items=>items.map(item=>({url:item.href,kind:item.querySelector('small')?.textContent})));
+  assert.equal(links.length,2,`December ${day} should show two related reading choices`);
+  for(const link of links) reading[link.kind==='Review'?'reviews':'editorial'].add(link.url);
+ }
+ assert(reading.editorial.size>=5&&reading.reviews.size>=5,`December reading did not rotate widely: ${reading.editorial.size} editorial and ${reading.reviews.size} reviews`);
+ result.decemberReading={editorial:reading.editorial.size,reviews:reading.reviews.size};
  await page.goto('http://127.0.0.1:4175/?snapshot=1&month=2027-08', { waitUntil: 'domcontentloaded' });
  await page.waitForFunction(()=>document.querySelector('#amc-after-dark-calendar')?.dataset.ready==='true');
  await page.locator('.amc-day[data-day="2"]').click();

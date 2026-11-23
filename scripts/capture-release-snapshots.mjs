@@ -14,6 +14,7 @@ function argument(name, fallback = "") {
 const url = argument("url", "http://127.0.0.1:4173/");
 const outputDir = path.resolve(rootDir, argument("output", ".release-snapshots"));
 const version = argument("version", "Beta0.9.6");
+const snapshotMonth = argument("month", "");
 const selectedDay = Number(argument("day", "12"));
 const chromePath = argument("chrome", "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
 const modulesPath = argument("modules", process.env.AMC_NODE_MODULES || "");
@@ -106,7 +107,19 @@ try {
   }, location);
   await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
   await page.locator("#amc-after-dark-calendar").waitFor({ state: "visible", timeout: 15000 });
+  await page.waitForFunction(() => document.querySelector("#amc-after-dark-calendar")?.dataset.ready === "true", null, { timeout: 15000 });
   await page.evaluate(() => document.fonts?.ready);
+  if (snapshotMonth) {
+    if (!/^\d{4}-\d{2}$/.test(snapshotMonth)) throw new Error(`Invalid snapshot month: ${snapshotMonth}`);
+    for (let step = 0; step < 20; step += 1) {
+      const current = await page.locator("#amc-after-dark-calendar").getAttribute("data-month");
+      if (current === snapshotMonth) break;
+      const selector = current < snapshotMonth ? "[data-month-next]" : "[data-month-prev]";
+      await page.locator(selector).first().click();
+      await page.waitForFunction(previous => document.querySelector("#amc-after-dark-calendar")?.dataset.month !== previous, current, { timeout: 15000 });
+    }
+    if (await page.locator("#amc-after-dark-calendar").getAttribute("data-month") !== snapshotMonth) throw new Error(`Could not navigate to snapshot month ${snapshotMonth}`);
+  }
   await page.waitForFunction(() => document.querySelectorAll(".amc-weather-card").length === 7, null, { timeout: 15000 }).catch(() => {});
   if (Number.isInteger(selectedDay) && selectedDay > 0) {
     const day = page.locator(`.amc-day[data-day="${selectedDay}"]`);

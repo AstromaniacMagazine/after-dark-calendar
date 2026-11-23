@@ -136,6 +136,24 @@
   };
 
   const articleData = {
+    stargazingAutumn: {
+      title: "Get Into Stargazing This Autumn – A Beginner’s Guide",
+      url: "https://www.astromaniacmagazine.com/articles/get-into-stargazing-this-autumn-a-beginners-guide",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/6af0ad1c90e8f318141a0c09/1794157852264/unsplash-image-yBgC-qVCxMg.jpg?format=750w",
+      kind: "Guide"
+    },
+    seestarS30PlusReview: {
+      title: "Seestar S30 Plus Review: Has ZWO Found the Sweet Spot?",
+      url: "https://www.astromaniacmagazine.com/reviews/seestar-s30-plus-review-has-zwo-found-the-sweet-spot-of-smart-telescopes",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/671029297d44974c85141aa0/6af205ee17768a3f41b7a823/1794350605642/Seestar+S30+Plus+Review+by+Astromaniac+Magazine.jpg?format=750w",
+      kind: "Review"
+    },
+    apolloSolarReview: {
+      title: "Player One Apollo 428M MAX Pro: A Cooled Solar Camera",
+      url: "https://www.astromaniacmagazine.com/reviews/player-one-apollo-428m-max-pro-camera-a-cooled-solar-camera-with-a-mission",
+      image: "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/6af0ed8d804d0c65c28c3e01/1794174349724/PlayerOne+Apollo+428M+MAX+Pro+Review+-+Astromaniac+Magazine.jpg?format=750w",
+      kind: "Review"
+    },
     "pixInsight": {"title": "PixInsight Through the Years: How the Astrophotography Landscape Is Changing", "url": "https://www.astromaniacmagazine.com/articles/pixinsight-through-the-years-how-the-astrophotography-landscape-is-changing", "image": "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/6ac28688c5665f2e714f205a/1791133320521/PixInsight+Article+Poster.jpg?format=750w", "kind": "Article"},
     "remoteHosting": {"title": "Remote Telescope Hosting: Why Astrophotographers Are Moving to Darker Skies", "url": "https://www.astromaniacmagazine.com/articles/remote-telescope-hosting-why-astrophotographers-are-moving-to-darker-skies", "image": "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/6aa2df946099b129b01bbe62/1789058964502/Remote+Hosting+Observatories+-+Astromaniac+Magazine.jpg?format=750w", "kind": "Article"},
     "wandererBoxReview": {"title": "WandererBox PLUS V3: A 150g Powerhouse", "url": "https://www.astromaniacmagazine.com/reviews/wandererbox-plus-v3-a-power-house-in-a-150g-box", "image": "https://static1.squarespace.com/static/6707b4b3f2000e3c80442056/t/6a974662c90e0742ca2cbf8e/1788298850793/Wanderer+Vixen+Dovetail+Bracket+Kit+For+WandererBox+-+Astromaniac+Magazine.jpg?format=750w", "kind": "Review"},
