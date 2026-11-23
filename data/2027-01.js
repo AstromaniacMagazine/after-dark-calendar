@@ -87,6 +87,16 @@
         "mediaKey": "planets"
       }
     ],
+    "24": [
+      {
+        "type": "sky",
+        "title": "Moon near Jupiter and Regulus",
+        "copy": "Jupiter passes about 1.5° north of the Moon at 00:24 UTC; Regulus is nearby later in the morning. The bright waning gibbous Moon favours a short-exposure or wide-field pairing over faint deep-sky work. Check local visibility.",
+        "fact": "Apparent separation and local visibility vary by observing site.",
+        "sourceIds": ["almanac2027"],
+        "mediaKey": "planets"
+      }
+    ],
     "4": [
       {
         "type": "meteor",
@@ -127,16 +137,16 @@
     }
   ]
 };
-  data.sources = { ...shared.sources, usnoSeasons2027: {"label": "US Naval Observatory 2027 seasons and apsides", "url": "https://aa.usno.navy.mil/calculated/seasons?year=2027&tz=0&dst=false", "note": "Exact UT season and Earth apsis times, checked 27 October 2026. Takes precedence over the older rounded almanac."}, ...{
+  data.sources = { ...shared.sources, usnoSeasons2027: {"label": "US Naval Observatory 2027 seasons and apsides", "url": "https://aa.usno.navy.mil/calculated/seasons?year=2027&tz=0&dst=false", "note": "Exact UT season and Earth apsis times, checked 22 November 2026. Takes precedence over the older rounded almanac."}, ...{
   "usnoPhases2027": {
     "label": "US Naval Observatory 2027 Moon phases",
     "url": "https://aa.usno.navy.mil/calculated/moon/phases?year=2027",
-    "note": "Primary phase instants in Universal Time, checked 27 October 2026. Local dates may differ."
+    "note": "Primary phase instants in Universal Time, checked 22 November 2026. Local dates may differ."
   },
   "almanac2027": {
     "label": "Fred Espenak: 2027 Sky Event Almanac (GMT)",
     "url": "https://astropixels.com/almanac/almanac21/almanac2027gmt.html",
-    "note": "Primary planetary and seasonal calculations. Hour-only entries are approximate; phase times use USNO. Checked 27 October 2026."
+    "note": "Primary planetary and seasonal calculations. Hour-only entries are approximate; phase times use USNO. Checked 22 November 2026."
   },
   "imo2027": {
     "label": "International Meteor Organization 2027 Meteor Shower Calendar",

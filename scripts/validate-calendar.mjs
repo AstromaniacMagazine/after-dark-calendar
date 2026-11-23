@@ -205,7 +205,16 @@ if (december) {
     if (!december.exactMoon?.[day]?.startsWith(label)) fail(`2026-12 day ${day} Moon phase should be "${label}".`);
   }
   if (!eventTitles("2026-12", 14).includes("Geminid meteor shower peak")) fail("The Geminid maximum must be listed on 2026-12-14.");
+  if (!eventTitles("2026-12", 13).includes("Geminids observing night")) fail("The 13–14 December observing window must be listed on 2026-12-13.");
   if (!eventTitles("2026-12", 21).includes("December solstice")) fail("The December solstice must be listed on 2026-12-21.");
+}
+
+if (!eventTitles("2027-01", 24).includes("Moon near Jupiter and Regulus")) fail("The 2027-01-24 Moon-Jupiter pairing is missing.");
+if (!eventTitles("2027-02", 14).includes("Moon near the Pleiades")) fail("The 2027-02-14 Moon-Pleiades pairing is missing.");
+if (!eventTitles("2027-02", 22).includes("Mars near Regulus")) fail("The 2027-02-22 Mars-Regulus pairing is missing.");
+for (const key of ["stargazingAutumn", "seestarS30PlusReview", "apolloSolarReview"]) {
+  const article = context.window.AMC_SHARED?.articleData?.[key];
+  if (!article || !article.title || !article.image || !article.url?.startsWith("https://www.astromaniacmagazine.com/")) fail(`Missing or invalid related reading: ${key}.`);
 }
 
 // UTC dates from Fred Espenak's primary 2026 almanac, audited 2026-09-15.

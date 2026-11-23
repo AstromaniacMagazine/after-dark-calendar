@@ -6,7 +6,7 @@
   if (!script || !host || host.dataset.amcLoaded === "true") return;
 
   const base = new URL("../", script.src).href;
-  const build = "1.0-20261115a";
+  const build = "1.10-20261123a";
   host.dataset.amcLoaded = "true";
   host.classList.add("amc-inline-host");
 
@@ -40,7 +40,7 @@
   }
 
   host.innerHTML = `
-    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="1.0" data-asset-version="${build}" data-asset-base="${base}" data-inline="true" aria-labelledby="amc-title">
+    <section class="amc-sky-calendar" id="amc-after-dark-calendar" data-theme="light" data-version="1.10" data-asset-version="${build}" data-asset-base="${base}" data-inline="true" aria-labelledby="amc-title">
       <div class="amc-print-brand" aria-hidden="true">
         <img class="amc-print-logo" src="${base}assets/astromaniac-logo.webp" alt="">
         <div><strong>After Dark Calendar</strong><span>by Astromaniac Magazine</span></div>
@@ -50,7 +50,7 @@
       <header class="amc-top">
         <div class="amc-brand-lockup">
           <img class="amc-brand-logo" src="${base}assets/astromaniac-logo.webp" alt="" width="56" height="56" loading="eager" decoding="async">
-          <h1 class="amc-title" id="amc-title"><span class="amc-title-line"><span>After Dark Calendar</span><small class="amc-version-badge" aria-label="Current version 1.0">1.0</small></span><span class="amc-byline">by Astromaniac Magazine</span></h1>
+          <h1 class="amc-title" id="amc-title"><span class="amc-title-line"><span>After Dark Calendar</span><small class="amc-version-badge" aria-label="Current version 1.10">1.10</small></span><span class="amc-byline">by Astromaniac Magazine</span></h1>
         </div>
 
         <div class="amc-month-strip">
@@ -102,14 +102,14 @@
 
       <div class="amc-reference-row">
         <details class="amc-sources">
-          <summary><span>Sources and logs</span><a class="amc-feedback-link" href="https://www.astromaniacmagazine.com/contact" target="_blank" rel="noopener">Suggestions or feedback?</a></summary>
+          <summary><span>Sources and logs</span><span class="amc-summary-actions"><a class="amc-manual-link" href="https://www.astromaniacmagazine.com/articles/after-dark-calendar-an-all-in-one-astrophotography-planner" target="_blank" rel="noopener noreferrer">User manual</a><a class="amc-feedback-link" href="https://www.astromaniacmagazine.com/contact" target="_blank" rel="noopener noreferrer">Suggestions or feedback?</a></span></summary>
           <ul class="amc-source-list" id="amc-source-list"></ul>
           <div class="amc-version-panel">
-            <h3>Current version: 1.0</h3>
+            <h3>Current version: 1.10</h3>
             <ul class="amc-version-list">
+              <li><b>1.10:</b> refines mobile day navigation and chart spacing, limits forecasts to covered dates, and refreshes winter events and reading.</li>
               <li><b>1.0:</b> improves image reliability, location privacy and first-load stability; rechecks sky events and observing recommendations.</li>
               <li><b>Beta0.9.9:</b> fits forecast nights to available desktop space, tightens mobile spacing and privacy controls, and adds a lower Today shortcut.</li>
-              <li><b>Beta0.9.8b:</b> repairs target images, refines forecast colours and Today navigation, and rechecks November through January.</li>
             </ul>
             <section class="amc-privacy" aria-labelledby="amc-privacy-title">
               <h3 id="amc-privacy-title">Location and privacy</h3>
@@ -125,7 +125,7 @@
             </section>
             <section class="amc-about" aria-labelledby="amc-about-title">
               <h2 id="amc-about-title">2026–2027 night-sky calendar and astrophotography planner</h2>
-              <p>Explore deep-sky objects, Moon phases, meteor showers, eclipses and planetary events month by month. Add your city for local Moon and Sun timings, astronomical darkness, target altitude guidance and a live seven-night observing forecast.<br><b>Disclaimer and copyright:</b> © 2026 Astromaniac Magazine. After Dark Calendar's original text, design and compiled content are protected by copyright; unauthorised copying, redistribution, adaptation or commercial reuse is prohibited except where permitted by law. Where limited use is legally permitted, give clear credit and link to this page. Third-party imagery and data remain subject to their owners' terms. Astronomy, weather and launch information can change, so verify critical plans with the cited sources. Calendars three months or more ahead may be incomplete; they will be updated and become more complete as those months approach and more reliable event data becomes available.</p>
+              <p>Explore deep-sky objects, Moon phases, meteor showers, eclipses and planetary events month by month. Add your city for local Moon and Sun timings, astronomical darkness, target altitude guidance and a live seven-night observing forecast. The forecast appears only on the seven dates covered by its latest weather data.<br><b>Disclaimer and copyright:</b> © 2026 Astromaniac Magazine. After Dark Calendar's original text, design and compiled content are protected by copyright; unauthorised copying, redistribution, adaptation or commercial reuse is prohibited except where permitted by law. Where limited use is legally permitted, give clear credit and link to this page. Third-party imagery and data remain subject to their owners' terms. Astronomy, weather and launch information can change, so verify critical plans with the cited sources. Calendars three months or more ahead may be incomplete; they will be updated and become more complete as those months approach and more reliable event data becomes available.</p>
             </section>
           </div>
         </details>

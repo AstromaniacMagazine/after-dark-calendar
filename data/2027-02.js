@@ -49,6 +49,14 @@
           "usnoPhases2027"
         ],
         "mediaKey": null
+      },
+      {
+        "type": "sky",
+        "title": "Moon near the Pleiades",
+        "copy": "The First Quarter Moon passes about 1.2° from the Pleiades at 16:13 UTC. A bright wide-field pairing may be visible later where both rise above the local horizon.",
+        "fact": "The moment of closest approach may occur in daylight for some locations.",
+        "sourceIds": ["almanac2027"],
+        "mediaKey": "pleiades"
       }
     ],
     "20": [
@@ -73,6 +81,16 @@
           "nasaEclipses2027"
         ],
         "mediaKey": "eclipse"
+      }
+    ],
+    "22": [
+      {
+        "type": "sky",
+        "title": "Mars near Regulus",
+        "copy": "Mars passes about 3.8° north of Regulus at 04:31 UTC. A wide-field pairing is possible where both are above the horizon; exact framing and visibility depend on location.",
+        "fact": "Times are UTC; the local observing date may differ.",
+        "sourceIds": ["almanac2027"],
+        "mediaKey": "planets"
       }
     ],
     "28": [
@@ -167,12 +185,12 @@
   "usnoPhases2027": {
     "label": "US Naval Observatory 2027 Moon phases",
     "url": "https://aa.usno.navy.mil/calculated/moon/phases?year=2027",
-    "note": "Primary phase instants in Universal Time, checked 27 October 2026. Local dates may differ."
+    "note": "Primary phase instants in Universal Time, checked 22 November 2026. Local dates may differ."
   },
   "almanac2027": {
     "label": "Fred Espenak: 2027 Sky Event Almanac (GMT)",
     "url": "https://astropixels.com/almanac/almanac21/almanac2027gmt.html",
-    "note": "Primary planetary and seasonal calculations. Hour-only entries are approximate; phase times use USNO. Checked 27 October 2026."
+    "note": "Primary planetary and seasonal calculations. Hour-only entries are approximate; phase times use USNO. Checked 22 November 2026."
   },
   "imo2027": {
     "label": "International Meteor Organization 2027 Meteor Shower Calendar",
@@ -181,7 +199,7 @@
   },
   "nasaEclipses2027": {
     "label": "NASA eclipse catalogues: 2027",
-    "url": "https://eclipse.gsfc.nasa.gov/",
+    "url": "https://eclipse.gsfc.nasa.gov/OH/OH2027.html",
     "note": "Two solar and three catalogued penumbral lunar eclipses in 2027. The July graze is marginal and effectively unobservable; visibility is location dependent."
   },
   "phaseDiagrams": {

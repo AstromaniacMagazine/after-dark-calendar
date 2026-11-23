@@ -1928,15 +1928,25 @@ body.amc-standalone-body {
   transform: rotate(90deg);
 }
 
-.amc-feedback-link {
+.amc-summary-actions {
+  align-items: center;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+.amc-feedback-link,
+.amc-manual-link {
   color: var(--accent);
   font-size: .68rem;
   font-weight: 600;
-  margin-left: auto;
   text-transform: none;
 }
 
-.amc-feedback-link:hover {
+.amc-feedback-link:hover,
+.amc-manual-link:hover {
   text-decoration: underline;
 }
 
@@ -3004,6 +3014,10 @@ body.amc-standalone-body {
 
   .amc-cell-mobile-extra {
     gap: 9px;
+  }
+
+  .amc-cell-mobile-extra > .amc-chart {
+    margin-top: 5px;
   }
 
   .amc-cell-mobile-extra .amc-weather-grid,

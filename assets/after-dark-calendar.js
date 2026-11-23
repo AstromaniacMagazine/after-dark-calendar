@@ -25,6 +25,7 @@
     mobileDayNav: root.querySelector("#amc-mobile-day-nav"),
     mobileDayRail: root.querySelector("#amc-mobile-day-rail"),
     feedbackLink: root.querySelector(".amc-feedback-link"),
+    manualLink: root.querySelector(".amc-manual-link"),
     backToTop: root.querySelector("#amc-back-to-top"),
     rememberLocations: root.querySelector("#amc-remember-locations"),
     rememberTheme: root.querySelector("#amc-remember-theme"),
@@ -275,6 +276,7 @@
     root.addEventListener("touchend", handleInlineHorizontalTouchEnd, { passive: true, capture: true });
     root.addEventListener("touchcancel", handleInlineHorizontalTouchEnd, { passive: true, capture: true });
     els.feedbackLink?.addEventListener("click", event => event.stopPropagation());
+    els.manualLink?.addEventListener("click", event => event.stopPropagation());
     root.addEventListener("pointerover", handleWeatherTipIn);
     root.addEventListener("pointerout", handleWeatherTipOut);
     root.addEventListener("focusin", handleWeatherTipIn);
@@ -1142,6 +1144,7 @@
 
   function embedHorizontalScroller(target) {
     if (!(target instanceof Element)) return null;
+    if (target.closest(".amc-bottom-day-nav")) return els.grid;
     const scroller = target.closest(".amc-mobile-day-rail, .amc-grid, .amc-intel-strip, .amc-legend, .amc-target-list");
     return scroller && scroller.scrollWidth > scroller.clientWidth + 1 ? scroller : null;
   }
@@ -1162,23 +1165,24 @@
     if (root.dataset.inline !== "true" || !isMobileCarousel() || event.touches.length !== 1) return;
     if (event.target instanceof Element && event.target.closest(".amc-target-list")) return;
     const scroller = event.target instanceof Element
-      ? event.target.closest(".amc-mobile-day-rail, .amc-grid")
+      ? event.target.closest(".amc-mobile-day-rail, .amc-grid, .amc-bottom-day-nav")
       : null;
-    if (!scroller || scroller.scrollWidth <= scroller.clientWidth + 1) return;
-    if (scroller === els.grid && state.mobileScrollAnimationFrame) {
+    const dayScroller = scroller?.classList.contains("amc-bottom-day-nav") ? els.grid : scroller;
+    if (!dayScroller || dayScroller.scrollWidth <= dayScroller.clientWidth + 1) return;
+    if (dayScroller === els.grid && state.mobileScrollAnimationFrame) {
       window.cancelAnimationFrame(state.mobileScrollAnimationFrame);
       state.mobileScrollAnimationFrame = null;
     }
-    if (scroller === els.mobileDayRail && state.mobileRailTimer) window.clearTimeout(state.mobileRailTimer);
+    if (dayScroller === els.mobileDayRail && state.mobileRailTimer) window.clearTimeout(state.mobileRailTimer);
     state.inlineHorizontalTouch = {
-      scroller,
+      scroller: dayScroller,
       x: event.touches[0].clientX,
       y: event.touches[0].clientY,
       lastX: event.touches[0].clientX,
       lastY: event.touches[0].clientY,
       lastAt: performance.now(),
       velocityX: 0,
-      scrollLeft: scroller.scrollLeft,
+      scrollLeft: dayScroller.scrollLeft,
       scrollTop: document.scrollingElement?.scrollTop || window.scrollY || 0,
       axis: ""
     };
@@ -1313,7 +1317,7 @@
       <span class="amc-cell-mobile-extra">
         ${events.length ? `<span class="amc-expanded-event-list">${events.map(expandedEventItem).join("")}</span>` : ""}
         ${moonChart(skyInfo, nightInfo, true)}
-        ${cellWeatherPanel()}
+        ${cellWeatherPanel(day)}
         ${includeRecommendations ? `<span class="amc-mobile-recommendations">${recommendationsMarkup(day)}</span>` : ""}
       </span>
     `;
@@ -1322,6 +1326,10 @@
   function weatherForCalendarDay(day) {
     const dateKey = `${state.month.year}-${String(state.month.monthIndex + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     return state.weather.find(item => item.dateKey === dateKey) || null;
+  }
+
+  function selectedDayHasForecast() {
+    return Boolean(weatherForCalendarDay(state.selectedDay));
   }
 
   function dayObservingBar(weather) {
@@ -1639,32 +1647,36 @@
   function recommendedArticles(day, events, moon) {
     const typeSet = new Set(events.map(item => item.type));
     const seed = day + (state.month.monthIndex + 1) * 37 + state.month.year * 11;
+    const seasonalBeginnerArticle = [8, 9, 10, 11, 0, 1].includes(state.month.monthIndex)
+      ? state.articles.stargazingAutumn : null;
     let editorial;
     let reviews;
     if (typeSet.has("eclipse")) {
       editorial = [state.articles.moon, state.articles.artemis];
-      reviews = [state.articles.sqmReview, state.articles.askar80Review];
+      reviews = events.some(item => /solar eclipse/i.test(item.title))
+        ? [state.articles.apolloSolarReview, state.articles.sqmReview]
+        : [state.articles.sqmReview, state.articles.askar80Review];
     } else if (typeSet.has("launch")) {
       editorial = [state.articles.launch, state.articles.artemis, state.articles.spaceDebris, state.articles.jamesWebb];
       reviews = [state.articles.powerReview, state.articles.zwoReview, state.articles.falconReview];
     } else if (typeSet.has("meteor")) {
-      editorial = [state.articles.deepSky, state.articles.lightPollution, state.articles.numbers, state.articles.accessories];
+      editorial = [state.articles.deepSky, seasonalBeginnerArticle, state.articles.lightPollution, state.articles.numbers, state.articles.accessories];
       reviews = [state.articles.sqmReview, state.articles.askar80Review, state.articles.sqa55Review, state.articles.atr2600Review];
     } else if (moon.phase >= 70 || (typeSet.has("moon") && moon.phase >= 35)) {
       editorial = [state.articles.moon, state.articles.artemis, state.articles.lunarLife, state.articles.lunarClock];
       reviews = [state.articles.sqmReview, state.articles.monitorReview, state.articles.powerReview, state.articles.zwoReview];
     } else if (typeSet.has("telescope")) {
       editorial = [state.articles.telescope, state.articles.rubin, state.articles.jamesWebb, state.articles.deepSky];
-      reviews = [state.articles.seestarS50ProReview, state.articles.askar103Review, state.articles.ts130Review, state.articles.askar80Review, state.articles.sqa55Review, state.articles.zwoReview];
+      reviews = [state.articles.seestarS30PlusReview, state.articles.seestarS50ProReview, state.articles.askar103Review, state.articles.ts130Review, state.articles.askar80Review, state.articles.sqa55Review, state.articles.zwoReview];
     } else if (typeSet.has("opposition")) {
       editorial = [state.articles.planetary, state.articles.planetNine, state.articles.marsLife, state.articles.earthLike];
       reviews = [state.articles.asi6200Review, state.articles.atr2600Review, state.articles.ts130Review, state.articles.falconReview];
     } else if (moon.phase < 35) {
-      editorial = [state.articles.deepSky, state.articles.remoteHosting, state.articles.jamesWebb, state.articles.pixInsight, state.articles.numbers];
-      reviews = [state.articles.seestarS50ProReview, state.articles.asi6200Review, state.articles.atr2600Review, state.articles.sqa55Review, state.articles.askar80Review, state.articles.askar103Review, state.articles.ts130Review, state.articles.falconReview, state.articles.flatPanelReview];
+      editorial = [state.articles.deepSky, seasonalBeginnerArticle, state.articles.remoteHosting, state.articles.jamesWebb, state.articles.pixInsight, state.articles.numbers];
+      reviews = [state.articles.seestarS30PlusReview, state.articles.seestarS50ProReview, state.articles.asi6200Review, state.articles.atr2600Review, state.articles.sqa55Review, state.articles.askar80Review, state.articles.askar103Review, state.articles.ts130Review, state.articles.falconReview, state.articles.flatPanelReview];
     } else {
-      editorial = [state.articles.numbers, state.articles.deepSky, state.articles.pixInsight, state.articles.accessories, state.articles.remoteHosting];
-      reviews = [state.articles.seestarS50ProReview, state.articles.wandererBoxReview, state.articles.powerReview, state.articles.flatPanelReview, state.articles.falconReview, state.articles.zwoReview, state.articles.sqmReview];
+      editorial = [state.articles.numbers, state.articles.deepSky, seasonalBeginnerArticle, state.articles.pixInsight, state.articles.accessories, state.articles.remoteHosting];
+      reviews = [state.articles.seestarS30PlusReview, state.articles.seestarS50ProReview, state.articles.wandererBoxReview, state.articles.powerReview, state.articles.flatPanelReview, state.articles.falconReview, state.articles.zwoReview, state.articles.sqmReview];
     }
 
     const editorialPool = uniqueArticles(editorial);
@@ -1782,6 +1794,7 @@
   }
 
   function weatherPanel() {
+    if (isMobileCarousel() && state.weather.length && !selectedDayHasForecast()) return "";
     if (!state.hasLocation) return `<section class="amc-weather"><h3>7-Night Forecast</h3><span class="amc-weather-note">Use Current Location to show night-time cloud cover and transparency.</span></section>`;
     if (state.weatherState === "loading") return `<section class="amc-weather"><h3>7-Night Forecast</h3><span class="amc-weather-note">Loading local observing conditions.</span></section>`;
     if (state.weatherState === "error" || !state.weather.length) return `<section class="amc-weather"><h3>7-Night Forecast</h3><span class="amc-weather-note">Weather forecast unavailable for this location.</span></section>`;
@@ -1791,7 +1804,8 @@
     </section>`;
   }
 
-  function cellWeatherPanel() {
+  function cellWeatherPanel(day) {
+    if (state.weather.length && !weatherForCalendarDay(day)) return "";
     if (!state.hasLocation) return `<span class="amc-weather"><b>7-Night Forecast</b><span class="amc-weather-note">Set your location to see the seven-night observing forecast.</span></span>`;
     if (!state.weather.length) return `<span class="amc-weather"><b>7-Night Forecast</b><span class="amc-weather-note">${state.weatherState === "loading" ? "Loading local observing conditions." : "Weather forecast unavailable for this location."}</span></span>`;
     return `<span class="amc-weather"><span class="amc-weather-title"><b>7-Night Forecast</b>${weatherUpdatedLine()}</span><span class="amc-cell-weather-list">${state.weather.map(day => weatherCard(day, true)).join("")}</span></span>`;

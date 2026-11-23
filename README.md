@@ -2,7 +2,7 @@
 
 This repository contains the production website files for **After Dark Calendar by Astromaniac Magazine**.
 
-Version 1.0 passed the release's data, astronomy, browser and mobile checks. See [the release audit](RELEASE_1_0_AUDIT.md) for results and the remaining external-service licence caveat.
+Version 1.10 is the current release. It follows the Version 1.0 data, astronomy, browser and mobile audit; see [the release audit](RELEASE_1_0_AUDIT.md) for the external-service licence caveat.
 
 ## Folder structure
 
@@ -39,6 +39,13 @@ For each version:
 8. Keep the Squarespace Code Block on the inline installation in `SQUARESPACE_EMBED.md`; do not restore the retired iframe bridge.
 
 ## Notes
+
+### Version 1.10 (23 November 2026)
+
+- Enabled date swipes over the lower mobile navigation hint and added clearance between the compact data boxes and Moon chart.
+- Removed the mobile forecast panel for dates outside Open-Meteo's seven covered nights, allowing target and article recommendations to move up naturally.
+- Added a user manual link, three newly verified magazine recommendations, and audited December through February event additions against USNO, NASA, IMO and the cited sky almanac.
+- Passed the 20-month validator, astronomy and forecast regressions, touch and responsive browser checks, standalone privacy audit, and four high-resolution theme captures.
 
 ### Version 1.0 (15 November 2026)
 

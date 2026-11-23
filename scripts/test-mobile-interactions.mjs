@@ -28,7 +28,8 @@ function staticServer(port) {
       const filePath = path.resolve(rootDir, relative);
       if (!filePath.startsWith(`${rootDir}${path.sep}`) && filePath !== path.join(rootDir, "index.html")) throw new Error("Invalid path");
       const body = await fs.readFile(filePath);
-      response.writeHead(200, { "content-type": mime.get(path.extname(filePath)) || "application/octet-stream" });
+      const contentType = mime.get(path.extname(filePath)) || "application/octet-stream";
+      response.writeHead(200, { "content-type": /^(text\/|application\/json)/.test(contentType) ? `${contentType}; charset=utf-8` : contentType });
       response.end(body);
     } catch {
       response.writeHead(404).end("Not found");
@@ -44,7 +45,7 @@ function wrapperServer(port) {
     <div id="adc-inline-calendar"></div>
     <script src="http://127.0.0.1:4173/assets/squarespace-inline.js?v=test"><\/script>`;
   const server = http.createServer((_request, response) => {
-    response.writeHead(200, { "content-type": "text/html" });
+    response.writeHead(200, { "content-type": "text/html; charset=utf-8" });
     response.end(html);
   });
   return new Promise(resolve => server.listen(port, "127.0.0.1", () => resolve(server)));
@@ -127,6 +128,16 @@ try {
     return Boolean(recommendations && forecast && (forecast.compareDocumentPosition(recommendations) & Node.DOCUMENT_POSITION_FOLLOWING));
   }), true, "The mobile forecast must appear before targets and related articles");
   assert.equal(await page.locator(".amc-day.is-mobile-active [data-now-detail]").count(), 1, "Moon chart is missing its live time/date/altitude label");
+  const chartClearance = await page.evaluate(() => {
+    const active = document.querySelector(".amc-day.is-mobile-active");
+    return active.querySelector(".amc-chart").getBoundingClientRect().top - active.querySelector(".amc-mini-grid").getBoundingClientRect().bottom;
+  });
+  assert(chartClearance >= 8, `Moon chart needs clear separation from the sunrise/sunset cards: ${chartClearance}px`);
+  if (process.argv.includes("--capture")) {
+    await fs.mkdir(path.join(rootDir, ".release-snapshots"), { recursive: true });
+    await page.locator(".amc-day.is-mobile-active .amc-expanded").screenshot({ path: path.join(rootDir, ".release-snapshots", "mobile-v110-expanded.png") });
+  }
+  assert.equal(await page.locator(".amc-manual-link").getAttribute("target"), "_blank", "User manual must open in a new tab");
   const todayStyle = await page.locator(".amc-day.is-today").evaluate(element => ({ border: getComputedStyle(element).borderTopWidth, shadow: getComputedStyle(element).boxShadow }));
   assert(Number.parseFloat(todayStyle.border) >= 3 && todayStyle.shadow !== "none", "Today is not visibly highlighted");
 
@@ -196,6 +207,15 @@ try {
     return nav.getBoundingClientRect().top - recs.getBoundingClientRect().bottom;
   });
   assert(lowerGap < 36, `Too much empty space below mobile Related Articles: ${lowerGap}px`);
+  const hint = page.locator(".amc-bottom-day-nav > span:nth-child(2)");
+  await page.waitForTimeout(450);
+  await hint.scrollIntoViewIfNeeded();
+  const hintBox = await hint.boundingBox();
+  const hintDayBefore = Number(await page.locator(".amc-day.is-mobile-active").getAttribute("data-day"));
+  await touchDrag(cdp, { x: hintBox.x + hintBox.width * .8, y: hintBox.y + hintBox.height / 2 }, { x: hintBox.x + hintBox.width * .2, y: hintBox.y + hintBox.height / 2 + 2 }, 12);
+  await page.waitForTimeout(520);
+  const hintDayAfter = Number(await page.locator(".amc-day.is-mobile-active").getAttribute("data-day"));
+  assert(hintDayAfter > hintDayBefore, `Swiping over the lower day hint did not advance: ${hintDayBefore} -> ${hintDayAfter}`);
   await page.locator("#amc-bottom-today").click();
   await page.waitForTimeout(530);
   assert.equal(Number(await page.locator(".amc-day.is-mobile-active").getAttribute("data-day")), today, "Lower Today control did not return to Today");
@@ -263,6 +283,11 @@ try {
     assert.equal(new Set(tops).size, 1, `Location controls do not stay on one row at ${width}px`);
     const radii = await page.locator("#amc-use-location, #amc-location-label, #amc-location-input, #amc-manual-location button").evaluateAll(elements => elements.map(element => getComputedStyle(element).borderTopLeftRadius));
     assert.equal(new Set(radii).size, 1, `Location controls do not share one corner radius at ${width}px`);
+    const clearance = await page.evaluate(() => {
+      const active = document.querySelector(".amc-day.is-mobile-active");
+      return active.querySelector(".amc-chart").getBoundingClientRect().top - active.querySelector(".amc-mini-grid").getBoundingClientRect().bottom;
+    });
+    assert(clearance >= 8, `Moon chart needs clear separation from data cards at ${width}px: ${clearance}px`);
   }
   await page.setViewportSize({ width: 390, height: 844 });
   const suggestionSizing = await page.evaluate(() => {
@@ -284,6 +309,8 @@ try {
   await outsideForecastChip.click();
   await page.waitForTimeout(520);
   assert.equal(await page.locator(".amc-day.is-mobile-active .amc-forecast-window-note").innerText(), "Outside the 7-day forecast window", "An out-of-range day does not explain forecast availability");
+  assert.equal(await page.locator(".amc-day.is-mobile-active .amc-weather").count(), 0, "Forecast panel remains visible outside its date range");
+  assert.equal(await page.locator(".amc-day.is-mobile-active .amc-mobile-recommendations").count(), 1, "Recommendations did not move up after the forecast disappeared");
   await page.locator("#amc-today-button").click();
   await page.waitForTimeout(420);
   assert.equal(Number(await page.locator(".amc-day.is-mobile-active").getAttribute("data-day")), today, "Today did not restore after the out-of-range forecast test");
